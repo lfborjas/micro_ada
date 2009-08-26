@@ -52,7 +52,9 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                 private MutableAttributeSet style;
 
                 private Color commentColor = Color.gray;
+                private Color stringColor = Color.red;
                 private Pattern singleLineCommentDelimter = Pattern.compile("--");
+                private Pattern stringLiteral = Pattern.compile("\"[a-zA-Z]+\"");
 
                 //private Pattern multiLineCommentDelimiterStart = Pattern.compile("/\\*");
                 //private Pattern multiLineCommentDelimiterEnd = Pattern.compile("\\*/");
@@ -225,6 +227,15 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
 
                                 highlightString(commentColor, slc.start(), (endOffset-slc.start()), true, true);
                         }
+                        /*
+                        Matcher stringlit=stringLiteral.matcher(text);
+                        while(stringlit.find()) {
+                                //int line = rootElement.getElementIndex(slc.start());
+                                //int endOffset = rootElement.getElement(line).getEndOffset() - 1;
+
+                                highlightString(stringColor, stringlit.start(), stringlit.end(), true, true);
+                        }*/
+
                 }
 
                 public void highlightString(Color col, int begin, int length, boolean flag, boolean bold)
