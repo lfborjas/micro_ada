@@ -325,6 +325,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
     }
 
     private void abrirArchivo() {
+        this.jFileChooser1.setDialogTitle("Abrir");
         int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -370,6 +371,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
     private void guardarArchivoActivo() {
         //si el archivo no existe, crearlo:
         if (archivo==null) {
+            this.jFileChooser1.setDialogTitle("Nombrar archivo");
             int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
             //poner vacío el display
@@ -404,18 +406,21 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 //guardar el archivo que está abierto
                 guardarArchivoActivo();
                 //borrar
-                this.jEditorPaneDocDisplay.setText("");
+                
 
             } else if (confirmacion == JOptionPane.NO_OPTION) {
                 //solo borrar:
-                this.jEditorPaneDocDisplay.setText("");
+                //this.jEditorPaneDocDisplay.setText("");
+
             }//fin NO
         }//fin EXISTS
 
         //mostrar el file chooser para poner nuevo nombre:
+        this.jFileChooser1.setDialogTitle("Nombrar nuevo archivo");
         int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             //poner vacío el display
+            this.jEditorPaneDocDisplay.setText("");
             archivo = this.jFileChooser1.getSelectedFile();
         }
     }//GEN-LAST:event_jMenuINuevoActionPerformed
