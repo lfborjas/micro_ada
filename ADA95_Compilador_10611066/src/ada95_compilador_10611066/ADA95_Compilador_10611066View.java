@@ -345,7 +345,23 @@ public class ADA95_Compilador_10611066View extends FrameView {
         // TODO add your handling code here:
         //Handle open button action.
 //    if (evt.getSource() == openButton) {
-        abrirArchivo();
+        if(archivo==null){
+            abrirArchivo();
+        }else{//si ya hay un archivo, preguntarle si quiere guardarlo antes:
+            int confirmacion = JOptionPane.showConfirmDialog(mainPanel, "¿Desea guardar el archivo " + archivo.getName() + " antes de abrir otro?");
+            if (confirmacion == JOptionPane.OK_OPTION) {
+                //guardar el archivo que está abierto
+                guardarArchivoActivo();
+                //borrar
+                this.jEditorPaneDocDisplay.setText("");
+
+            } else if (confirmacion == JOptionPane.NO_OPTION) {
+                //solo borrar:
+                this.jEditorPaneDocDisplay.setText("");
+            }//fin NO
+            //ya terminó con la confirmación, ahora sí abrir el archivo:
+            abrirArchivo();
+        }
 
         // }
 
