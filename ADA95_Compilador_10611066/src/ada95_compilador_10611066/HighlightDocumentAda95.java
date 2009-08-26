@@ -65,7 +65,7 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                         putProperty( DefaultEditorKit.EndOfLineStringProperty, "\n" );
 
                         rootElement = getDefaultRootElement();
-
+                        
                         keywords = new HashMap<String, Color>();
                         keywords.put( "abstract", Color.blue);                                                                      
                         /*Visibilidad: */
@@ -161,6 +161,12 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                         keywords.put( "Integer", Color.blue);
                         keywords.put( "Boolean", Color.blue);
 
+                        //ahora, en mayúsculas; poner entradas para las mayúscula también:
+                        //Set<String> toIterate=keywords.keySet();
+                        HashMap<String, Color> copy=(HashMap<String, Color>) keywords.clone();
+                        for(String value:copy.keySet()){
+                            keywords.put(value.toUpperCase(), keywords.get(value));
+                        }
                         /*Tipos:
                          keywords.put( "char", Color.orange);
                         keywords.put( "byte", Color.orange);
