@@ -1,0 +1,146 @@
+This package contains CUP grammars for the Java programming language.
+
+Copyright (C) 2002 C. Scott Ananian
+This code is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.  See the file COPYING for more details.
+
+Directory structure:
+ Parse/		contains the Java grammars.
+  java10.cup    contains a Java 1.0 grammar.
+  java11.cup    contains a Java 1.1 grammar.
+  java12.cup    contains a Java 1.2 grammar. [added 11-feb-1999]
+  java14.cup    contains a Java 1.4 grammar. [added 10-apr-2002]
+  java15.cup    contains a Java 1.5 Java grammar. [added 12-apr-2002]
+                [last updated 28-jul-2003; Java 1.5 spec not yet final.]
+  Lexer.java    interface description for a lexer.
+
+ Lex/           contains a simple but complete Java lexer.
+  Lex.java      main class
+  Sym.java      a copy of Parse/Sym.java containing symbolic constants.
+
+ Main/
+  Main.java     a simple testing skeleton for the parser/lexer.
+
+The grammar in Parse/ should be processed by CUP into Grm.java.
+There are much better ways to write lexers for java, but the
+implementation in Lex/ seemed to be the easiest at the time.  The
+lexer implemented here may not be as efficient as a table-driven lexer,
+but adheres to the java specification exactly.
+
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 3-Apr-1998
+                                                [revised 12-apr-2002]
+                                                [revised 28-jul-2003]
+
+UPDATE: Fixed a lexer bug: '5.2' is a double, not a float.  Thanks to
+Ben Walter <bwalter@mit.edu> for spotting this.
+
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 14-Jul-1998
+
+UPDATE: Fixed a couple of minor bugs.
+1) Lex.EscapedUnicodeReader wasn't actually parsing unicode escape sequences
+   properly because we didn't implement read(char[], int, int).
+2) Grammar fixes: int[].class, Object[].class and all array class
+   literals were not being parsed.  Also special void.class literal
+   inadvertantly omitted from the grammar.
+Both these problems have been fixed.
+
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 11-Feb-1999
+
+UPDATE: Fixed another lexer bug: Large integer constants such as
+0xFFFF0000 were being incorrectly flagged as 'too large for an int'.
+Also, by the Java Language Specification, "\477" is a valid string
+literal (it is the same as "\0477": the character '\047' followed by
+the character '7').  The lexer handles this case correctly now.
+
+Created java12.cup with grammar updated to Java 1.2.  Features
+added include the 'strictfp' keyword and the various new inner class
+features at http://java.sun.com/docs/books/jls/nested-class-clarify.html.
+
+Also added slightly better position/error reporting to all parsers.
+
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 11-Feb-1999
+
+UPDATE: fixed some buglets with symbol/error position reporting.
+
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 13-Sep-1999
+
+UPDATE: multi-line comments were causing incorrect character position
+reporting.  If you were using the character-position-to-line-number
+code in Lexer, you would never have noticed this problem.  Thanks to
+William Young <youngwr@rose-hulman.edu> for pointing this out.
+
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 27-Oct-1999
+
+UPDATE: extended grammar to handle the 'assert' statement added in
+Java 1.4.  Also fixed an oversight: a single SEMICOLON is a valid
+ClassBodyDeclaration; this was added to allow trailing semicolons
+uniformly on class declarations.  This wasn't part of the original
+JLS, but was revised in to conform with the actual behavior of the
+javac compiler.  I've added this to all the grammars from 1.0-1.4
+to conform to javac behavior; let me know if you've got a good
+reason why this production shouldn't be in early grammars.
+
+Also futzed with the Makefile some to allow building a 'universal'
+driver which will switch between java 1.0/1.1/1.2/1.4 on demand.
+This helps me test the separate grammars; maybe you'll find a
+use for this behavior too.
+
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 10-Apr-2002
+
+NEW: added a grammar for the JSR-14 "Adding Generics to the Java
+Programming Language" Java variant.  Calling this java15.cup, since
+this JSR currently seems to be destined for inclusion in Java 1.5.
+This grammar is very very tricky!  I need to use a lexer trick to
+handle type casts to parameterized types, which otherwise do not
+seem to be LALR(1).
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 12-Apr-2002
+
+UPDATE: various bug fixes to all grammars, in reponse to bugs reported
+by Eric Blake <ebb9@email.byu.edu> and others.
+ a) TWEAK: added 'String' type to IDENTIFIER terminal to match Number types
+    given to numeric literals. (all grammars)
+ b) BUG FIX: added SEMICOLON production to interface_member_declaration to
+    allow optional trailing semicolons, in accordance with the JLS (for
+    java 1.2-and-later grammars) and Sun practice (for earlier grammars).
+    The 10-Apr-2002 release did not address this problem completely, due
+    to an oversight. (all grammars)
+ c) BUG FIX: '<primary>.this(...);' is not a legal production;
+    '<name>.super(...);' and '<name>.new <identifier>(...' ought to be.
+    In particular, plain identifiers ought to be able to qualify instance
+    creation and explicit constructor invocation.
+    (fix due to Eric Blake; java 1.2 grammar and following)
+ d) BUG FIX: parenthesized variables on the left-hand-side of an assignment
+    ought to be legal, according to JLS2.  For example, this code is
+    legal:
+       class Foo { void m(int i) { (i) = 1; } }
+    (fix due to Eric Blake; java 1.2 grammar and following)
+ e) BUG FIX: array access of anonymous arrays ought to be legal, according
+    to JLS2.  For example, this is legal code:
+       class Foo { int i = new int[]{0}[0]; }
+    (fix due to Eric Blake; java 1.2 grammar and following)
+ f) BUG FIX: nested parameterized types ought to be legal, for example:
+       class A<T> { class B<S> { }  A<String>.B<String> c; }
+    (bug found by Eric Blake; jsr-14 grammar only)
+ g) TWEAK: test cases were added for these issues.
+
+In addition, it should be clarified that the 'java15.cup' grammar is
+really only for java 1.4 + jsr-14; recent developments at Sun indicate
+that "Java 1.5" is likely to include several additional language changes
+in addition to JSR-14 parameterized types; see JSR-201 for more details.
+I will endeavor to add these features to 'java15.cup' as soon as their
+syntax is nailed down.
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 13-Apr-2003
+
+UPDATE: Updated the 'java15.cup' grammar to match the latest specifications
+(and their corrections) for Java 1.5.  This grammar matches the 2.2
+prototype of JSR-14 + JSR-201 capabilities, with some corrections for
+mistakes in the released specification and expected future features of
+Java 1.5 (in particular, arrays of parameterized types bounded by
+wildcards).  Reimplemented java15.cup to use a refactoring originally
+due to Eric Blake which eliminates our previous need for "lexer lookahead"
+(see release notes for 12-April-2002).  Added new 'enum' and '...' tokens
+to the lexer to accomodate Java 1.5.  New test cases added for the
+additional language features.
+  -- C. Scott Ananian <cananian@alumni.princeton.edu> 28-Jul-2003
