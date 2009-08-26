@@ -227,14 +227,15 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
 
                                 highlightString(commentColor, slc.start(), (endOffset-slc.start()), true, true);
                         }
-                        /*
+                        
                         Matcher stringlit=stringLiteral.matcher(text);
+                        
                         while(stringlit.find()) {
                                 //int line = rootElement.getElementIndex(slc.start());
                                 //int endOffset = rootElement.getElement(line).getEndOffset() - 1;
 
                                 highlightString(stringColor, stringlit.start(), stringlit.end(), true, true);
-                        }*/
+                        }
 
                 }
 
