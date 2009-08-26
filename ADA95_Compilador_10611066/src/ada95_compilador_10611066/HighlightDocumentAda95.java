@@ -54,7 +54,7 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                 private Color commentColor = Color.gray;
                 private Color stringColor = Color.orange;
                 private Pattern singleLineCommentDelimter = Pattern.compile("--");
-                private Pattern stringLiteral = Pattern.compile("\".*\"");
+                private Pattern stringLiteral = Pattern.compile("\"[^\"]*\"");
 
                 //private Pattern multiLineCommentDelimiterStart = Pattern.compile("/\\*");
                 //private Pattern multiLineCommentDelimiterEnd = Pattern.compile("\\*/");
