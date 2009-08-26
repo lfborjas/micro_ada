@@ -1,7 +1,6 @@
 /*
  * ADA95_Compilador_10611066View.java
  */
-
 package ada95_compilador_10611066;
 
 import java.io.FileNotFoundException;
@@ -46,6 +45,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
         messageTimer = new Timer(messageTimeout, new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 statusMessageLabel.setText("");
             }
@@ -56,6 +56,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             busyIcons[i] = resourceMap.getIcon("StatusBar.busyIcons[" + i + "]");
         }
         busyIconTimer = new Timer(busyAnimationRate, new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
                 statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
@@ -68,6 +69,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         // connecting action tasks to status bar via TaskMonitor
         TaskMonitor taskMonitor = new TaskMonitor(getApplication().getContext());
         taskMonitor.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
                 if ("started".equals(propertyName)) {
@@ -84,11 +86,11 @@ public class ADA95_Compilador_10611066View extends FrameView {
                     progressBar.setVisible(false);
                     progressBar.setValue(0);
                 } else if ("message".equals(propertyName)) {
-                    String text = (String)(evt.getNewValue());
+                    String text = (String) (evt.getNewValue());
                     statusMessageLabel.setText((text == null) ? "" : text);
                     messageTimer.restart();
                 } else if ("progress".equals(propertyName)) {
-                    int value = (Integer)(evt.getNewValue());
+                    int value = (Integer) (evt.getNewValue());
                     progressBar.setVisible(true);
                     progressBar.setIndeterminate(false);
                     progressBar.setValue(value);
@@ -291,97 +293,118 @@ public class ADA95_Compilador_10611066View extends FrameView {
     }// </editor-fold>//GEN-END:initComponents
 
     /**Para leer el contenido de un archivo de texto: sacado de 
-     http://www.javapractices.com/topic/TopicAction.do?Id=42*/
+    http://www.javapractices.com/topic/TopicAction.do?Id=42*/
     static public String getContents(File aFile) {
-    //...checks on aFile are elided
-    StringBuilder contents = new StringBuilder();
+        //...checks on aFile are elided
+        StringBuilder contents = new StringBuilder();
 
-    try {
-      //use buffering, reading one line at a time
-      //FileReader always assumes default encoding is OK!
-      BufferedReader input =  new BufferedReader(new FileReader(aFile));
-      try {
-        String line = null; //not declared within while loop
+        try {
+            //use buffering, reading one line at a time
+            //FileReader always assumes default encoding is OK!
+            BufferedReader input = new BufferedReader(new FileReader(aFile));
+            try {
+                String line = null; //not declared within while loop
         /*
-        * readLine is a bit quirky :
-        * it returns the content of a line MINUS the newline.
-        * it returns null only for the END of the stream.
-        * it returns an empty String if two newlines appear in a row.
-        */
-        while (( line = input.readLine()) != null){
-          contents.append(line);
-          contents.append(System.getProperty("line.separator"));
+                 * readLine is a bit quirky :
+                 * it returns the content of a line MINUS the newline.
+                 * it returns null only for the END of the stream.
+                 * it returns an empty String if two newlines appear in a row.
+                 */
+                while ((line = input.readLine()) != null) {
+                    contents.append(line);
+                    contents.append(System.getProperty("line.separator"));
+                }
+            } finally {
+                input.close();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
-      }
-      finally {
-        input.close();
-      }
-    }
-    catch (IOException ex){
-      ex.printStackTrace();
+
+        return contents.toString();
     }
 
-    return contents.toString();
-  }
-private void abrirArchivo(){
-    int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
+    private void abrirArchivo() {
+        int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             archivo = this.jFileChooser1.getSelectedFile();
-            textoDeArchivo = getContents(archivo);
-            this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
-            this.jEditorPaneDocDisplay.setText(textoDeArchivo);
+            if (archivo.exists()) {
+                textoDeArchivo = getContents(archivo);
+                this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
+                this.jEditorPaneDocDisplay.setText(textoDeArchivo);
+            } else {
+                JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getAbsolutePath() + " no existe");
+            }
         } /*else {
-            //log.append("Open command cancelled by user." + newline);
+        //log.append("Open command cancelled by user." + newline);
         }*/
-}
+    }
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         // TODO add your handling code here:
         //Handle open button action.
 //    if (evt.getSource() == openButton) {
         abrirArchivo();
-        
-  // }
 
-        
+        // }
+
+
     }//GEN-LAST:event_jMenuItem1ActionPerformed
-private void guardarArchivoActivo(){
-    if (archivo.exists()){
+    private void guardarArchivoActivo() {
+        //si el archivo no existe, crearlo:
+        if (archivo==null) {
+            int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+            //poner vacío el display
+                archivo = this.jFileChooser1.getSelectedFile();
+            }
+
+        }
             try {
 
                 //FileWriter aGuardar = new FileWriter(archivo.getName());
                 FileWriter aGuardar = new FileWriter(archivo.getAbsolutePath());
                 aGuardar.write(this.jEditorPaneDocDisplay.getText());
                 aGuardar.close();
-                JOptionPane.showMessageDialog(mainPanel, "El archivo "+archivo.getName()+" se ha guardado exitosamente");
+                JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getName() + " se ha guardado exitosamente");
             } catch (IOException ex) {
                 Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-}
+    
 
     private void jMenuGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuGuardarActionPerformed
         guardarArchivoActivo();
-        
+
     }//GEN-LAST:event_jMenuGuardarActionPerformed
 
     private void jMenuINuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuINuevoActionPerformed
         // TODO add your handling code here:
-        if(archivo.exists()){
+        if (archivo.exists()) {
 
-            int confirmacion=JOptionPane.showConfirmDialog(mainPanel,"¿Desea guardar el archivo "+archivo.getName()+" antes de crear uno nuevo?");
-            if(confirmacion== JOptionPane.OK_OPTION){
+            int confirmacion = JOptionPane.showConfirmDialog(mainPanel, "¿Desea guardar el archivo " + archivo.getName() + " antes de crear uno nuevo?");
+            if (confirmacion == JOptionPane.OK_OPTION) {
+                //guardar el archivo que está abierto
                 guardarArchivoActivo();
+                //borrar
                 this.jEditorPaneDocDisplay.setText("");
-                //debería crear un nuevo archivo...
-            }else if(confirmacion==JOptionPane.NO_OPTION){
-                this.jEditorPaneDocDisplay.setText("");                
-            }
+
+            } else if (confirmacion == JOptionPane.NO_OPTION) {
+                //solo borrar:
+                this.jEditorPaneDocDisplay.setText("");
+            }//fin NO
+        }//fin EXISTS
+
+        //mostrar el file chooser para poner nuevo nombre:
+        int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            //poner vacío el display
+            archivo = this.jFileChooser1.getSelectedFile();
         }
     }//GEN-LAST:event_jMenuINuevoActionPerformed
 //variables de lfborjas:
-    File archivo;
+    File archivo=null;
     /**El contenido del archivo en texto:*/
     String textoDeArchivo;
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -403,12 +426,10 @@ private void guardarArchivoActivo(){
     private javax.swing.JPanel statusPanel;
     private javax.swing.JSeparator statusPanelSeparator;
     // End of variables declaration//GEN-END:variables
-
     private final Timer messageTimer;
     private final Timer busyIconTimer;
     private final Icon idleIcon;
     private final Icon[] busyIcons = new Icon[15];
     private int busyIconIndex = 0;
-
     private JDialog aboutBox;
 }
