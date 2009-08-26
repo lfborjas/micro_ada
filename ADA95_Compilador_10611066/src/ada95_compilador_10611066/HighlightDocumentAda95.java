@@ -55,7 +55,7 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                 private Color stringColor = Color.orange;
                 private Pattern singleLineCommentDelimter = Pattern.compile("--");
                 private Pattern stringLiteral = Pattern.compile("\"[^\"]*\"");
-                
+                private Pattern functionName=Pattern.compile("[a-zA-Z_]*[(]");
 
                 //private Pattern multiLineCommentDelimiterStart = Pattern.compile("/\\*");
                 //private Pattern multiLineCommentDelimiterEnd = Pattern.compile("\\*/");
@@ -221,8 +221,9 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                                 else
                                         highlightString(commentColor, mlcStart.start(), getLength(), true, true);
                         }
-*/
-                         Matcher slc = singleLineCommentDelimter.matcher(text);
+     */
+                        //process single comments:
+                        Matcher slc = singleLineCommentDelimter.matcher(text);
 
                         while(slc.find()) {
                                 int line = rootElement.getElementIndex(slc.start());
@@ -230,7 +231,7 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
 
                                 highlightString(commentColor, slc.start(), (endOffset-slc.start()), true, true);
                         }
-                        
+                        //process string literals
                         Matcher stringlit=stringLiteral.matcher(text);
                         
                         while(stringlit.find()) {
@@ -238,6 +239,14 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                                 //int endOffset = rootElement.getElement(line).getEndOffset() - 1;
 
                                 highlightString(stringColor, stringlit.start(), (stringlit.end()-stringlit.start()), true, true);
+                        }
+
+                        //process function names:
+                        Matcher func=functionName.matcher(text);
+                        while(func.find()){
+                            StyleConstants.setBold(style, true);
+                            StyleConstants.setForeground(style, Color.black);
+                            setCharacterAttributes(func.start(),(func.end()-func.start())-1,style,true);
                         }
 
                 }
