@@ -20,7 +20,30 @@ import javax.swing.text.SimpleAttributeSet;
  * @author lfborjas
  * Copiado de <link>http://www.dreamincode.net/forums/blog/abgorn/index.php?showentry=1048</link>
  * Usado bajo la GPL
- *
+ * En base al manual de referencia de ADA95:
+ *      abort          else           new            return
+        abs            elsif          not            reverse
+        abstract       end            null
+        accept         entry                         select
+        access         exception                     separate
+        aliased        exit           of             subtype
+        all                           or
+        and            for            others         tagged
+        array          function       out            task
+        at                                           terminate
+                       generic        package        then
+        begin          goto           pragma         type
+        body                          private
+                       if             procedure
+        case           in             protected      until
+        constant       is                            use
+                                      raise
+        declare                       range          when
+        delay          limited        record         while
+        delta          loop           rem            with
+        digits                        renames
+        do             mod            requeue        xor
+
  */
 public class HighlightDocumentAda95 extends DefaultStyledDocument{
 

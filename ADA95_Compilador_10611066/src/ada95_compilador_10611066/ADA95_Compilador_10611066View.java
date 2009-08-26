@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.CharBuffer;
 import javax.swing.Timer;
@@ -25,6 +26,7 @@ import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  * The application's main frame.
@@ -37,7 +39,6 @@ public class ADA95_Compilador_10611066View extends FrameView {
         initComponents();
         /*Setear el highlighter del editor*/
         this.jEditorPaneDocDisplay.setEditorKit(new highlightKit());
-
         this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
         this.jFileChooser1.setFileFilter(new AdaFilter());
 
@@ -118,54 +119,77 @@ public class ADA95_Compilador_10611066View extends FrameView {
         mainPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jEditorPaneDocDisplay = new javax.swing.JEditorPane();
+        jToolBar1 = new javax.swing.JToolBar();
+        jButton1 = new javax.swing.JButton();
         menuBar = new javax.swing.JMenuBar();
         javax.swing.JMenu fileMenu = new javax.swing.JMenu();
-        javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+        jMenuINuevo = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuGuardar = new javax.swing.JMenuItem();
+        javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
         statusPanel = new javax.swing.JPanel();
-        javax.swing.JSeparator statusPanelSeparator = new javax.swing.JSeparator();
+        statusPanelSeparator = new javax.swing.JSeparator();
         statusMessageLabel = new javax.swing.JLabel();
         statusAnimationLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea1 = new javax.swing.JTextArea();
         jFileChooser1 = new javax.swing.JFileChooser();
 
         mainPanel.setName("mainPanel"); // NOI18N
+        mainPanel.setPreferredSize(new java.awt.Dimension(1000, 1000));
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
         jEditorPaneDocDisplay.setName("jEditorPaneDocDisplay"); // NOI18N
         jScrollPane1.setViewportView(jEditorPaneDocDisplay);
 
+        jToolBar1.setRollover(true);
+        jToolBar1.setName("jToolBar1"); // NOI18N
+
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ada95_compilador_10611066.ADA95_Compilador_10611066App.class).getContext().getResourceMap(ADA95_Compilador_10611066View.class);
+        jButton1.setText(resourceMap.getString("jButton1.text")); // NOI18N
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setName("jButton1"); // NOI18N
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(jButton1);
+
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
-                .addContainerGap())
+                .addGap(12, 12, 12)
+                .addComponent(jScrollPane1)
+                .addGap(12, 12, 12))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 426, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         menuBar.setName("menuBar"); // NOI18N
 
-        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(ada95_compilador_10611066.ADA95_Compilador_10611066App.class).getContext().getResourceMap(ADA95_Compilador_10611066View.class);
         fileMenu.setText(resourceMap.getString("fileMenu.text")); // NOI18N
         fileMenu.setName("fileMenu"); // NOI18N
 
-        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ada95_compilador_10611066.ADA95_Compilador_10611066App.class).getContext().getActionMap(ADA95_Compilador_10611066View.class, this);
-        exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
-        exitMenuItem.setText(resourceMap.getString("exitMenuItem.text")); // NOI18N
-        exitMenuItem.setName("exitMenuItem"); // NOI18N
-        fileMenu.add(exitMenuItem);
+        jMenuINuevo.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuINuevo.setText(resourceMap.getString("jMenuINuevo.text")); // NOI18N
+        jMenuINuevo.setName("jMenuINuevo"); // NOI18N
+        jMenuINuevo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuINuevoActionPerformed(evt);
+            }
+        });
+        fileMenu.add(jMenuINuevo);
 
         jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem1.setText(resourceMap.getString("jMenuItem1.text")); // NOI18N
@@ -177,12 +201,29 @@ public class ADA95_Compilador_10611066View extends FrameView {
         });
         fileMenu.add(jMenuItem1);
 
+        jMenuGuardar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuGuardar.setText(resourceMap.getString("jMenuGuardar.text")); // NOI18N
+        jMenuGuardar.setName("jMenuGuardar"); // NOI18N
+        jMenuGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuGuardarActionPerformed(evt);
+            }
+        });
+        fileMenu.add(jMenuGuardar);
+
+        javax.swing.ActionMap actionMap = org.jdesktop.application.Application.getInstance(ada95_compilador_10611066.ADA95_Compilador_10611066App.class).getContext().getActionMap(ADA95_Compilador_10611066View.class, this);
+        exitMenuItem.setAction(actionMap.get("quit")); // NOI18N
+        exitMenuItem.setText(resourceMap.getString("exitMenuItem.text")); // NOI18N
+        exitMenuItem.setName("exitMenuItem"); // NOI18N
+        fileMenu.add(exitMenuItem);
+
         menuBar.add(fileMenu);
 
         helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
         helpMenu.setName("helpMenu"); // NOI18N
 
         aboutMenuItem.setAction(actionMap.get("showAboutBox")); // NOI18N
+        aboutMenuItem.setText(resourceMap.getString("aboutMenuItem.text")); // NOI18N
         aboutMenuItem.setName("aboutMenuItem"); // NOI18N
         helpMenu.add(aboutMenuItem);
 
@@ -190,6 +231,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
         statusPanel.setName("statusPanel"); // NOI18N
 
+        statusPanelSeparator.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         statusPanelSeparator.setName("statusPanelSeparator"); // NOI18N
 
         statusMessageLabel.setName("statusMessageLabel"); // NOI18N
@@ -199,30 +241,46 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
         progressBar.setName("progressBar"); // NOI18N
 
+        jScrollPane2.setName("jScrollPane2"); // NOI18N
+
+        jTextArea1.setColumns(20);
+        jTextArea1.setForeground(resourceMap.getColor("jTextArea1.foreground")); // NOI18N
+        jTextArea1.setRows(5);
+        jTextArea1.setText(resourceMap.getString("jTextArea1.text")); // NOI18N
+        jTextArea1.setName("jTextArea1"); // NOI18N
+        jScrollPane2.setViewportView(jTextArea1);
+
         javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
         statusPanel.setLayout(statusPanelLayout);
         statusPanelLayout.setHorizontalGroup(
             statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)
+            .addComponent(statusPanelSeparator, javax.swing.GroupLayout.DEFAULT_SIZE, 663, Short.MAX_VALUE)
+            .addGroup(statusPanelLayout.createSequentialGroup()
+                .addGap(501, 501, 501)
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(statusMessageLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 309, Short.MAX_VALUE)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(statusAnimationLabel)
+                .addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
+                    .addGroup(statusPanelLayout.createSequentialGroup()
+                        .addComponent(statusMessageLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 639, Short.MAX_VALUE)
+                        .addComponent(statusAnimationLabel)))
                 .addContainerGap())
         );
         statusPanelLayout.setVerticalGroup(
             statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(statusPanelLayout.createSequentialGroup()
                 .addComponent(statusPanelSeparator, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(statusMessageLabel)
+                        .addComponent(statusAnimationLabel))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(statusMessageLabel)
-                    .addComponent(statusAnimationLabel)
-                    .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(3, 3, 3))
+                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jFileChooser1.setName("jFileChooser1"); // NOI18N
@@ -265,42 +323,85 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
     return contents.toString();
   }
-
-
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        // TODO add your handling code here:
-        //Handle open button action.
-//    if (evt.getSource() == openButton) {
-
-        int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
+private void abrirArchivo(){
+    int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
 
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             archivo = this.jFileChooser1.getSelectedFile();
             textoDeArchivo = getContents(archivo);
             this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
             this.jEditorPaneDocDisplay.setText(textoDeArchivo);
-        } else {
+        } /*else {
             //log.append("Open command cancelled by user." + newline);
-        }
+        }*/
+}
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        // TODO add your handling code here:
+        //Handle open button action.
+//    if (evt.getSource() == openButton) {
+        abrirArchivo();
+        
   // }
 
         
     }//GEN-LAST:event_jMenuItem1ActionPerformed
+private void guardarArchivoActivo(){
+    if (archivo.exists()){
+            try {
+
+                //FileWriter aGuardar = new FileWriter(archivo.getName());
+                FileWriter aGuardar = new FileWriter(archivo.getAbsolutePath());
+                aGuardar.write(this.jEditorPaneDocDisplay.getText());
+                aGuardar.close();
+                JOptionPane.showMessageDialog(mainPanel, "El archivo "+archivo.getName()+" se ha guardado exitosamente");
+            } catch (IOException ex) {
+                Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+}
+
+    private void jMenuGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuGuardarActionPerformed
+        guardarArchivoActivo();
+        
+    }//GEN-LAST:event_jMenuGuardarActionPerformed
+
+    private void jMenuINuevoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuINuevoActionPerformed
+        // TODO add your handling code here:
+        if(archivo.exists()){
+
+            int confirmacion=JOptionPane.showConfirmDialog(mainPanel,"¿Desea guardar el archivo "+archivo.getName()+" antes de crear uno nuevo?");
+            if(confirmacion== JOptionPane.OK_OPTION){
+                guardarArchivoActivo();
+                this.jEditorPaneDocDisplay.setText("");
+                //debería crear un nuevo archivo...
+            }else if(confirmacion==JOptionPane.NO_OPTION){
+                this.jEditorPaneDocDisplay.setText("");                
+            }
+        }
+    }//GEN-LAST:event_jMenuINuevoActionPerformed
 //variables de lfborjas:
     File archivo;
     /**El contenido del archivo en texto:*/
     String textoDeArchivo;
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jButton1;
     private javax.swing.JEditorPane jEditorPaneDocDisplay;
     private javax.swing.JFileChooser jFileChooser1;
+    private javax.swing.JMenuItem jMenuGuardar;
+    private javax.swing.JMenuItem jMenuINuevo;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JProgressBar progressBar;
     private javax.swing.JLabel statusAnimationLabel;
     private javax.swing.JLabel statusMessageLabel;
     private javax.swing.JPanel statusPanel;
+    private javax.swing.JSeparator statusPanelSeparator;
     // End of variables declaration//GEN-END:variables
 
     private final Timer messageTimer;
