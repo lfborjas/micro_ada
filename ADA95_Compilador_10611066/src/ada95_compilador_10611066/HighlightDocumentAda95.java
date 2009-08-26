@@ -51,10 +51,11 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                 private HashMap<String,Color> keywords;
                 private MutableAttributeSet style;
 
-                private Color commentColor = Color.gray;
+                private Color commentColor = Color.lightGray;
                 private Color stringColor = Color.orange;
                 private Pattern singleLineCommentDelimter = Pattern.compile("--");
                 private Pattern stringLiteral = Pattern.compile("\"[^\"]*\"");
+                
 
                 //private Pattern multiLineCommentDelimiterStart = Pattern.compile("/\\*");
                 //private Pattern multiLineCommentDelimiterEnd = Pattern.compile("\\*/");
@@ -155,8 +156,10 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
 
                         keywords.put( "xor", Color.blue);
 
-
-
+                        //Tipos:
+                        keywords.put( "Float", Color.blue);
+                        keywords.put( "Integer", Color.blue);
+                        keywords.put( "Boolean", Color.blue);
 
                         /*Tipos:
                          keywords.put( "char", Color.orange);
