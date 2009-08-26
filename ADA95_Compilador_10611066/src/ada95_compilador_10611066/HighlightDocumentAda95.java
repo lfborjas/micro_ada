@@ -16,8 +16,11 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 
 /**
- *
+ * Clase para resaltar sintaxis de ada95
  * @author lfborjas
+ * Copiado de <link>http://www.dreamincode.net/forums/blog/abgorn/index.php?showentry=1048</link>
+ * Usado bajo la GPL
+ *
  */
 public class HighlightDocumentAda95 extends DefaultStyledDocument{
 
@@ -25,10 +28,12 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                 private HashMap<String,Color> keywords;
                 private MutableAttributeSet style;
 
-                private Color commentColor = Color.red;
-                private Pattern singleLineCommentDelimter = Pattern.compile("//");
-                private Pattern multiLineCommentDelimiterStart = Pattern.compile("/\\*");
-                private Pattern multiLineCommentDelimiterEnd = Pattern.compile("\\*/");
+                private Color commentColor = Color.gray;
+                private Pattern singleLineCommentDelimter = Pattern.compile("--");
+
+                //private Pattern multiLineCommentDelimiterStart = Pattern.compile("/\\*");
+                //private Pattern multiLineCommentDelimiterEnd = Pattern.compile("\\*/");
+
 
                 public HighlightDocumentAda95() {
                         putProperty( DefaultEditorKit.EndOfLineStringProperty, "\n" );
@@ -36,62 +41,115 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                         rootElement = getDefaultRootElement();
 
                         keywords = new HashMap<String, Color>();
-                        keywords.put( "abstract", Color.blue);
-                        keywords.put( "interface", Color.blue);
-                        keywords.put( "class", Color.blue);
-                        keywords.put( "extends", Color.blue);
-                        keywords.put( "implements", Color.blue);
-
+                        keywords.put( "abstract", Color.blue);                                                                      
+                        /*Visibilidad: */
                         keywords.put( "package", new Color(0,200,0));
-                        keywords.put( "import", new Color(0,200,0));
                         keywords.put( "private", new Color(0,200,0));
                         keywords.put( "protected", new Color(0,200,0));
-                        keywords.put( "public", new Color(0,200,0));
+                        
 
-                        keywords.put( "void", Color.orange);
-                        keywords.put( "boolean", Color.orange);
-                        keywords.put( "char", Color.orange);
+                        keywords.put( "abort", Color.blue);
+                        keywords.put( "abs", Color.blue);
+                        keywords.put( "accept", Color.blue);
+                        keywords.put( "access", Color.blue);
+                        keywords.put( "aliased", Color.blue);
+                        keywords.put( "all", Color.blue);
+                        keywords.put( "and", Color.blue);
+                        keywords.put( "array", Color.blue);
+                        keywords.put( "at", Color.blue);
+
+                        keywords.put( "begin", Color.blue);
+                        keywords.put( "body", Color.blue);
+                        keywords.put( "case", Color.blue);
+                        keywords.put( "constant", Color.blue);
+                        keywords.put( "declare", Color.blue);
+                        keywords.put( "delay", Color.blue);
+                        keywords.put( "delta", Color.blue);
+                        keywords.put( "digits", Color.blue);
+                        keywords.put( "do", Color.blue);
+
+                        keywords.put( "else", Color.blue);
+                        keywords.put( "elsif", Color.blue);
+                        keywords.put( "end", Color.blue);
+                        keywords.put( "endtry", Color.blue);
+                        keywords.put( "exception", Color.blue);
+                        keywords.put( "exit", Color.blue);
+
+                        keywords.put( "for", Color.blue);
+                        keywords.put( "function", Color.blue);
+
+                        keywords.put( "generic", Color.blue);
+                        keywords.put( "goto", Color.blue);
+
+                        keywords.put( "if", Color.blue);
+                        keywords.put( "in", Color.blue);
+                        keywords.put( "is", Color.blue);
+
+                        keywords.put( "limited", Color.blue);
+                        keywords.put( "loop", Color.blue);
+
+                        keywords.put( "mod", Color.blue);
+
+                        keywords.put( "new", Color.blue);
+                        keywords.put( "not", Color.blue);
+                        keywords.put( "null", Color.red);
+
+                        keywords.put( "of", Color.blue);
+                        keywords.put( "or", Color.blue);
+                        keywords.put( "others", Color.blue);
+                        keywords.put( "out", Color.blue);
+
+                        keywords.put( "pragma", Color.blue);
+                        keywords.put( "procedure", Color.blue);
+
+                        keywords.put( "raise", Color.blue);
+                        keywords.put( "range", Color.blue);
+                        keywords.put( "record", Color.blue);
+                        keywords.put( "rem", Color.blue);
+                        keywords.put( "renames", Color.blue);
+                        keywords.put( "requeue", Color.blue);
+                        keywords.put( "return", Color.blue);
+                        keywords.put( "reverse", Color.blue);
+
+                        keywords.put( "select", Color.blue);
+                        keywords.put( "separate", Color.blue);
+                        keywords.put( "subtype", Color.blue);
+
+                        keywords.put( "tagged", Color.blue);
+                        keywords.put( "task", Color.blue);
+                        keywords.put( "terminate", Color.blue);
+                        keywords.put( "then", Color.blue);
+                        keywords.put( "type", Color.blue);
+
+                        keywords.put( "until", Color.blue);
+                        keywords.put( "use", Color.blue);
+
+                        keywords.put( "when", Color.blue);
+                        keywords.put( "while", Color.blue);
+                        keywords.put( "with", Color.blue);
+
+                        keywords.put( "xor", Color.blue);
+
+
+
+
+                        /*Tipos:
+                         keywords.put( "char", Color.orange);
                         keywords.put( "byte", Color.orange);
                         keywords.put( "float", Color.orange);
                         keywords.put( "double", Color.orange);
                         keywords.put( "long", Color.orange);
                         keywords.put( "short", Color.orange);
                         keywords.put( "int", Color.orange);
-                        keywords.put( "String", Color.orange);
-
+                        keywords.put( "String", Color.orange);*/
+                        /*Valores especiales:
                         keywords.put( "true", Color.red);
                         keywords.put( "false", Color.red);
                         keywords.put( "const", Color.red);
-                        keywords.put( "null", Color.red);
+                         */
+                        
 
-                        keywords.put( "break", Color.blue);
-                        keywords.put( "case", Color.blue);
-                        keywords.put( "catch", Color.blue);
-                        keywords.put( "operator", Color.blue);
-                        keywords.put( "continue", Color.blue);
-                        keywords.put( "default", Color.blue);
-                        keywords.put( "do", Color.blue);
-                        keywords.put( "else", Color.blue);
-                        keywords.put( "final", Color.blue);
-                        keywords.put( "finally", Color.blue);
-                        keywords.put( "for", Color.blue);
-                        keywords.put( "if", Color.blue);
-                        keywords.put( "instanceof", Color.blue);
-                        keywords.put( "native", Color.blue);
-                        keywords.put( "new", Color.blue);
-                        keywords.put( "return", Color.blue);
-                        keywords.put( "static", Color.blue);
-                        keywords.put( "super", Color.blue);
-                        keywords.put( "switch", Color.blue);
-                        keywords.put( "synchronized", Color.blue);
-                        keywords.put( "this", Color.blue);
-                        keywords.put( "Thread", Color.blue);
-                        keywords.put( "throw", Color.blue);
-                        keywords.put( "throws", Color.blue);
-                        keywords.put( "transient", Color.blue);
-                        keywords.put( "try", Color.blue);
-                        keywords.put( "volatile", Color.blue);
-                        keywords.put( "while", Color.blue);
+                        
 
                         style = new SimpleAttributeSet();
                 }
@@ -125,17 +183,17 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                                         highlightString(col, m.start(), keyword.length(), true, true);
                                 }
                         }
-
-                        Matcher mlcStart = multiLineCommentDelimiterStart.matcher(text);
-                        Matcher mlcEnd = multiLineCommentDelimiterEnd.matcher(text);
-
+                        /*There are no multiline comments in ADA95: */
+                       /* Matcher mlcStart = multiLineCommentDelimiterStart.matcher(text);
+                        Matcher mlcEnd = multiLineCommentDelimiterEnd.matcher(text);*/
+/*
                         while(mlcStart.find()) {
                                 if(mlcEnd.find( mlcStart.end() ))
                                         highlightString(commentColor, mlcStart.start(), (mlcEnd.end()-mlcStart.start()), true, true);
                                 else
                                         highlightString(commentColor, mlcStart.start(), getLength(), true, true);
                         }
-
+*/
                          Matcher slc = singleLineCommentDelimter.matcher(text);
 
                         while(slc.find()) {
