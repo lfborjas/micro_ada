@@ -297,7 +297,9 @@ public class ADA95_Compilador_10611066View extends FrameView {
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
 
-    /**Métodos para redirigir las system outs:*/
+    /**Métodos para redirigir las system outs:
+     * Sacados de http://unserializableone.blogspot.com/2009/01/redirecting-systemout-and-systemerr-to.html
+     */
 
     /*Lo hace en un thread:*/
     private void updateTextArea(final String text) {
@@ -371,7 +373,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             if (archivo.exists()) {
                 textoDeArchivo = getContents(archivo);
                 this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
-                this.jEditorPaneDocDisplay.setText(textoDeArchivo);
+                this.jEditorPaneDocDisplay.setText(textoDeArchivo);                
             } else {
                 JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getAbsolutePath() + " no existe");
             }
