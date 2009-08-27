@@ -255,13 +255,13 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JTextArea" name="jTextArea1">
+            <Component class="javax.swing.JTextArea" name="errorArea">
               <Properties>
                 <Property name="columns" type="int" value="20"/>
-                <Property name="foreground" type="java.awt.Color" resourceKey="jTextArea1.foreground"/>
+                <Property name="foreground" type="java.awt.Color" resourceKey="errorArea.foreground"/>
                 <Property name="rows" type="int" value="5"/>
-                <Property name="text" type="java.lang.String" resourceKey="jTextArea1.text"/>
-                <Property name="name" type="java.lang.String" value="jTextArea1" noResource="true"/>
+                <Property name="text" type="java.lang.String" resourceKey="errorArea.text"/>
+                <Property name="name" type="java.lang.String" value="errorArea" noResource="true"/>
               </Properties>
             </Component>
           </SubComponents>

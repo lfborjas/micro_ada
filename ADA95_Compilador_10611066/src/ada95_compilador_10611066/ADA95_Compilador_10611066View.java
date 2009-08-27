@@ -19,6 +19,8 @@ import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.nio.CharBuffer;
 import javax.swing.Timer;
 import javax.swing.Icon;
@@ -26,6 +28,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  * The application's main frame.
@@ -36,6 +39,8 @@ public class ADA95_Compilador_10611066View extends FrameView {
         super(app);
 
         initComponents();
+        this.redirectSystemStreams();
+        
         /*Setear el highlighter del editor*/
         this.jEditorPaneDocDisplay.setEditorKit(new highlightKit());
         this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
@@ -132,12 +137,12 @@ public class ADA95_Compilador_10611066View extends FrameView {
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
         statusPanel = new javax.swing.JPanel();
-        statusPanelSeparator = new javax.swing.JSeparator();
+        javax.swing.JSeparator statusPanelSeparator = new javax.swing.JSeparator();
         statusMessageLabel = new javax.swing.JLabel();
         statusAnimationLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        errorArea = new javax.swing.JTextArea();
         jFileChooser1 = new javax.swing.JFileChooser();
 
         mainPanel.setName("mainPanel"); // NOI18N
@@ -245,12 +250,12 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
         jScrollPane2.setName("jScrollPane2"); // NOI18N
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setForeground(resourceMap.getColor("jTextArea1.foreground")); // NOI18N
-        jTextArea1.setRows(5);
-        jTextArea1.setText(resourceMap.getString("jTextArea1.text")); // NOI18N
-        jTextArea1.setName("jTextArea1"); // NOI18N
-        jScrollPane2.setViewportView(jTextArea1);
+        errorArea.setColumns(20);
+        errorArea.setForeground(resourceMap.getColor("errorArea.foreground")); // NOI18N
+        errorArea.setRows(5);
+        errorArea.setText(resourceMap.getString("errorArea.text")); // NOI18N
+        errorArea.setName("errorArea"); // NOI18N
+        jScrollPane2.setViewportView(errorArea);
 
         javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
         statusPanel.setLayout(statusPanelLayout);
@@ -292,6 +297,39 @@ public class ADA95_Compilador_10611066View extends FrameView {
         setStatusBar(statusPanel);
     }// </editor-fold>//GEN-END:initComponents
 
+    /**Métodos para redirigir las system outs:*/
+
+    /*Lo hace en un thread:*/
+    private void updateTextArea(final String text) {
+        SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+        errorArea.append(text);
+        }
+         });
+    }
+
+    /*Los redirige:*/
+    private void redirectSystemStreams() {
+   OutputStream out = new OutputStream() {  
+     @Override
+     public void write(int b) throws IOException {
+       updateTextArea(String.valueOf((char) b));
+     }
+
+     @Override
+     public void write(byte[] b, int off, int len) throws IOException {
+       updateTextArea(new String(b, off, len));
+     }
+
+     @Override
+     public void write(byte[] b) throws IOException {
+       write(b, 0, b.length);
+     }
+   };
+
+   System.setOut(new PrintStream(out, true));
+   System.setErr(new PrintStream(out, true));
+ }
     /**Para leer el contenido de un archivo de texto: sacado de 
     http://www.javapractices.com/topic/TopicAction.do?Id=42*/
     static public String getContents(File aFile) {
@@ -429,6 +467,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
     /**El contenido del archivo en texto:*/
     String textoDeArchivo;
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextArea errorArea;
     private javax.swing.JButton jButton1;
     private javax.swing.JEditorPane jEditorPaneDocDisplay;
     private javax.swing.JFileChooser jFileChooser1;
@@ -437,7 +476,6 @@ public class ADA95_Compilador_10611066View extends FrameView {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JMenuBar menuBar;
@@ -445,7 +483,6 @@ public class ADA95_Compilador_10611066View extends FrameView {
     private javax.swing.JLabel statusAnimationLabel;
     private javax.swing.JLabel statusMessageLabel;
     private javax.swing.JPanel statusPanel;
-    private javax.swing.JSeparator statusPanelSeparator;
     // End of variables declaration//GEN-END:variables
     private final Timer messageTimer;
     private final Timer busyIconTimer;
