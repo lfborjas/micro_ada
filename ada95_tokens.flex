@@ -37,6 +37,6 @@ private Symbol symbol(int type, Object value){
 /*Las reglas léxicas*/
 
 /*Si la entrada no pega con nada, devolver error léxico*/
-[^]    { throw new Error("Caracter inesperado: <"+yytext()+">"); }
+[^]    { throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+"."); }
 
 
