@@ -55,50 +55,99 @@ decimal_literal={numeral}({point}{numeral})?{exponent}?
 extended_digit={digit}|[a-fA-F]
 based_numeral={extended_digit}({underline}{extended_digit})*
 base={numeral}
-based_literal={base}{num_sign}{based_numeral}({point}{based_numeral})?{num_sign}{exponent}
+based_literal={base}{num_sign}{based_numeral}({point}{based_numeral})?({num_sign}{exponent})?
 numeric_literal={decimal_literal}|{based_literal}
 identifier={identifier_letter}({underline}({identifier_letter}|{digit}))*
-logical_operator="and"|"or"|"xor"
 relational_operator="/="|"="|"<"|">"|"<="|">="
 adding_operator="+"|"-"
 concatenate="&"
-multiplying_operator="*"|"/"|"mod"|"rem"
-highest_precedence_operator="**"|"not"|"abs"
-shortcut_operator="and then"|"or else"
-membership_test="in"|"not in"
+//actually, mod and rem are also multiplying operators:
+multiplying_operator="*"|"/"
+
+/*I've decided to better check for these in the grammar: */
+//logical_operator="and"|"or"|"xor"
+//highest_precedence_operator="**"|"not"|"abs"
+//shortcut_operator="and then"|"or else"
+//membership_test="in"|"not in"
 
 
 
 %state STRING
 %%
+
 /*Las reglas léxicas*/
 
 
 /*Manejando lo demás en función de YYINITIAL*/
+
+
 <YYINITIAL>{
+{comment}	{/*ignorar*/}
+/*el ADA-RM dice que el whitespace es un separador que se requiere entre algunos elementos léxicos
+*revisar eso en la gramática
+*/
+/*El ADA-RM dice que debe haber separadores entre algunas cosas ¿lo manejo acá?*/
+{whitespace} 	{/*return symbol(sym.SEPARATOR);*/}
 /*primero los operadores*/
-{logical_operator}	{return symbol(sym.LOG_OP,yytext());}
-{relational_operator}	{return symbol(sym.REL_OP,yytext());}
-{adding_operator}	{return symbol(sym.ADD_OP,yytext());}
+{relational_operator}	{return symbol(sym.RELATIONAL_OPERATOR,yytext());}
+{adding_operator}	{return symbol(sym.ADDING_OPERATOR,yytext());}
 {concatenate}		{return symbol(sym.CONCATENATE);}
-{multiplying_operator}	{return symbol(sym.MULT_OP,yytext());}
-{highest_precedence_operator} {return symbol(sym.HIGHEST_PRECEDENCE_OP,yytext());}
-{shortcut_operator}	{return symbol(sym.SHORTCUT,yytext());}
-{membership_test}	{return symbol(sym.MEMBERSHIP_TEST,yytext());}
-/*luego, las palabras reservadas acá:*/
+{multiplying_operator}	{return symbol(sym.MULTIPLYING_OPERATOR,yytext());}
+
+/*Las palabras reservadas: */
+"abort"	{return symbol(sym.ABORT);}
+"abs"	{return symbol(sym.ABS);}
+"abstract"	{return symbol(sym.ABSTRACT);}
+"accept"	{return symbol(sym.ACCEPT);}
+"access"	{return symbol(sym.ACCESS);}
+"aliased"	{return symbol(sym.ALIASED);}
+"all"	{return symbol(sym.ALL);}
+"and"	{return symbol(sym.AND);}
+"array"	{return symbol(sym.ARRAY);}
+"at"	{return symbol(sym.AT);}
+
+"begin"	{return symbol(sym.BEGIN);}
+"body"	{return symbol(sym.BODY);}
+
+"case"	{return symbol(sym.CASE);}
+"constant"	{return symbol(sym.CONSTANT);}
+
+"declare"	{return symbol(sym.DECLARE);}
+"delay"	{return symbol(sym.DELAY);}
+"delta"	{return symbol(sym.DELTA);}
+"digits"	{return symbol(sym.DIGITS);}
+"do"	{return symbol(sym.DO);}
+
+"else"	{return symbol(sym.ELSE);}
+"elsif"	{return symbol(sym.ELSIF);}
+"end"	{return symbol(sym.END);}
+"entry"	{return symbol(sym.ENTRY);}
+"exception"	{return symbol(sym.EXCEPTION);}
+"exit"	{return symbol(sym.EXIT);}
+
+"for"	{return symbol(sym.FOR);}
+"function"	{return symbol(sym.FUNCTION);}
+
+"generic"	{return symbol(sym.GENERIC);}
+"goto"		{return symbol(sym.GOTO);}
+
+"if" 	{return symbol(sym.IF);}
+"in" 	{return symbol(sym.IN);}
+"is" 	{return symbol(sym.IS);}
+
+
+
+
 
 /*Ahora, lo demás:*/
-{comment}	{/*ignore*/}
-{whitespace} 	{/*ignore*/}
 {identifier}	{return symbol(sym.ID, yytext());}
 {numeric_literal}	{return symbol(sym.NUMERIC_LITERAL,yytext());}
+{character_literal}	{return symbol(sym.CHAR_LIT,yytext());}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
-{character_literal}	{return symbol(sym.CHAR_LIT,yytext());}
 
 
 /*Caracteres especiales como acciones de YYINITIAL*/
-"'"	{return symbol(sym.TICK);}
 "("	{return symbol(sym.LEFT_PAR);}
 ")"	{return symbol(sym.RIGHT_PAR);}
 ","	{return symbol(sym.COMMA);}
@@ -116,6 +165,7 @@ membership_test="in"|"not in"
 "<<"	{return symbol(sym.LEFTLABEL);}
 ">>"	{return symbol(sym.RIGHTLABEL);}
 "<>"	{return symbol(sym.BOX);}
+"**"	{return symbol(sym.EXPONENTIATE);}
 {underline} {return symbol(sym.UNDERLINE);}
 
 
