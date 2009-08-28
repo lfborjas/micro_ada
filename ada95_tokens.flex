@@ -98,10 +98,10 @@ string_literal=\"({string_element})*\"
 /*El ADA-RM dice que debe haber separadores entre algunas cosas ¿lo manejo acá?*/
 {whitespace} 	{/*return symbol(sym.SEPARATOR);*/}
 /*primero los operadores*/
-{relational_operator}	{return symbol(sym.RELATIONAL_OPERATOR,yytext());}
-{adding_operator}	{return symbol(sym.ADDING_OPERATOR,yytext());}
+{relational_operator}	{return symbol(sym.RELATIONALOPERATOR,yytext());}
+{adding_operator}	{return symbol(sym.ADDINGOPERATOR,yytext());}
 {concatenate}		{return symbol(sym.CONCATENATE);}
-{multiplying_operator}	{return symbol(sym.MULTIPLYING_OPERATOR,yytext());}
+{multiplying_operator}	{return symbol(sym.MULTIPLYINGOPERATOR,yytext());}
 
 /*Las palabras reservadas: declararlas como terminales en el .cup*/
 "abort"	{return symbol(sym.ABORT);}
@@ -202,20 +202,20 @@ string_literal=\"({string_element})*\"
 
 /*Ahora, lo demás:*/
 {identifier}	{return symbol(sym.IDENTIFIER, yytext());}
-{numeric_literal}	{return symbol(sym.NUMERIC_LITERAL,yytext());}
-{character_literal}	{return symbol(sym.CHARACTER_LITERAL,yytext());}
+{numeric_literal}	{return symbol(sym.NUMERICLITERAL,yytext());}
+{character_literal}	{return symbol(sym.CHARACTERLITERAL,yytext());}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 
 
 /*Delimitadores como acciones de YYINITIAL*/
-"("	{return symbol(sym.LEFT_PAR);}
-")"	{return symbol(sym.RIGHT_PAR);}
+"("	{return symbol(sym.LEFTPAR);}
+")"	{return symbol(sym.RIGHTPAR);}
 ","	{return symbol(sym.COMMA);}
 "."	{return symbol(sym.POINT);}
 ":"	{return symbol(sym.COLON);}
 ";"	{return symbol(sym.SEMICOLON);}
-"|"	{return symbol(sym.VERTICAL_LINE);}
+"|"	{return symbol(sym.VERTICALLINE);}
 ":="	{return symbol(sym.ASSIGNMENT);}
 "=>"	{return symbol(sym.ARROW);}
 ".."	{return symbol(sym.DOUBLEDOT);}
@@ -240,7 +240,7 @@ El RM no usa los siguientes cuatro como delimitadores ¿debería permitirlos?
 {double_quote}	{string.append(yytext());}
 /*Cuando encuentre el final, retornarlo con todo lo que haya puesto en la cadena*/
 \"	{yybegin(YYINITIAL);
-	 return symbol(sym.STRING_LITERAL,string.toString());}
+	 return symbol(sym.STRINGLITERAL,string.toString());}
 /*Todo lo que no sea salto de línea o cierre se vale*/
 [^\"\n\r]+	{string.append(yytext());}
 /*ADA no permite saltos de línea en string literals*/
