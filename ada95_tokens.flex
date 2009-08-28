@@ -192,7 +192,10 @@ string_literal=\"({string_element})*\"
 
 "xor"		{return symbol(sym.XOR);}
 
-
+/*Los tipos que usaremos:*/
+"integer"	{return symbol(sym.INTEGER);}
+"boolean"	{return symbol(sym.BOOLEAN);}
+"float"		{return symbol(sym.FLOAT);}
 
 
 
