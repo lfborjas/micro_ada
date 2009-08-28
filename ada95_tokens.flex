@@ -103,7 +103,7 @@ string_literal=\"({string_element})*\"
 {concatenate}		{return symbol(sym.CONCATENATE);}
 {multiplying_operator}	{return symbol(sym.MULTIPLYING_OPERATOR,yytext());}
 
-/*Las palabras reservadas: ¿qué hacer con ellas?*/
+/*Las palabras reservadas: declararlas como terminales en el .cup*/
 "abort"	{return symbol(sym.ABORT);}
 "abs"	{return symbol(sym.ABS);}
 "abstract"	{return symbol(sym.ABSTRACT);}
