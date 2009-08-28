@@ -94,7 +94,7 @@ multiplying_operator="*"|"/"
 {concatenate}		{return symbol(sym.CONCATENATE);}
 {multiplying_operator}	{return symbol(sym.MULTIPLYING_OPERATOR,yytext());}
 
-/*Las palabras reservadas: */
+/*Las palabras reservadas: ¿qué hacer con ellas?*/
 "abort"	{return symbol(sym.ABORT);}
 "abs"	{return symbol(sym.ABS);}
 "abstract"	{return symbol(sym.ABSTRACT);}
@@ -134,6 +134,55 @@ multiplying_operator="*"|"/"
 "if" 	{return symbol(sym.IF);}
 "in" 	{return symbol(sym.IN);}
 "is" 	{return symbol(sym.IS);}
+
+"limited"	{return symbol(sym.LIMITED);}
+"loop"		{return symbol(sym.LOOP);}
+
+"mod"	{return symbol(sym.MOD);}
+
+"new"	{return symbol(sym.NEW);}
+"not"	{return symbol(sym.NOT);}
+"null"	{return symbol(sym.NULL);}
+
+"of"	{return symbol(sym.OF);}
+"or"	{return symbol(sym.OR);}
+"others" {return symbol(sym.OTHERS);}
+"out"	{return symbol(sym.OUT);}
+
+"package"	{return symbol(sym.PACKAGE);}
+"pragma"	{return symbol(sym.PRAGMA);}
+"private"	{return symbol(sym.PRIVATE);}
+"procedure"	{return symbol(sym.PROCEDURE);}
+"protected"	{return symbol(sym.PROTECTED);}
+
+"raise"	{return symbol(sym.RAISE);}
+"range"	{return symbol(sym.RANGE);}
+"record"{return symbol(sym.RECORD);}
+"rem"	{return symbol(sym.REM);}
+"renames"	{return symbol(sym.RENAMES);}
+"requeue"	{return symbol(sym.REQUEUE);}
+"return"	{return symbol(sym.RETURN);}
+"reverse"	{return symbol(sym.REVERSE);}
+
+"select"	{return symbol(sym.SELECT);}
+"separate"	{return symbol(sym.SEPARATE);}
+"subtype"	{return symbol(sym.SUBTYPE);}
+
+"tagged"	{return symbol(sym.TAGGED);}
+"task"		{return symbol(sym.TASK);}
+"terminate"	{return symbol(sym.TERMINATE);}
+"then"		{return symbol(sym.THEN);}
+"type"		{return symbol(sym.TYPE);}
+
+"until"		{return symbol(sym.UNTIL);}
+"use"		{return symbol(sym.USE);}
+
+"when"		{return symbol(sym.WHEN);}
+"while"		{return symbol(sym.WHILE);}
+"with"		{return symbol(sym.WITH);}
+
+"xor"		{return symbol(sym.XOR);}
+
 
 
 
@@ -180,10 +229,10 @@ multiplying_operator="*"|"/"
 /*Todo lo que no sea salto de línea o cierre se vale*/
 [^\"\n\r]+	{string.append(yytext());}
 /*ADA no permite saltos de línea en string literals*/
-[\n\r]		{System.err.println("Token inválido: no es permitido un salto de línea en una cadena de caracteres. En línea "+yyline+" columna "+yycolumn);}
+[\n\r]		{System.err.println("Token inválido: no es permitido un salto de línea en una cadena de caracteres. En línea "+yyline+", columna "+yycolumn);}
 }
 
 /*Si la entrada no pega con nada, devolver error léxico*/
-[^]    { throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+"."); }
+[^]    { throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumn); }
 
 
