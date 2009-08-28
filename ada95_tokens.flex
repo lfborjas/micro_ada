@@ -166,7 +166,7 @@ string_literal=\"({string_element})*\"
 
 "raise"	{return symbol(sym.RAISE);}
 "range"	{return symbol(sym.RANGE);}
-"record"{return symbol(sym.RECORD);}
+"record" {return symbol(sym.RECORD);}
 "rem"	{return symbol(sym.REM);}
 "renames"	{return symbol(sym.RENAMES);}
 "requeue"	{return symbol(sym.REQUEUE);}
@@ -198,9 +198,9 @@ string_literal=\"({string_element})*\"
 
 
 /*Ahora, lo demás:*/
-{identifier}	{return symbol(sym.ID, yytext());}
+{identifier}	{return symbol(sym.IDENTIFIER, yytext());}
 {numeric_literal}	{return symbol(sym.NUMERIC_LITERAL,yytext());}
-{character_literal}	{return symbol(sym.CHAR_LIT,yytext());}
+{character_literal}	{return symbol(sym.CHARACTER_LITERAL,yytext());}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 

@@ -6,3 +6,6 @@ begin
 end Hello;
 
 private null;
+ this is not a "string"
+
+Idea: poner un marcador, en el archivo, dónde está el error
