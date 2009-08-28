@@ -40,6 +40,7 @@ num_sign="#"
 point="."
 plus="+"
 minus="-"
+double_quote=\"{2}
 comment_start="--"
 special_character=[^a-zA-Z 0-9]
 format_effector=[\t\v\f]
@@ -48,22 +49,30 @@ graphic_character={special_character}|{identifier_letter}|{digit}|{space_charact
 separator={space_character}|{format_effector}|{line_terminator}
 whitespace={separator}+
 comment={comment_start}({graphic_character}|{format_effector})*{line_terminator}
-character_literal='{graphic_character}'
-numeral={digit}({underline}{digit})*
+/*Puse ? porque podría darse '' como literal de caracter*/
+character_literal='{graphic_character}?'
+/*Lo necesario para números decimales:*/
+numeral={digit}({underline}?{digit})*
 exponent=[Ee]{plus}?{numeral}|[Ee]{minus}{numeral}
 decimal_literal={numeral}({point}{numeral})?{exponent}?
+/*Lo necesario para números con base*/
 extended_digit={digit}|[a-fA-F]
-based_numeral={extended_digit}({underline}{extended_digit})*
+based_numeral={extended_digit}({underline}?{extended_digit})*
 base={numeral}
-based_literal={base}{num_sign}{based_numeral}({point}{based_numeral})?({num_sign}{exponent})?
+based_literal={base}{num_sign}{based_numeral}({point}{based_numeral})?{num_sign}{exponent}?
+/*Las literales numéricas*/
 numeric_literal={decimal_literal}|{based_literal}
+/*Identificadores y operadores*/
 identifier={identifier_letter}({underline}({identifier_letter}|{digit}))*
 relational_operator="/="|"="|"<"|">"|"<="|">="
 adding_operator="+"|"-"
 concatenate="&"
 //actually, mod and rem are also multiplying operators:
 multiplying_operator="*"|"/"
-
+/*Para strings, si el estado no funciona:
+string_element=([^\"]|{graphic_character})
+string_literal=\"({string_element})*\"
+*/
 /*I've decided to better check for these in the grammar: */
 //logical_operator="and"|"or"|"xor"
 //highest_precedence_operator="**"|"not"|"abs"
@@ -196,7 +205,7 @@ multiplying_operator="*"|"/"
 \"	{string.setLength(0);yybegin(STRING);}
 
 
-/*Caracteres especiales como acciones de YYINITIAL*/
+/*Delimitadores como acciones de YYINITIAL*/
 "("	{return symbol(sym.LEFT_PAR);}
 ")"	{return symbol(sym.RIGHT_PAR);}
 ","	{return symbol(sym.COMMA);}
@@ -204,10 +213,6 @@ multiplying_operator="*"|"/"
 ":"	{return symbol(sym.COLON);}
 ";"	{return symbol(sym.SEMICOLON);}
 "|"	{return symbol(sym.VERTICAL_LINE);}
-"["	{return symbol(sym.LEFT_BRACKET);}
-"]"	{return symbol(sym.RIGHT_BRACKET);}
-"{"	{return symbol(sym.LEFT_BRACE);}
-"}"	{return symbol(sym.RIGHT_BRACE);}
 ":="	{return symbol(sym.ASSIGNMENT);}
 "=>"	{return symbol(sym.ARROW);}
 ".."	{return symbol(sym.DOUBLEDOT);}
@@ -215,24 +220,32 @@ multiplying_operator="*"|"/"
 ">>"	{return symbol(sym.RIGHTLABEL);}
 "<>"	{return symbol(sym.BOX);}
 "**"	{return symbol(sym.EXPONENTIATE);}
-{underline} {return symbol(sym.UNDERLINE);}
-
-
-
+/*
+El RM no usa los siguientes cuatro como delimitadores ¿debería permitirlos?
+"["	{return symbol(sym.LEFT_BRACKET);}
+"]"	{return symbol(sym.RIGHT_BRACKET);}
+"{"	{return symbol(sym.LEFT_BRACE);}
+"}"	{return symbol(sym.RIGHT_BRACE);}
+*/
+/*El RM no define al underline como separador*/
+//{underline} {return symbol(sym.UNDERLINE);}
 }
 
 
 <STRING>{
+/*El RM dice que la doble comilla se considera un elemento del string:*/
+{double_quote}	{string.append(yytext());}
 /*Cuando encuentre el final, retornarlo con todo lo que haya puesto en la cadena*/
 \"	{yybegin(YYINITIAL);
 	 return symbol(sym.STRING_LITERAL,string.toString());}
 /*Todo lo que no sea salto de línea o cierre se vale*/
 [^\"\n\r]+	{string.append(yytext());}
 /*ADA no permite saltos de línea en string literals*/
-[\n\r]		{System.err.println("Token inválido: no es permitido un salto de línea en una cadena de caracteres. En línea "+yyline+", columna "+yycolumn);}
+[\n\r]		{System.err.println("Error léxico: no es permitido un salto de línea en una cadena de caracteres. En línea "+yyline+", columna "+yycolumn);}
 }
 
 /*Si la entrada no pega con nada, devolver error léxico*/
-[^]    { throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumn); }
+[^]    { /*throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumn);*/
+	System.err.println("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumnn); }
 
 
