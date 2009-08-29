@@ -165,6 +165,11 @@ public class ADA95_Compilador_10611066View extends FrameView {
         jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         jButton1.setName("jButton1"); // NOI18N
         jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
         jToolBar1.add(jButton1);
 
         jTabbedPane1.setName("jTabbedPane1"); // NOI18N
@@ -172,6 +177,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         jScrollPane2.setName("jScrollPane2"); // NOI18N
 
         errorArea.setColumns(20);
+        errorArea.setEditable(false);
         errorArea.setForeground(resourceMap.getColor("errorArea.foreground")); // NOI18N
         errorArea.setRows(5);
         errorArea.setText(resourceMap.getString("errorArea.text")); // NOI18N
@@ -197,10 +203,10 @@ public class ADA95_Compilador_10611066View extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(25, 25, 25))
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         menuBar.setName("menuBar"); // NOI18N
@@ -475,6 +481,29 @@ public class ADA95_Compilador_10611066View extends FrameView {
             archivo = this.jFileChooser1.getSelectedFile();
         }
     }//GEN-LAST:event_jMenuINuevoActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+        //prepararla para el output:
+        this.errorArea.setForeground(Color.black);
+        this.errorArea.setText("");
+        if(archivo==null){
+            this.errorArea.setForeground(Color.red);
+            System.err.println("No hay un archivo abierto");
+        }else{
+            long start=System.currentTimeMillis();
+            //lo de parsear:
+            long end=System.currentTimeMillis();
+            float elapsed=(end-start)/1000;
+            //si no dio errores:
+            if(!this.errorArea.getForeground().equals(Color.red)){
+                this.errorArea.setForeground(Color.green);
+            }
+            System.out.println("Compilación exitosa ("+elapsed+" segundos)");
+            this.jTabbedPane1.setTitleAt(0, archivo.getName()+" (Compilación)");
+        }
+        
+    }//GEN-LAST:event_jButton1ActionPerformed
 //variables de lfborjas:
     File archivo=null;
     /**El contenido del archivo en texto:*/
