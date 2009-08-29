@@ -46,7 +46,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         this.jEditorPaneDocDisplay.setEditorKit(new highlightKit());
         this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
         this.jFileChooser1.setFileFilter(new AdaFilter());
-        this.jTabbedPane1.setTitleAt(0, "Errores");
+        this.jTabbedPane1.setTitleAt(0, "Salida");
         this.errorArea.setForeground(Color.red);
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
