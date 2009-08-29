@@ -160,13 +160,14 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                         keywords.put( "Float", Color.blue);
                         keywords.put( "Integer", Color.blue);
                         keywords.put( "Boolean", Color.blue);
-
+                        /*
                         //ahora, en mayúsculas; poner entradas para las mayúscula también:
                         //Set<String> toIterate=keywords.keySet();
                         HashMap<String, Color> copy=(HashMap<String, Color>) keywords.clone();
                         for(String value:copy.keySet()){
                             keywords.put(value.toUpperCase(), keywords.get(value));
                         }
+                        */
                         /*Tipos:
                          keywords.put( "char", Color.orange);
                         keywords.put( "byte", Color.orange);
@@ -209,8 +210,8 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
 
                         for (String keyword : keyw) {
                                 Color col = keywords.get(keyword);
-
-                                Pattern p = Pattern.compile("\\b" + keyword + "\\b");
+                                //hacer el matching case insensitive
+                                Pattern p = Pattern.compile("\\b" + keyword + "\\b", Pattern.CASE_INSENSITIVE);
                                 Matcher m = p.matcher(text);
 
                                 while(m.find()) {
@@ -246,7 +247,7 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
 
                                 highlightString(stringColor, stringlit.start(), (stringlit.end()-stringlit.start()), true, true);
                         }
-
+                        
                         //process function names:
                         Matcher func=functionName.matcher(text);
                         while(func.find()){
@@ -255,6 +256,7 @@ public class HighlightDocumentAda95 extends DefaultStyledDocument{
                             setCharacterAttributes(func.start(),(func.end()-func.start())-1,style,true);
                         }
                         StyleConstants.setBold(style, false);
+                        
 
                 }
 
