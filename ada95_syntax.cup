@@ -1,7 +1,12 @@
 /*Gramática del lenguaje de programación ADA95
-*Autor: Luis Felipe Borjas @ 26 Agosto 09
+*Autor: Luis Felipe Borjas @ 26 Agosto 09 (fecha de inicio)
+*v. 2009083000
 *archivo basado en el artículo  http://www.linuxgazette.com/issue39/sevenich.html
 *incluido en los ejemplos de CUP que trae JFlex
+*REFERENCIAS:
+*==============
+*la gramática, basado en el manual de referencia de Ada95(http://www.adahome.com/rm95/)
+*y en el BNF de Ada-95 (http://www.seas.gwu.edu/~adagroup/ada95-syntax/)
 */
 
 /*SECCIÓN DE DECLARACIONES PRELIMINARES*/
@@ -118,6 +123,24 @@ terminal Number	NUMERIC_LITERAL;
 terminal Character CHARACTER_LITERAL;
 terminal String STRING_LITERAL;	
 terminal Boolean BOOLEAN_LITERAL;
+
+/*Sección de las no-terminales; iremos en el orden del RM*/
+//INICIALES:
+non terminal goal, compilation_unit;
+
+//RM-3. DECLARATIONS
+non terminal basic_declaration;
+non terminal defining_identifier;
+non terminal subtype_declaration, subtype_indication, subtype_mark;
+non terminal constraint, scalar_constraint, composite_constraint;
+non terminal range_constraint, digits_constraint, delta_constraint;
+non terminal index_constraint, discriminant_constraint;
+//RM-4: NAMES AND EXPRESSIONS
+
+//RM-5: STATEMENTS
+
+//RM-6: SUBPROGRAMS
+
 /*SECCIÓN DE PRECEDENCIA Y ASOCIATIVIDAD DE TERMINALES*/
 //ordenados de menor a mayor precedencia:
 precedence left AND;
@@ -131,4 +154,23 @@ precedence left EXPONENTIATE, NOT, ABS;
 precedence left AND_THEN, OR_ELSE;
 precedence left IN, NOT_IN;
 
-/*SECCIÓN DE LA GRAMÁTICA*/
+/*SECCIÓN DE LA GRAMÁTICA*
+//empezamos con goal, que será una unidad de compilación:
+start with goal;
+
+goal ::=	compilation_unit
+	;
+
+//RM-2  LEXICAL ELEMENTS
+
+
+//RM-3: DECLARATIONS
+basic_declaration	::=	subprogram_declaration
+		   	|	type_declaration
+			;
+defining_identifier     ::=	IDENTIFIER
+	;
+	
+
+
+
