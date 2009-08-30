@@ -72,9 +72,63 @@ parser code {:
 
 /*SECCIÓN DE DECLARACIÓN DE TERMINALES Y NO TERMINALES*/
 //primero, las terminales sin valor de retorno:
-
+//1. Palabras reservadas (en filas por orden alfabético):
+terminal ABORT, ABS, ABSTRACT, ACCEPT, ACCESS, ALIASED, ALL, AND, ARRAY, AT;
+terminal BEGIN, BODY;
+terminal CASE, CONSTANT;
+terminal DECLARE, DELAY, DELTA, DIGITS, DO;
+terminal ELSE, ELSIF, END, ENTRY, EXCEPTION, EXIT;
+terminal FOR, FUNCTION;
+terminal GENERIC, GOTO;
+terminal IF, IN, IS;
+terminal LIMITED, LOOP;
+terminal MOD;
+terminal NEW, NOT, NULL;
+terminal OF, OR, OTHERS, OUT;
+terminal PACKAGE, PRAGMA, PRIVATE,  PROCEDURE, PROTECTED;
+terminal RAISE, RANGE, RECORD, REM, RENAMES, REQUEUE, RETURN, REVERSE;
+terminal SELECT, SEPARATE, SUBTYPE;
+terminal TAGGED, TASK, TERMINATE, THEN, TYPE;
+terminal UNTIL, USE;
+terminal WHEN, WHILE, WITH;
+terminal XOR;
+//2. Delimitadores
+terminal CONCATENATE;
+terminal TICK;
+terminal LEFTPAR, RIGHTPAR;
+terminal MULTIPLY, DIVIDE;
+terminal PLUS, MINUS;
+terminal COMMA;
+terminal POINT;
+terminal COLON;
+terminal SEMICOLON;
+terminal GT, LT, EQUAL, INEQUALITY, GTEQ, LTEQ;
+terminal VERTICAL_LINE;
+terminal ARROW;
+terminal DOUBLEDOT;
+terminal EXPONENTIATE;
+terminal ASSIGNMENT;
+terminal LEFTLABEL, RIGHTLABEL;
+terminal BOX;
+//los diz-que-operadores:
+terminal AND_THEN, OR_ELSE, NOT_IN;
 //ahora las que sí tienen valores de retorno:
-terminal Number	
+terminal String IDENTIFIER;
+terminal Number	NUMERIC_LITERAL;
+terminal Character CHARACTER_LITERAL;
+terminal String STRING_LITERAL;	
+terminal Boolean BOOLEAN_LITERAL;
 /*SECCIÓN DE PRECEDENCIA Y ASOCIATIVIDAD DE TERMINALES*/
+//ordenados de menor a mayor precedencia:
+precedence left AND;
+precedence left OR;
+precedence left XOR;
+precedence left EQUAL;
+precedence left INEQUALITY, GT, LT, GTEQ, LTEQ;
+precedence left PLUS, MINUS, CONCATENATE;
+precedence left MULTIPLY, DIVIDE, MOD, REM;
+precedence left EXPONENTIATE, NOT, ABS;
+precedence left AND_THEN, OR_ELSE;
+precedence left IN, NOT_IN;
 
 /*SECCIÓN DE LA GRAMÁTICA*/
