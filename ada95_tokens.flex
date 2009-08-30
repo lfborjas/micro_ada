@@ -64,20 +64,10 @@ based_literal={base}{num_sign}{based_numeral}({point}{based_numeral})?{num_sign}
 numeric_literal={decimal_literal}|{based_literal}
 /*Identificadores y operadores*/
 identifier={identifier_letter}({underline}({identifier_letter}|{digit}))*
-relational_operator="/="|"="|"<"|">"|"<="|">="
-adding_operator="+"|"-"
-concatenate="&"
-//actually, mod and rem are also multiplying operators:
-multiplying_operator="*"|"/"
 /*Para strings, si el estado no funciona:
 string_element=([^\"]|{graphic_character})
 string_literal=\"({string_element})*\"
 */
-/*I've decided to better check for these in the grammar: */
-//logical_operator="and"|"or"|"xor"
-//highest_precedence_operator="**"|"not"|"abs"
-//shortcut_operator="and then"|"or else"
-//membership_test="in"|"not in"
 
 
 
@@ -97,11 +87,7 @@ string_literal=\"({string_element})*\"
 */
 /*El ADA-RM dice que debe haber separadores entre algunas cosas ¿lo manejo acá?*/
 {whitespace} 	{/*return symbol(sym.SEPARATOR);*/}
-/*primero los operadores*/
-{relational_operator}	{return symbol(sym.RELATIONAL_OPERATOR,yytext());}
-{adding_operator}	{return symbol(sym.ADDING_OPERATOR,yytext());}
-{concatenate}		{return symbol(sym.CONCATENATE);}
-{multiplying_operator}	{return symbol(sym.MULTIPLYING_OPERATOR,yytext());}
+
 
 /*Las palabras reservadas: declararlas como terminales en el .cup*/
 "abort"	{return symbol(sym.ABORT);}
@@ -206,20 +192,32 @@ string_literal=\"({string_element})*\"
 
 
 /*Delimitadores como acciones de YYINITIAL*/
+"&"	{return symbol(sym.CONCATENATE);}
+"'"	{return symbol(sym.TICK);}
 "("	{return symbol(sym.LEFTPAR);}
 ")"	{return symbol(sym.RIGHTPAR);}
+"*"	{return symbol(sym.MULTIPLY);}
+"+"	{return symbol(sym.PLUS);}
 ","	{return symbol(sym.COMMA);}
+"-"	{return symbol(sym.MINUS);}
 "."	{return symbol(sym.POINT);}
+"/"	{return symbol(sym.DIVIDE);}
 ":"	{return symbol(sym.COLON);}
 ";"	{return symbol(sym.SEMICOLON);}
+"<"	{return symbol(sym.LT);}
+"="	{return symbol(sym.EQUAL);}
+">"	{return symbol(sym.GT);}
 "|"	{return symbol(sym.VERTICAL_LINE);}
-":="	{return symbol(sym.ASSIGNMENT);}
 "=>"	{return symbol(sym.ARROW);}
 ".."	{return symbol(sym.DOUBLEDOT);}
+"**"	{return symbol(sym.EXPONENTIATE);}
+":="	{return symbol(sym.ASSIGNMENT);}
 "<<"	{return symbol(sym.LEFTLABEL);}
 ">>"	{return symbol(sym.RIGHTLABEL);}
 "<>"	{return symbol(sym.BOX);}
-"**"	{return symbol(sym.EXPONENTIATE);}
+"/="	{return symbol(sym.INEQUALITY);}
+">="	{return symbol(sym.GTEQ);}
+"<="	{return symbol(sym.LTEQ);}
 /*
 El RM no usa los siguientes cuatro como delimitadores ¿debería permitirlos?
 "["	{return symbol(sym.LEFT_BRACKET);}
