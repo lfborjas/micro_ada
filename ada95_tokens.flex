@@ -68,7 +68,8 @@ identifier={identifier_letter}({underline}({identifier_letter}|{digit}))*
 string_element=([^\"]|{graphic_character})
 string_literal=\"({string_element})*\"
 */
-
+//las literales booleanas:
+boolean_literal="true"|"false"
 
 
 %state STRING
@@ -190,6 +191,7 @@ string_literal=\"({string_element})*\"
 {identifier}	{return symbol(sym.IDENTIFIER, yytext());}
 {numeric_literal}	{return symbol(sym.NUMERIC_LITERAL,yytext());}
 {character_literal}	{return symbol(sym.CHARACTER_LITERAL,yytext());}
+{boolean_literal}	{return symbol(sym.BOOLEAN_LITERAL,yytext();)}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 
