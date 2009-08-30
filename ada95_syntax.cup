@@ -71,7 +71,10 @@ parser code {:
 :};
 
 /*SECCIÓN DE DECLARACIÓN DE TERMINALES Y NO TERMINALES*/
+//primero, las terminales sin valor de retorno:
 
+//ahora las que sí tienen valores de retorno:
+terminal Number	
 /*SECCIÓN DE PRECEDENCIA Y ASOCIATIVIDAD DE TERMINALES*/
 
 /*SECCIÓN DE LA GRAMÁTICA*/
