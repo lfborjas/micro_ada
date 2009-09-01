@@ -88,6 +88,9 @@ boolean_literal="true"|"false"
 */
 /*El ADA-RM dice que debe haber separadores entre algunas cosas ¿lo manejo acá?*/
 {whitespace} 	{/*return symbol(sym.SEPARATOR);*/}
+/*Las funciones hardcodeadas*/
+"put"	{return symbol(sym.PUT);}
+"get"	{return symbol(sym.GET);}
 
 /*Los operadores compuestos: NO cumplen con la definición de operador del RM*/
 "and then"	{return symbol(sym.AND_THEN);}
