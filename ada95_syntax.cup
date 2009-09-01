@@ -115,11 +115,18 @@ terminal EXPONENTIATE;
 terminal ASSIGNMENT;
 terminal LEFTLABEL, RIGHTLABEL;
 terminal BOX;
+//3. Las funciones empotradas:
+terminal PUT, GET;
+//4. los tipos primitivos:
+terminal BOOLEAN, INTEGER, FLOAT;
+
 //los diz-que-operadores:
 terminal AND_THEN, OR_ELSE, NOT_IN;
 //ahora las que sí tienen valores de retorno:
 terminal String IDENTIFIER;
-terminal Number	NUMERIC_LITERAL;
+//terminal Number	NUMERIC_LITERAL;
+terminal Integer INTEGER_LITERAL;
+terminal Float	FLOATING_POINT_LITERAL;
 terminal Character CHARACTER_LITERAL;
 terminal String STRING_LITERAL;	
 terminal Boolean BOOLEAN_LITERAL;
@@ -162,6 +169,10 @@ goal ::=	compilation_unit
 	;
 
 //RM-2  LEXICAL ELEMENTS
+primitive_type 		::=	BOOLEAN
+			|	INTEGER
+			|	FLOAT
+			;
 
 
 //RM-3: DECLARATIONS
@@ -169,7 +180,7 @@ basic_declaration	::=	subprogram_declaration
 		   	|	type_declaration
 			;
 defining_identifier     ::=	IDENTIFIER
-	;
+			;
 	
 
 
