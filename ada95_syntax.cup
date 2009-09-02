@@ -181,7 +181,7 @@ basic_declaration	::=	subprogram_declaration
 			;
 defining_identifier     ::=	IDENTIFIER
 			;
-defining_identifier_list ::=	defining_identifier {COMMA defining_identifier}
+defining_identifier_list ::=	defining_identifier| defining_identifier_list COMMA defining_identifier
 			;
 
 //a esta le falta el discriminante luego de defining_identifier			
@@ -191,6 +191,7 @@ type_definition		::=	record_type_definition
 			;
 record_type_definition	::=	[[ABSTRACT] TAGGED] [LIMITED] record_definition
 			;
+record_type_definition	::=	ABSTRACT record
 record_definition	::=	(RECORD (
 				(component_item {component_item})
 				|({component_item} variant_part)
