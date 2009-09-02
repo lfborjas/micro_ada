@@ -6,3 +6,7 @@ http://en.wikibooks.org/wiki/Ada_Programming/Delimiters
 http://fibonaccidavinci.wordpress.com/2009/03/25/jlex-y-cup-en-netbeans-y-windows-vista/
 
 http://www.adaworld.com/
+
+/usr/share/java contains cup.jar
+
+manejo de errores: ver qué ondas con el toString de la clase symbol...

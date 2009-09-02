@@ -1,7 +1,12 @@
 /*Gramática del lenguaje de programación ADA95
-*Autor: Luis Felipe Borjas @ 26 Agosto 09
+*Autor: Luis Felipe Borjas @ 26 Agosto 09 (fecha de inicio)
+*v. 2009083000
 *archivo basado en el artículo  http://www.linuxgazette.com/issue39/sevenich.html
 *incluido en los ejemplos de CUP que trae JFlex
+*REFERENCIAS:
+*==============
+*la gramática, basado en el manual de referencia de Ada95(http://www.adahome.com/rm95/)
+*y en el BNF de Ada-95 (http://www.seas.gwu.edu/~adagroup/ada95-syntax/)
 */
 
 /*SECCIÓN DE DECLARACIONES PRELIMINARES*/
@@ -71,7 +76,170 @@ parser code {:
 :};
 
 /*SECCIÓN DE DECLARACIÓN DE TERMINALES Y NO TERMINALES*/
+//primero, las terminales sin valor de retorno:
+//1. Palabras reservadas (en filas por orden alfabético):
+terminal ABORT, ABS, ABSTRACT, ACCEPT, ACCESS, ALIASED, ALL, AND, ARRAY, AT;
+terminal BEGIN, BODY;
+terminal CASE, CONSTANT;
+terminal DECLARE, DELAY, DELTA, DIGITS, DO;
+terminal ELSE, ELSIF, END, ENTRY, EXCEPTION, EXIT;
+terminal FOR, FUNCTION;
+terminal GENERIC, GOTO;
+terminal IF, IN, IS;
+terminal LIMITED, LOOP;
+terminal MOD;
+terminal NEW, NOT, NULL;
+terminal OF, OR, OTHERS, OUT;
+terminal PACKAGE, PRAGMA, PRIVATE,  PROCEDURE, PROTECTED;
+terminal RAISE, RANGE, RECORD, REM, RENAMES, REQUEUE, RETURN, REVERSE;
+terminal SELECT, SEPARATE, SUBTYPE;
+terminal TAGGED, TASK, TERMINATE, THEN, TYPE;
+terminal UNTIL, USE;
+terminal WHEN, WHILE, WITH;
+terminal XOR;
+//2. Delimitadores
+terminal CONCATENATE;
+terminal TICK;
+terminal LEFTPAR, RIGHTPAR;
+terminal MULTIPLY, DIVIDE;
+terminal PLUS, MINUS;
+terminal COMMA;
+terminal POINT;
+terminal COLON;
+terminal SEMICOLON;
+terminal GT, LT, EQUAL, INEQUALITY, GTEQ, LTEQ;
+terminal VERTICAL_LINE;
+terminal ARROW;
+terminal DOUBLEDOT;
+terminal EXPONENTIATE;
+terminal ASSIGNMENT;
+terminal LEFTLABEL, RIGHTLABEL;
+terminal BOX;
+//3. Las funciones empotradas:
+terminal PUT, GET;
+//4. los tipos primitivos:
+terminal BOOLEAN, INTEGER, FLOAT;
+
+//los diz-que-operadores:
+terminal AND_THEN, OR_ELSE, NOT_IN;
+//ahora las que sí tienen valores de retorno:
+terminal String IDENTIFIER;
+//terminal Number	NUMERIC_LITERAL;
+terminal Integer INTEGER_LITERAL;
+terminal Float	FLOATING_POINT_LITERAL;
+terminal Character CHARACTER_LITERAL;
+terminal String STRING_LITERAL;	
+terminal Boolean BOOLEAN_LITERAL;
+
+/*Sección de las no-terminales; iremos en el orden del RM*/
+//INICIALES:
+non terminal goal, compilation_unit;
+
+//RM-3. DECLARATIONS
+non terminal basic_declaration;
+non terminal defining_identifier;
+non terminal subtype_declaration, subtype_indication, subtype_mark;
+non terminal constraint, scalar_constraint, composite_constraint;
+non terminal range_constraint, digits_constraint, delta_constraint;
+non terminal index_constraint, discriminant_constraint;
+//RM-4: NAMES AND EXPRESSIONS
+
+//RM-5: STATEMENTS
+
+//RM-6: SUBPROGRAMS
 
 /*SECCIÓN DE PRECEDENCIA Y ASOCIATIVIDAD DE TERMINALES*/
+//ordenados de menor a mayor precedencia:
+precedence left AND;
+precedence left OR;
+precedence left XOR;
+precedence left EQUAL;
+precedence left INEQUALITY, GT, LT, GTEQ, LTEQ;
+precedence left PLUS, MINUS, CONCATENATE;
+precedence left MULTIPLY, DIVIDE, MOD, REM;
+precedence left EXPONENTIATE, NOT, ABS;
+precedence left AND_THEN, OR_ELSE;
+precedence left IN, NOT_IN;
 
-/*SECCIÓN DE LA GRAMÁTICA*/
+/*SECCIÓN DE LA GRAMÁTICA*
+//empezamos con goal, que será una unidad de compilación:
+start with goal;
+
+goal ::=	compilation_unit
+	;
+
+//RM-2  LEXICAL ELEMENTS
+primitive_type 		::=	BOOLEAN
+			|	INTEGER
+			|	FLOAT
+			;
+
+
+//RM-3: DECLARATIONS
+basic_declaration	::=	subprogram_declaration
+		   	|	type_declaration
+			;
+defining_identifier     ::=	IDENTIFIER
+			;
+defining_identifier_list ::=	defining_identifier| defining_identifier_list COMMA defining_identifier
+			;
+
+//a esta le falta el discriminante luego de defining_identifier			
+full_type_declaration	::=	TYPE defining_identifier IS type_definition SEMICOLON
+			;
+type_definition		::=	record_type_definition
+			;
+record_type_definition	::=	[[ABSTRACT] TAGGED] [LIMITED] record_definition
+			;
+record_type_definition	::=	ABSTRACT record
+record_definition	::=	(RECORD (
+				(component_item {component_item})
+				|({component_item} variant_part)
+				|(NULL SEMICOLON)) END RECORD)
+			|	NULL RECORD
+			;
+component_item		::=	component_declaration
+			|	representation_clause
+			;
+component_declaration	::=	defining_identifier_list COLON	component_definition [ASSIGNMENT default_expression] SEMICOLON
+			;
+component_definition	::=	[ALIASED] subtype_indication
+			;
+default_expression	::=	expression
+			;
+representation_clause	::=	record_representation_clause
+			|	at_clause
+			;
+at_clause		::=	FOR direct_name USE AT expression SEMICOLON
+			;
+record_representation_clause ::= FOR direct_name USE RECORD [mod_clause] {component_clause} END RECORD SEMICOLON
+			;
+mod_clause		::= AT MOD expression SEMICOLON
+			;	
+component_clause	::=	direct_name AT static_expression RANGE first_bit DOUBLEDOT last_bit SEMICOLON
+			;
+variant_part		::=	CASE direct_name IS variant {variant} END CASE SEMICOLON
+			;
+direct_name		::=	IDENTIFIER | STRING_LITERAL
+			;
+variant			::=	WHEN  discrete_choice_list ARROW  (component_item {component_item})
+			| ({component_item} variant_part)
+			| (NULL SEMICOLON)
+			;
+discrete_choice_list	::=	discrete_choice {VERTICAL_LINE discrete_choice}
+			;
+discrete_choice		::=	expression 
+			|       discrete_range 
+			|	OTHERS
+			;
+discrete_range		::=	subtype_indication
+			|	range
+			;
+range			::=	simple_expression DOUBLEDOT simple_expression
+			;
+simple_expression	::=	
+
+
+
+
+

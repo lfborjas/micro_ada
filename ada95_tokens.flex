@@ -54,21 +54,29 @@ character_literal='{graphic_character}?'
 /*Lo necesario para números decimales:*/
 numeral={digit}({underline}?{digit})*
 exponent=[Ee]{plus}?{numeral}|[Ee]{minus}{numeral}
+/*Macro no usada, pero dejada porque va con el RM*/
 decimal_literal={numeral}({point}{numeral})?{exponent}?
 /*Lo necesario para números con base*/
 extended_digit={digit}|[a-fA-F]
 based_numeral={extended_digit}({underline}?{extended_digit})*
 base={numeral}
 based_literal={base}{num_sign}{based_numeral}({point}{based_numeral})?{num_sign}{exponent}?
-/*Las literales numéricas*/
+/*Las literales numéricas: macro no usada*/
 numeric_literal={decimal_literal}|{based_literal}
+/*reglas para literales numéricas empotradas:*/
+number=	{digit}{digit}*
+floating_point_literal={number}{point}{number}
+integer_literal={number}
+/*Los números con exponente*/
+power_literal={numeral}({point}{numeral})?{exponent}
 /*Identificadores y operadores*/
 identifier={identifier_letter}({underline}({identifier_letter}|{digit}))*
 /*Para strings, si el estado no funciona:
 string_element=([^\"]|{graphic_character})
 string_literal=\"({string_element})*\"
 */
-
+//las literales booleanas:
+boolean_literal="true"|"false"
 
 
 %state STRING
@@ -87,8 +95,18 @@ string_literal=\"({string_element})*\"
 */
 /*El ADA-RM dice que debe haber separadores entre algunas cosas ¿lo manejo acá?*/
 {whitespace} 	{/*return symbol(sym.SEPARATOR);*/}
+/*Los tipos primitivos: */
+"boolean"	{return symbol(sym.BOOLEAN);}
+"integer"	{return symbol(sym.INTEGER);}
+"float"		{return symbol(sym.FLOAT);}
+/*Las funciones hardcodeadas*/
+"put"	{return symbol(sym.PUT);}
+"get"	{return symbol(sym.GET);}
 
-
+/*Los operadores compuestos: NO cumplen con la definición de operador del RM*/
+"and then"	{return symbol(sym.AND_THEN);}
+"or else"	{return symbol(sym.OR_ELSE);}
+"not in"	{return symbol(sym.NOT_IN);}
 /*Las palabras reservadas: declararlas como terminales en el .cup*/
 "abort"	{return symbol(sym.ABORT);}
 "abs"	{return symbol(sym.ABS);}
@@ -185,8 +203,16 @@ string_literal=\"({string_element})*\"
 
 /*Ahora, lo demás:*/
 {identifier}	{return symbol(sym.IDENTIFIER, yytext());}
-{numeric_literal}	{return symbol(sym.NUMERIC_LITERAL,yytext());}
+//manejarlo así o de la otra manera?
+/*{numeric_literal}	{return symbol(sym.NUMERIC_LITERAL,yytext());}*/
+{integer_literal}	{return symbol(sym.INTEGER_LITERAL,yytext());}
+{floating_point_literal} {return symbol(sym.FLOATING_POINT_LITERAL,yytext());}	
 {character_literal}	{return symbol(sym.CHARACTER_LITERAL,yytext());}
+{boolean_literal}	{return symbol(sym.BOOLEAN_LITERAL,yytext();)}
+/*Avisar que no se aceptan números con base:*/
+{based_literal}		{System.err.println("<"+yytext()+"> Es un número con base, este compilador sólo acepta números enteros y de punto flotante sin exponente");}
+/*Avisar que tampoco se aceptan números con exponente: */
+{power_literal}		{System.err.println("<"+yytext()+"> Es un número con exponente, este compilador sólo acepta números enteros y de punto flotante sin exponente");}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 
