@@ -204,14 +204,14 @@ non terminal name_list;
 //de p85-persch, pag 96:
 non terminal compilation, compilation_list;
 //de p85-persch, pag 97:
-
-//RM-3. DECLARATIONS
-
-//RM-4: NAMES AND EXPRESSIONS
-
-//RM-5: STATEMENTS
-
-//RM-6: SUBPROGRAMS
+non terminal compilation_unit;
+non terminal context_specification, use_clause_option, with_clause;
+non terminal subunit, body_stub;
+non terminal exception_handler, exception_choice_list, exception_choice;
+//de p85-persch, pag 98:
+non terminal representation_specification, length_specification, record_type_representation;
+non terminal location_list, alignment_clause_option, address_specification;
+non terminal code_statement;
 
 /*SECCIÓN DE PRECEDENCIA Y ASOCIATIVIDAD DE TERMINALES*/
 //ordenados de menor a mayor precedencia:
@@ -659,7 +659,54 @@ compilation_list		::= 	compilation_unit
 				|	compilation_list compilation_unit
 				;
 //de p85-persch, pag 97:
-
+compilation_unit		::=	context_specification subprogram_declaration
+				|	context_specification subprogram_body
+				|	context_specification package_declaration
+				|	context_specification package_body
+				|	context_specification subunit
+				;
+//esto de context specification y las clauses va a desaparecer...
+context_specification		::=	| context_specification  with_clause use_clause_option
+				;
+use_clause_option		::=	| use_clause
+				;
+with_clause			::=	WITH name_list SEMICOLON
+				;
+subunit				::=	SEPARATE LEFTPAR name RIGHTPAR body
+				;
+body_stub			::=	subprogram_specification_is 	SEPARATE SEMICOLON
+				|	PACKAGE BODY identifier IS 	SEPARATE SEMICOLON
+				;
+//hay que quitar todo esto de exceptions!
+exception_handler		::=	WHEN exception_choice_list ARROW sequence_of_statements
+				;
+exception_choice_list		::=	exception_choice 
+				|	exception_choice_list VERTICAL_LINE exception_choice
+				;
+exception_choice		::=	name 
+				|	OTHERS
+				;
+//de p85-persch, pag 98:
+representation_specification	::=	length_specification
+				|	record_type_representation
+				|	address_specification
+				;
+length_specification		::=	FOR name USE expression SEMICOLON
+				;
+record_type_representation	::=	FOR name USE
+						RECORD alignment_clause_option 
+							location_list
+						END RECORD SEMICOLON
+				;
+location_list			::=	| location_list name AT simple_expression RANGE range SEMICOLON
+				;
+alignment_clause_option		::=	| AT MOD simple_expression SEMICOLON
+				;
+address_specification		::=	FOR name USE AT simple_expression SEMICOLON
+				;
+code_statement			::=	qualified_expression SEMICOLON
+				;
+					
 				
 	
 
