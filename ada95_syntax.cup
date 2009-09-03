@@ -7,6 +7,11 @@
 *==============
 *la gramática, basado en el manual de referencia de Ada95(http://www.adahome.com/rm95/)
 *y en el BNF de Ada-95 (http://www.seas.gwu.edu/~adagroup/ada95-syntax/)
+*
+*el paper:    An LALR(1) Grammar  for  (Revised) Ada
+ de: G. Persch, G. Winterstein, S. Drossopoulou, M. Dausmann
+*al cual me referiré de ahora en adelante como 'p85-persch'
+
 */
 
 /*SECCIÓN DE DECLARACIONES PRELIMINARES*/
@@ -134,14 +139,34 @@ terminal Boolean BOOLEAN_LITERAL;
 /*Sección de las no-terminales; iremos en el orden del RM*/
 //INICIALES:
 non terminal goal, compilation_unit;
+//lexicos y varios
+//de p85-persch, pag 87
+non terminal constant_option;
+non terminal primitive_type;
+non terminal identifier, identifier_list, argument_list, argument;
+non terminal declaration, object_declaration, initialization_option, number_declaration;
+non terminal type_declaration, discriminant_part_option, type_definition;
+non terminal subtype_declaration, subtype_indication;
+//de p85-persch, pag 88
+non terminal subtype_indication_with_constraint, range_constraint, range;
+non terminal accuracy_constraint, floating_point_constraint, range_constraint_option, fixed_point_constraint;
+non terminal record_type_definition, component_list;
+//de p85-persch, pag 89
+non terminal component_declaration_list, variant_part_option, component_declaration, discriminant_part;
+non terminal discriminant_declaration_list, discriminant_declaration;
+non terminal variant_part, variant_list;
+non terminal choice, choice_list;
+non terminal declarative_part, declarative_item_list;
+//de p85-persch, pag 90
+non terminal representation_spec_list_empty, representation_spec_list;
+non terminal body_or_stub, program_component_list, program_component, body;
+non terminal name, indexed_component, generalized_expression_list, generalized_expression;
+non terminal selected_component, literal, aggregate, component_association_list, component_association;
+non terminal expression;
+//de p85-persch, pag 91
 
 //RM-3. DECLARATIONS
-non terminal basic_declaration;
-non terminal defining_identifier;
-non terminal subtype_declaration, subtype_indication, subtype_mark;
-non terminal constraint, scalar_constraint, composite_constraint;
-non terminal range_constraint, digits_constraint, delta_constraint;
-non terminal index_constraint, discriminant_constraint;
+
 //RM-4: NAMES AND EXPRESSIONS
 
 //RM-5: STATEMENTS
@@ -161,84 +186,180 @@ precedence left EXPONENTIATE, NOT, ABS;
 precedence left AND_THEN, OR_ELSE;
 precedence left IN, NOT_IN;
 
-/*SECCIÓN DE LA GRAMÁTICA*
+/*SECCIÓN DE LA GRAMÁTICA*/
+//elementos opcionales comunes:
+constant_option	::=	| CONSTANT;
 //empezamos con goal, que será una unidad de compilación:
 start with goal;
 
-goal ::=	compilation_unit
+goal	::=	compilation_unit
 	;
 
-//RM-2  LEXICAL ELEMENTS
+//RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
 primitive_type 		::=	BOOLEAN
 			|	INTEGER
 			|	FLOAT
 			;
-
+identifier	::=	IDENTIFIER
+		;
+argument_list	::=	argument
+		|	argument_list COMMA argument
+		;
+argument	::=	expression
+		|	identifier ARROW expression
+		; 
 
 //RM-3: DECLARATIONS
-basic_declaration	::=	subprogram_declaration
-		   	|	type_declaration
+declaration	::=	object_declaration
+		|	type_declaration
+		|	subprogram_declaration
+		|	subtype_declaration
+		;
+//de p85-persch, pag 87
+object_declaration	::=	identifier COLON constant_option subtype_indication initialization_option SEMICOLON
+			|	identifier_list	COLON constant_option subtype_indication initialization_option SEMICOLON
 			;
-defining_identifier     ::=	IDENTIFIER
+initialization_option	::=	| ASSIGNMENT expression
 			;
-defining_identifier_list ::=	defining_identifier| defining_identifier_list COMMA defining_identifier
+number_declaration	::=	identifier COLON CONSTANT ASSIGNMENT expression SEMICOLON
+			|	identifier_list COLON CONSTANT ASSIGNMENT expression SEMICOLON
 			;
-
-//a esta le falta el discriminante luego de defining_identifier			
-full_type_declaration	::=	TYPE defining_identifier IS type_definition SEMICOLON
+identifier_list		::=	identifier COMMA identifier 
+			|	 identifier_list COMMA identifier
+			;
+type_declaration	::=	TYPE identifier discriminant_part_option IS type_definition SEMICOLON
+			;
+discriminant_part_option ::=	| discriminant_part
 			;
 type_definition		::=	record_type_definition
 			;
-record_type_definition	::=	[[ABSTRACT] TAGGED] [LIMITED] record_definition
+subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
 			;
-record_type_definition	::=	ABSTRACT record
-record_definition	::=	(RECORD (
-				(component_item {component_item})
-				|({component_item} variant_part)
-				|(NULL SEMICOLON)) END RECORD)
-			|	NULL RECORD
+subtype_indication	::=	name
+			|	subtype_indication_with_constraint
 			;
-component_item		::=	component_declaration
-			|	representation_clause
-			;
-component_declaration	::=	defining_identifier_list COLON	component_definition [ASSIGNMENT default_expression] SEMICOLON
-			;
-component_definition	::=	[ALIASED] subtype_indication
-			;
-default_expression	::=	expression
-			;
-representation_clause	::=	record_representation_clause
-			|	at_clause
-			;
-at_clause		::=	FOR direct_name USE AT expression SEMICOLON
-			;
-record_representation_clause ::= FOR direct_name USE RECORD [mod_clause] {component_clause} END RECORD SEMICOLON
-			;
-mod_clause		::= AT MOD expression SEMICOLON
-			;	
-component_clause	::=	direct_name AT static_expression RANGE first_bit DOUBLEDOT last_bit SEMICOLON
-			;
-variant_part		::=	CASE direct_name IS variant {variant} END CASE SEMICOLON
-			;
-direct_name		::=	IDENTIFIER | STRING_LITERAL
-			;
-variant			::=	WHEN  discrete_choice_list ARROW  (component_item {component_item})
-			| ({component_item} variant_part)
-			| (NULL SEMICOLON)
-			;
-discrete_choice_list	::=	discrete_choice {VERTICAL_LINE discrete_choice}
-			;
-discrete_choice		::=	expression 
-			|       discrete_range 
-			|	OTHERS
-			;
-discrete_range		::=	subtype_indication
-			|	range
-			;
-range			::=	simple_expression DOUBLEDOT simple_expression
-			;
-simple_expression	::=	
+//de p85-persch, pag 88
+subtype_indication_with_constraint ::=	name range_constraint
+				   |	name accuracy_constraint
+				   ;
+range_constraint		   ::= RANGE range
+				   ;
+range	::=	simple_expression DOUBLEDOT simple_expression
+	;
+//quité la enumeration type definition
+accuracy_constraint		::=	floating_point_constraint
+				|	fixed_point_constraint
+				;
+floating_point_constraint	::=	DIGITS simple_expression range_constraint_option
+				;
+range_constraint_option		::=	| range_constraint
+				;
+fixed_point_constraint		::=	DELTA simple_expression range_constraint_option
+				;
+//no pongo lo de array ni index ni discrete range
+record_type_definition		::=	RECORD component_list END RECORD
+				;
+component_list			::=	component_declaration_list variant_part_option 
+				|	NULL SEMICOLON
+				;
+//de p85-persch, pag 89			
+component_declaration_list	::=	| component_declaration_list component_declaration
+				;
+variant_part_option		::=	| variant_part
+				;
+component_declaration		::=	discriminant_declaration SEMICOLON 
+				;
+discriminant_part		::=	LEFTPAR discriminant_declaration_list RIGHTPAR
+				;
+discriminant_declaration_list	::=	discriminant_declaration
+				|	discriminant_declaration_list SEMICOLON discriminant_declaration
+				;
+discriminant_declaration	::=	identifier COLON subtype_indication initialization_option
+				|	identifier_list COLON subtype_indication initialization_option
+				;
+variant_part 			::=	CASE name IS variant_list END CASE SEMICOLON
+				;
+variant_list			::=	| variant_list WHEN choice_list ARROW component_list
+				;
+choice				::=	simple_expression
+				|	OTHERS
+				|	name range_constraint
+				|	range
+				;
+choice_list			::=	choice 
+				|	choice_list VERTICAL_LINE choice
+				; 
+declarative_part		::=	declarative_item_list
+				|	declarative_item_list	representation_spec_list_empty  program_component_list
+				|	declarative_item_list body_or_stub program_component_list
+				;
+declarative_item_list		::=	| declarative_item_list declaration
+				|	declarative_item_list use_clause
+				;
 
+//de p85-persch, pag 90
+representation_spec_list_empty	::=	| representation_spec_list
+				;
+representation_spec_list	::= 	representation_specification
+				|	representation_spec_list representation_specification
+				;
+body_or_stub			::=	body 
+				|       body_stub
+				;
+program_component_list		::=	| program_component_list program_component
+				;
+program_component		::=	body
+				|	package_declaration
+				|	body_stub
+				;
+body				::=	subprogram_body
+				|	package_body
+				;
+//"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
+name				::=	identifier
+				|	indexed_component
+				|	selected_component
+				|	function_call
+				|	operator_symbol
+				;
+indexed_component		::=	name LEFTPAR generalized_expression_list RIGHTPAR
+				;
+generalized_expression_list	::=	generalized_expression
+				|	generalized_expression_list COMMA generalized_expression
+				;
+generalized_expression		::=	expression
+				|	range
+				|	subtype_indication_with_constraint
+				|	choice_list ARROW expression
+				|	choice_list ARROW subtype_indication_with_constraint
+				;
+selected_component		::=	name POINT identifier
+				|	name POINT ALL
+				|	name POINT operator_symbol
+				;
+//pongo acá los string literals?
+literal				::=	integer_literal
+				|	floating_point_literal
+				|	character_literal
+				|	NULL
+				;
+aggregate			::=	LEFTPAR component_association_list RIGHTPAR
+				|	LEFTPAR choice_list ARROW expression RIGHTPAR
+				;
+component_association_list	::=	component_association COMMA component_association
+				|	component_association_list COMMA component_association
+				;
+component_association		::=	expression
+				|	choice_list ARROW expression
+				;
+expression			::=	relation
+				|	and_expression
+				|	or_expression
+				|	xor_expression
+				|	andthen_expression
+				|	orelse_expression
+				;
+//de p85-persch, pag 91
 
 
 
