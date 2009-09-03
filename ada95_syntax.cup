@@ -172,6 +172,15 @@ non terminal primary;
 non terminal relational_operator, adding_operator, unary_operator, multipliying_operator;
 non terminal qualified_expression, allocator;
 non terminal sequence_of_statements, statement;
+//de p85-persch, pag 92
+non terminal label_list;
+non terminal simple_statement, compound_statement;
+non terminal label;
+non terminal null_statement, assignment_statement;
+non terminal if_statement, elsif_list, else_option, condition;
+non terminal loop_statement, basic_loop;
+//de p85-persch, pag 93:
+
 //RM-3. DECLARATIONS
 
 //RM-4: NAMES AND EXPRESSIONS
@@ -442,7 +451,47 @@ statement			::=	label_list simple_statement
 				|	label_list compund_statement
 				;
 //de p85-persch, pag 92:
-
+label_list			::=	| label_list label
+				;
+simple_statement		::=	null_statement
+				|	assignment_statement
+				|	exit_statement
+				|	return_statement
+				|	goto_statement
+				|	procedure_call
+				|	delay_statement
+				|	abort_statement
+				|	raise_statement	
+				|	code_statement
+				;
+compound_statement		::=	if_statement
+				|	case_statement
+				|	loop_statement
+				|	block
+				|	accept_statement
+				|	select_statement
+				;
+label				::=	LEFTLABEL identifier RIGHTLABEL
+				;
+null_statement			::=	NULL SEMICOLON
+				;
+assignment_statement		::=	name ASSIGNMENT expression SEMICOLON
+				;
+if_statement			::=	IF condition THEN sequence_of_statements elsif_list else_option END IF SEMICOLON
+				;
+elsif_list			::=	| elsif_list ELSIF condition THEN sequence_of_statements
+				;
+else_option			::=	| ELSE sequence_of_statements
+				;
+condition			::=	expression
+				;
+//acá iría el bloque case, seguido de la alternative_list
+loop_statement			::=	iteration_clause_option basic_loop SEMICOLON
+				|	identifier COLON iteration_clause_option basic_loop identifier SEMICOLON
+				;
+basic_loop			::=	LOOP sequence_of_statements END LOOP
+				;
+//de p85-persch, pag 93
 	
 
 
