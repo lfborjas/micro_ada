@@ -65,8 +65,8 @@ based_literal={base}{num_sign}{based_numeral}({point}{based_numeral})?{num_sign}
 numeric_literal={decimal_literal}|{based_literal}
 /*reglas para literales numéricas empotradas:*/
 number=	{digit}{digit}*
-floating_point_literal={number}{point}{number}
-integer_literal={number}
+floating_point_literal={numeral}{point}{numeral}
+integer_literal={numeral}
 /*Los números con exponente*/
 power_literal={numeral}({point}{numeral})?{exponent}
 /*Identificadores y operadores*/
