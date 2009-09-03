@@ -126,7 +126,7 @@ terminal PUT, GET;
 terminal BOOLEAN, INTEGER, FLOAT;
 
 //los diz-que-operadores:
-terminal AND_THEN, OR_ELSE, NOT_IN;
+//terminal AND_THEN, OR_ELSE, NOT_IN;
 //ahora las que sí tienen valores de retorno:
 terminal String IDENTIFIER;
 //terminal Number	NUMERIC_LITERAL;
@@ -164,7 +164,14 @@ non terminal name, indexed_component, generalized_expression_list, generalized_e
 non terminal selected_component, literal, aggregate, component_association_list, component_association;
 non terminal expression;
 //de p85-persch, pag 91
-
+non terminal and_expression, or_expression, xor_expression, andthen_expression, orelse_expression;
+non terminal relation;
+non terminal membership_operator;
+non terminal simple_expression, term_list, term, factor;
+non terminal primary;
+non terminal relational_operator, adding_operator, unary_operator, multipliying_operator;
+non terminal qualified_expression, allocator;
+non terminal sequence_of_statements, statement;
 //RM-3. DECLARATIONS
 
 //RM-4: NAMES AND EXPRESSIONS
@@ -183,8 +190,8 @@ precedence left INEQUALITY, GT, LT, GTEQ, LTEQ;
 precedence left PLUS, MINUS, CONCATENATE;
 precedence left MULTIPLY, DIVIDE, MOD, REM;
 precedence left EXPONENTIATE, NOT, ABS;
-precedence left AND_THEN, OR_ELSE;
-precedence left IN, NOT_IN;
+//precedence left AND_THEN, OR_ELSE;
+//precedence left IN, NOT_IN;
 
 /*SECCIÓN DE LA GRAMÁTICA*/
 //elementos opcionales comunes:
@@ -360,7 +367,83 @@ expression			::=	relation
 				|	orelse_expression
 				;
 //de p85-persch, pag 91
+and_expression			::=	relation AND relation
+				|	and_expression AND relation
+				;
+or_expression			::=	relation OR relation
+				|	or_expression OR relation
+				;
+xor_expression			::=	relation XOR relation
+				|	xor_expression XOR relation
+				;
+andthen_expression		::=	relation AND THEN relation
+				|	andthen_expression AND THEN relation
+				;
+orelse_expression		::=	relation OR ELSE relation
+				|	orelse_expression OR ELSE relation
+				;
+relation			::=	simple_expression
+				|	simple_expression relational_operator simple_expression
+				|	simple_expression membership_operator range
+				|	simple_expression membership_operator subtype_indication
+				;
+membership_operator		::=	IN
+				|	NOT IN
+				;
+simple_expression		::=	term_list	
+				|	unary_operator term_list
+				;
+term_list			::=	term
+				|	term_list adding_operator term
+				;
+term				::=	factor
+				|	term multiplying_operator factor
+				;
+factor				::=	primary
+				|	primary EXPONENTIATE primary
+				;
+primary				::=	literal
+				|	aggregate
+				|	name
+				|	allocator
+				|	qualified_expression
+				|	LEFTPAR expression RIGHTPAR
+				;
+relational_operator		::=	EQUAL
+				|	INEQUALITY
+				|	LT	
+				|	GT	
+				|	GTEQ
+				|	LTEQ
+				;
+adding_operator			::=	PLUS
+				|	MINUS
+				|	CONCATENATE
+				;
+unary_operator			::=	PLUS
+				|	MINUS
+				|	NOT
+				;
+multiplying_operator		::=	MULTIPLY
+				|	DIVIDE
+				|	MOD
+				|	REM
+				;
+qualified_expression		::=	name TICK LEFTPAR expression RIGHTPAR
+				|	name TICK aggregate
+				;
+allocator			::=	NEW name
+				;
+sequence_of_statements		::=	statement
+				|	sequence_of_statements statement
+				;
+//usaremos pragma? De ser así, aquí también produciría pragma:
+statement			::=	label_list simple_statement
+				|	label_list compund_statement
+				;
+//de p85-persch, pag 92:
 
+	
 
 
 
