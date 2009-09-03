@@ -27,6 +27,10 @@ private Symbol symbol(int type){
 */
 private Symbol symbol(int type, Object value){
 	return new Symbol(type, yyline, yycolumn, value);
+/**La función que le quita los guiones a los tokens*/
+private Number quitar_guiones(){
+	
+}
 }
 
 %}
@@ -206,10 +210,10 @@ boolean_literal="true"|"false"
 {identifier}	{return symbol(sym.IDENTIFIER, yytext());}
 //manejarlo así o de la otra manera?
 /*{numeric_literal}	{return symbol(sym.NUMERIC_LITERAL,yytext());}*/
-{integer_literal}	{return symbol(sym.INTEGER_LITERAL,yytext());}
-{floating_point_literal} {return symbol(sym.FLOATING_POINT_LITERAL,yytext());}	
-{character_literal}	{return symbol(sym.CHARACTER_LITERAL,yytext());}
-{boolean_literal}	{return symbol(sym.BOOLEAN_LITERAL,yytext();)}
+{integer_literal}	{return symbol(sym.INTEGER_LITERAL,new Integer(quitar_guiones(yytext()).integerValue()));}
+{floating_point_literal} {return symbol(sym.FLOATING_POINT_LITERAL,new Float(quitar_guiones(yytext()).floatValue());}	
+{character_literal}	{return symbol(sym.CHARACTER_LITERAL,new Character(yytext()));}
+{boolean_literal}	{return symbol(sym.BOOLEAN_LITERAL,new Boolean(yytext());)}
 /*Avisar que no se aceptan números con base:*/
 {based_literal}		{System.err.println("<"+yytext()+"> Es un número con base, este compilador sólo acepta números enteros y de punto flotante sin exponente");}
 /*Avisar que tampoco se aceptan números con exponente: */
