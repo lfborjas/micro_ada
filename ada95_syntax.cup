@@ -138,7 +138,7 @@ terminal Boolean BOOLEAN_LITERAL;
 
 /*Sección de las no-terminales; iremos en el orden del RM*/
 //INICIALES:
-non terminal goal, compilation_unit;
+non terminal goal;
 //lexicos y varios
 //de p85-persch, pag 87
 non terminal constant_option;
@@ -170,7 +170,7 @@ non terminal relation;
 non terminal membership_operator;
 non terminal simple_expression, term_list, term, factor;
 non terminal primary;
-non terminal relational_operator, adding_operator, unary_operator, multipliying_operator;
+non terminal relational_operator, adding_operator, unary_operator, multiplying_operator;
 non terminal qualified_expression, allocator;
 non terminal sequence_of_statements, statement;
 //de p85-persch, pag 92
@@ -194,11 +194,12 @@ non terminal mode;
 non terminal subprogram_body;
 non terminal designator_option;
 non terminal procedure_call,function_call;
-non terminal actual_parameter_part, parameter_association_list, parameter_association, formal_parameter_option, explicit_actual_parameter;
+non terminal actual_parameter_part;
+//non terminal actual_parameter_part, parameter_association_list, parameter_association, formal_parameter_option, explicit_actual_parameter;
 non terminal package_declaration, package_specification, private_part_option, identifier_option, package_body;
 //de p85-persch, pag 95:
 non terminal statements_option;
-non terminal private_definition;
+non terminal private_type_definition;
 non terminal use_clause;
 non terminal name_list;
 //de p85-persch, pag 96:
@@ -227,10 +228,10 @@ precedence left EXPONENTIATE, NOT, ABS;
 //precedence left IN, NOT_IN;
 
 /*SECCIÓN DE LA GRAMÁTICA*/
+start with goal;
 //elementos opcionales comunes:
 constant_option	::=	| CONSTANT;
 //empezamos con goal, que será una unidad de compilación:
-start with goal;
 
 goal	::=	compilation
 	;
@@ -362,12 +363,13 @@ body				::=	subprogram_body
 				|	package_body
 				;
 //"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
+//quité la de indexed_component:
 name				::=	identifier
-				|	indexed_component
 				|	selected_component
 				|	function_call
 				|	operator_symbol
 				;
+/*
 indexed_component		::=	name LEFTPAR generalized_expression_list RIGHTPAR
 				;
 generalized_expression_list	::=	generalized_expression
@@ -379,6 +381,7 @@ generalized_expression		::=	expression
 				|	choice_list ARROW expression
 				|	choice_list ARROW subtype_indication_with_constraint
 				;
+*/
 selected_component		::=	name POINT identifier
 				|	name POINT ALL
 				|	name POINT operator_symbol
@@ -478,7 +481,7 @@ sequence_of_statements		::=	statement
 				;
 //usaremos pragma? De ser así, aquí también produciría pragma:
 statement			::=	label_list simple_statement
-				|	label_list compund_statement
+				|	label_list compound_statement
 				;
 //de p85-persch, pag 92:
 label_list			::=	| label_list label
@@ -489,17 +492,11 @@ simple_statement		::=	null_statement
 				|	return_statement
 				|	goto_statement
 				|	procedure_call
-				|	delay_statement
-				|	abort_statement
-				|	raise_statement	
 				|	code_statement
 				;
 compound_statement		::=	if_statement
-				|	case_statement
 				|	loop_statement
 				|	block
-				|	accept_statement
-				|	select_statement
 				;
 label				::=	LEFTLABEL identifier RIGHTLABEL
 				;
@@ -611,8 +608,10 @@ pero quería sólo dejar que pusieran expresiones booleanas, enteras y float all
 supongo que queda para el semántico...
 */
 
-actual_parameter_part		::=	 LEFTPAR parameter_association_list RIGHTPAR	
+//actual_parameter_part		::=	 LEFTPAR parameter_association_list RIGHTPAR	
+actual_parameter_part		::=	 LEFTPAR argument_list RIGHTPAR	
 				;
+/*
 parameter_association_list	::=	parameter_association
 				|	parameter_association_list COMMA parameter_association
 				;
@@ -623,7 +622,7 @@ formal_parameter_option		::=	| identifier ARROW
 				;
 explicit_actual_parameter	::=	expression
 				|	name
-				;	
+				;	*/
 
 //si usásemos generic, aquí faltarían dos producciones:
 package_declaration		::=	package_specification SEMICOLON 
