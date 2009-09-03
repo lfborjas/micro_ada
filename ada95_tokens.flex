@@ -103,10 +103,11 @@ boolean_literal="true"|"false"
 "put"	{return symbol(sym.PUT);}
 "get"	{return symbol(sym.GET);}
 
-/*Los operadores compuestos: NO cumplen con la definición de operador del RM*/
+/*Los operadores compuestos: NO cumplen con la definición de operador del RM
 "and then"	{return symbol(sym.AND_THEN);}
 "or else"	{return symbol(sym.OR_ELSE);}
 "not in"	{return symbol(sym.NOT_IN);}
+*/
 /*Las palabras reservadas: declararlas como terminales en el .cup*/
 "abort"	{return symbol(sym.ABORT);}
 "abs"	{return symbol(sym.ABS);}
