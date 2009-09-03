@@ -201,6 +201,10 @@ non terminal statements_option;
 non terminal private_definition;
 non terminal use_clause;
 non terminal name_list;
+//de p85-persch, pag 96:
+non terminal compilation, compilation_list;
+//de p85-persch, pag 97:
+
 //RM-3. DECLARATIONS
 
 //RM-4: NAMES AND EXPRESSIONS
@@ -228,7 +232,7 @@ constant_option	::=	| CONSTANT;
 //empezamos con goal, que será una unidad de compilación:
 start with goal;
 
-goal	::=	compilation_unit
+goal	::=	compilation
 	;
 
 //RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
@@ -646,6 +650,15 @@ name_list			::=  	name
 /*acá irían las renaming declaration, y comienza lo relacionado con tasks:
 * entry, accept, select y abort
 */
+//de p85-persch, pag 96:
+/*acá sigue lo de tasks: entry, delay, select y abort*/
+compilation			::=	compilation_list
+				;
+//a esta le falta una tal lista de pragmas, pero como no manejaremos pragmas, no la pongo:
+compilation_list		::= 	compilation_unit
+				|	compilation_list compilation_unit
+				;
+//de p85-persch, pag 97:
 
 				
 	
