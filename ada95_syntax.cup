@@ -197,7 +197,10 @@ non terminal procedure_call,function_call;
 non terminal actual_parameter_part, parameter_association_list, parameter_association, formal_parameter_option, explicit_actual_parameter;
 non terminal package_declaration, package_specification, private_part_option, identifier_option, package_body;
 //de p85-persch, pag 95:
-
+non terminal statements_option;
+non terminal private_definition;
+non terminal use_clause;
+non terminal name_list;
 //RM-3. DECLARATIONS
 
 //RM-4: NAMES AND EXPRESSIONS
@@ -630,6 +633,19 @@ identifier_option		::=	| identifier
 package_body			::=	PACKAGE BODY identifier IS declarative_part statements_option END identifier_option SEMICOLON
 				;
 //de p85-persch, pag 95:
+statements_option		::=	| BEGIN sequence_of_statements exception_option
+				;
+private_type_definition		::=	LIMITED PRIVATE
+				|	PRIVATE
+				;
+use_clause			::=	USE name_list SEMICOLON 
+				;
+name_list			::=  	name
+				|	name_list COMMA name
+				;
+/*acá irían las renaming declaration, y comienza lo relacionado con tasks:
+* entry, accept, select y abort
+*/
 
 				
 	
