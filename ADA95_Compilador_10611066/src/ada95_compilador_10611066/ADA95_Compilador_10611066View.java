@@ -487,12 +487,27 @@ public class ADA95_Compilador_10611066View extends FrameView {
         //prepararla para el output:
         this.errorArea.setForeground(Color.black);
         this.errorArea.setText("");
+        
+
+
+        
         if(archivo==null){
             this.errorArea.setForeground(Color.red);
             System.err.println("No hay un archivo abierto");
         }else{
             long start=System.currentTimeMillis();
-            //lo de parsear:
+            try {
+                //lo de parsear:
+                
+                parser p = new parser(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));                
+                Object result=p.parse().value;
+                //p.parse();
+            } catch (FileNotFoundException ex) {
+                //Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
+
+            } catch(Exception e){
+                
+            }
             long end=System.currentTimeMillis();
             float elapsed=(end-start)/1000;
             //si no dio errores:

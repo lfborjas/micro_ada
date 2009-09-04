@@ -63,9 +63,9 @@ parser code {:
    
         /* Print the contents of the StringBuffer 'm', which contains
            an error message, out on a line. */
-        //System.err.println(m);
+        System.err.println(m);
 	/*Guardar el error en el buffer, mas un salto de línea:*/
-	errorMessages.append(m+"\n");
+	//	errorMessages.append(m+"\n");
     }
    
     /* Change the method report_fatal_error so when it reports a fatal
