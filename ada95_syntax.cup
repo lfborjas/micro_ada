@@ -194,7 +194,7 @@ non terminal mode;
 non terminal subprogram_body;
 non terminal designator_option;
 non terminal procedure_call,function_call;
-non terminal actual_parameter_part;
+non terminal actual_parameter_part, semicolon_parameter_part;
 //non terminal actual_parameter_part, parameter_association_list, parameter_association, formal_parameter_option, explicit_actual_parameter;
 non terminal package_declaration, package_specification, private_part_option, identifier_option, package_body;
 //de p85-persch, pag 95:
@@ -594,12 +594,13 @@ designator_option		::=	| designator
 * y explicit_actual_parameter
 */
 procedure_call			::=	name SEMICOLON
-				|	name actual_parameter_part SEMICOLON
 				;
 function_call			::=	name LEFTPAR RIGHTPAR
 				|	name actual_parameter_part
 				|	PUT actual_parameter_part
 				|	GET actual_parameter_part
+				;
+semicolon_parameter_part	::=	actual_parameter_part SEMICOLON
 				;
 /*Esta no me parece tan poderosa:
 put_call	::= PUT LEFTPAR actual_parameter_list RIGHTPAR
