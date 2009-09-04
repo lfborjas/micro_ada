@@ -1390,7 +1390,7 @@ public class parser extends java_cup.runtime.lr_parser {
     public void report_fatal_error(String message, Object info) {
         report_error(message, info);
 
-        System.exit(1);
+       // System.exit(1);
     }
 
 }

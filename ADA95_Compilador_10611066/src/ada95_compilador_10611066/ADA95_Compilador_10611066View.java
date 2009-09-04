@@ -499,8 +499,8 @@ public class ADA95_Compilador_10611066View extends FrameView {
             try {
                 //lo de parsear:
                 
-                parser p = new parser(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));                
-                Object result=p.parse().value;
+                parser p = new parser(new Ada95Lexer(new FileReader(archivo.getPath())));
+                Object result=p.parse();
                 //p.parse();
             } catch (FileNotFoundException ex) {
                 //Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
