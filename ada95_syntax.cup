@@ -132,7 +132,7 @@ terminal String IDENTIFIER;
 //terminal Number	NUMERIC_LITERAL;
 terminal Integer INTEGER_LITERAL;
 terminal Float	FLOATING_POINT_LITERAL;
-terminal Character CHARACTER_LITERAL;
+terminal String CHARACTER_LITERAL;
 terminal String STRING_LITERAL;	
 terminal Boolean BOOLEAN_LITERAL;
 
