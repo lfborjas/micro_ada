@@ -278,6 +278,7 @@ subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
 			;
 subtype_indication	::=	name
 			|	subtype_indication_with_constraint
+			|	primitive_type
 			;
 //de p85-persch, pag 88
 subtype_indication_with_constraint ::=	name range_constraint
@@ -390,6 +391,7 @@ selected_component		::=	name POINT identifier
 literal				::=	INTEGER_LITERAL
 				|	FLOATING_POINT_LITERAL
 				|	CHARACTER_LITERAL
+				|	BOOLEAN_LITERAL
 				|	NULL
 				;
 aggregate			::=	LEFTPAR component_association_list RIGHTPAR
