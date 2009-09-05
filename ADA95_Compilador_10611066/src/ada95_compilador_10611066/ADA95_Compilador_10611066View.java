@@ -525,7 +525,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             try {
                 //lo de parsear:
                 
-                parser p = new parser(new Ada95Lexer(new FileReader(archivo.getPath())));
+                parser p = new parser(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));
                 if(debug){
                     Object result=p.debug_parse();
                 }else{
