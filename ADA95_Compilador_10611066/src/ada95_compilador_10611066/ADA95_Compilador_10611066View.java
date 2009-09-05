@@ -41,6 +41,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         super(app);
 
         initComponents();
+        this.jScrollPane1.setRowHeaderView(new TextLineNumber(this.jEditorPaneDocDisplay));
         this.redirectSystemStreams();
         this.debug=false;
         
