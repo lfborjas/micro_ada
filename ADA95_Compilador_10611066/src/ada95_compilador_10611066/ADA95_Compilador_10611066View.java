@@ -211,12 +211,12 @@ public class ADA95_Compilador_10611066View extends FrameView {
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 1176, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE)
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1152, Short.MAX_VALUE)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1152, Short.MAX_VALUE))
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 976, Short.MAX_VALUE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         mainPanelLayout.setVerticalGroup(
@@ -224,7 +224,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -430,7 +430,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             int confirmacion = JOptionPane.showConfirmDialog(mainPanel, "¿Desea guardar el archivo " + archivo.getName() + " antes de abrir otro?");
             if (confirmacion == JOptionPane.OK_OPTION) {
                 //guardar el archivo que está abierto
-                guardarArchivoActivo();
+                guardarArchivoActivo(true);
                 //borrar
                 this.jEditorPaneDocDisplay.setText("");
 
@@ -446,7 +446,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
 
     }//GEN-LAST:event_jMenuItem1ActionPerformed
-    private void guardarArchivoActivo() {
+    private void guardarArchivoActivo(boolean prompt) {
         //si el archivo no existe, crearlo:
         if (archivo==null) {
             this.jFileChooser1.setDialogTitle("Nombrar archivo");
@@ -463,7 +463,9 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 FileWriter aGuardar = new FileWriter(archivo.getAbsolutePath());
                 aGuardar.write(this.jEditorPaneDocDisplay.getText());
                 aGuardar.close();
-                JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getName() + " se ha guardado exitosamente");
+                if(prompt){
+                    JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getName() + " se ha guardado exitosamente");
+                }
             } catch (IOException ex) {
                 Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -471,7 +473,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
     
 
     private void jMenuGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuGuardarActionPerformed
-        guardarArchivoActivo();
+        guardarArchivoActivo(true);
 
     }//GEN-LAST:event_jMenuGuardarActionPerformed
 
@@ -482,7 +484,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             int confirmacion = JOptionPane.showConfirmDialog(mainPanel, "¿Desea guardar el archivo " + archivo.getName() + " antes de crear uno nuevo?");
             if (confirmacion == JOptionPane.OK_OPTION) {
                 //guardar el archivo que está abierto
-                guardarArchivoActivo();
+                guardarArchivoActivo(true);
                 //borrar
                 
 
@@ -504,7 +506,8 @@ public class ADA95_Compilador_10611066View extends FrameView {
     }//GEN-LAST:event_jMenuINuevoActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+
+        
         //prepararla para el output:
         this.errorArea.setForeground(Color.black);
         this.errorArea.setText("");
@@ -515,7 +518,9 @@ public class ADA95_Compilador_10611066View extends FrameView {
         if(archivo==null){
             this.errorArea.setForeground(Color.red);
             System.err.println("No hay un archivo abierto");
-        }else{
+        }else{//si sí hay archivo:
+            //guardar el archivo activo
+            this.guardarArchivoActivo(false);
             long start=System.currentTimeMillis();
             try {
                 //lo de parsear:
@@ -534,12 +539,12 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 
             }
             long end=System.currentTimeMillis();
-            float elapsed=(end-start)/1000;
+            float elapsed=(end-start);
             //si no dio errores:
             if(!this.errorArea.getForeground().equals(Color.red)){
-                this.errorArea.setForeground(Color.green);
+                this.errorArea.setForeground(Color.black);
             }
-            System.out.println("Compilación exitosa ("+elapsed+" segundos)");
+            System.out.println("Compilación exitosa ("+elapsed+" milisegundos)");
             this.jTabbedPane1.setTitleAt(0, archivo.getName()+" (Compilación)");
         }
         
