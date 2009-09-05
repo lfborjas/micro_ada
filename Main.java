@@ -5,7 +5,12 @@ public class Main {
     /* Start the parser */
     try {
       parser p = new parser(new Ada95Lexer(new FileReader(argv[0])));
-      Object result = p.debug_parse().value;
+      if(argv.length==2 && argv[1].equals("-debug")){	
+	      Object result = p.debug_parse().value;
+	}else{
+	     Object result = p.parse().value;
+	}
+
     } catch (Exception e) {
       /* do cleanup here -- possibly rethrow e */
       e.printStackTrace();
