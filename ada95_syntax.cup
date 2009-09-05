@@ -578,7 +578,8 @@ parameter_declaration_list	::=	parameter_declaration
 parameter_declaration		::=	identifier COLON mode subtype_indication initialization_option
 				|	identifier_list COLON mode subtype_indication initialization_option
 				;
-mode				::=	IN
+mode				::=	
+				|	IN
 				|	OUT
 				|	IN OUT
 				;
