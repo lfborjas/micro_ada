@@ -484,6 +484,7 @@ sequence_of_statements		::=	statement
 //usaremos pragma? De ser así, aquí también produciría pragma:
 statement			::=	label_list simple_statement
 				|	label_list compound_statement
+				|	error SEMICOLON
 				;
 //de p85-persch, pag 92:
 label_list			::=	| label_list label
