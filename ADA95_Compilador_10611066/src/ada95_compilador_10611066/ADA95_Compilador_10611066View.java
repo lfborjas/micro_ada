@@ -14,6 +14,7 @@ import org.jdesktop.application.FrameView;
 import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -41,6 +42,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
         initComponents();
         this.redirectSystemStreams();
+        this.debug=false;
         
         /*Setear el highlighter del editor*/
         this.jEditorPaneDocDisplay.setEditorKit(new highlightKit());
@@ -130,6 +132,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         jEditorPaneDocDisplay = new javax.swing.JEditorPane();
         jToolBar1 = new javax.swing.JToolBar();
         jButton1 = new javax.swing.JButton();
+        jCheckBox1 = new javax.swing.JCheckBox();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         errorArea = new javax.swing.JTextArea();
@@ -171,6 +174,23 @@ public class ADA95_Compilador_10611066View extends FrameView {
             }
         });
         jToolBar1.add(jButton1);
+
+        jCheckBox1.setText(resourceMap.getString("jCheckBox1.text")); // NOI18N
+        jCheckBox1.setFocusable(false);
+        jCheckBox1.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        jCheckBox1.setName("jCheckBox1"); // NOI18N
+        jCheckBox1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jCheckBox1.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jCheckBox1ItemStateChanged(evt);
+            }
+        });
+        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCheckBox1ActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(jCheckBox1);
 
         jTabbedPane1.setName("jTabbedPane1"); // NOI18N
 
@@ -500,7 +520,11 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 //lo de parsear:
                 
                 parser p = new parser(new Ada95Lexer(new FileReader(archivo.getPath())));
-                Object result=p.parse();
+                if(debug){
+                    Object result=p.debug_parse();
+                }else{
+                    Object result=p.parse();
+                }
                 //p.parse();
             } catch (FileNotFoundException ex) {
                 //Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
@@ -519,13 +543,29 @@ public class ADA95_Compilador_10611066View extends FrameView {
         }
         
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
+        // TODO add your handling code here:
+
+    }//GEN-LAST:event_jCheckBox1ActionPerformed
+
+    private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
+        // TODO add your handling code here:
+        if(evt.getStateChange()==ItemEvent.DESELECTED){
+            debug=false;
+        }else if(evt.getStateChange()==ItemEvent.SELECTED){
+            debug=true;
+        }
+    }//GEN-LAST:event_jCheckBox1ItemStateChanged
 //variables de lfborjas:
     File archivo=null;
     /**El contenido del archivo en texto:*/
     String textoDeArchivo;
+    boolean debug;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextArea errorArea;
     private javax.swing.JButton jButton1;
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JEditorPane jEditorPaneDocDisplay;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JMenuItem jMenuGuardar;
