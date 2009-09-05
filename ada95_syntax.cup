@@ -142,7 +142,7 @@ non terminal goal;
 //lexicos y varios
 //de p85-persch, pag 87
 non terminal constant_option;
-non terminal primitive_type;
+non terminal primitive_type,numeric_type;
 non terminal identifier, identifier_list, argument_list, argument;
 non terminal declaration, object_declaration, initialization_option, number_declaration;
 non terminal type_declaration, discriminant_part_option, type_definition;
@@ -237,9 +237,11 @@ goal	::=	compilation
 	;
 
 //RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
-primitive_type 		::=	BOOLEAN
-			|	INTEGER
+numeric_type		::=	INTEGER
 			|	FLOAT
+			;
+primitive_type 		::=	BOOLEAN
+			|	numeric_type
 			;
 identifier	::=	IDENTIFIER
 		;
@@ -283,7 +285,9 @@ subtype_indication	::=	name
 //de p85-persch, pag 88
 subtype_indication_with_constraint ::=	name range_constraint
 				   |	name accuracy_constraint
-				   ;
+				   |	numeric_type range_constraint
+				   |	FLOAT 	accuracy_constraint
+		         	   ;
 range_constraint		   ::= RANGE range
 				   ;
 range	::=	simple_expression DOUBLEDOT simple_expression
@@ -303,6 +307,7 @@ discrete_range_list		::=	discrete_range
 				|	discrete_range_list COMMA discrete_range
 				;
 discrete_range			::=	name range_constraint_option
+				|	numeric_type range_constraint_option
 				|	range
 				;
 record_type_definition		::=	RECORD component_list END RECORD
