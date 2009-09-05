@@ -76,7 +76,7 @@ parser code {:
     public void report_fatal_error(String message, Object info) {
         report_error(message, info);
 
-        System.exit(1);
+        //System.exit(1);
     }
 :};
 
