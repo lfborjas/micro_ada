@@ -63,9 +63,9 @@ parser code {:
    
         /* Print the contents of the StringBuffer 'm', which contains
            an error message, out on a line. */
-        //System.err.println(m);
+        System.err.println(m);
 	/*Guardar el error en el buffer, mas un salto de línea:*/
-	errorMessages.append(m+"\n");
+	//	errorMessages.append(m+"\n");
     }
    
     /* Change the method report_fatal_error so when it reports a fatal
@@ -76,7 +76,7 @@ parser code {:
     public void report_fatal_error(String message, Object info) {
         report_error(message, info);
 
-        System.exit(1);
+        //System.exit(1);
     }
 :};
 
@@ -278,6 +278,7 @@ subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
 			;
 subtype_indication	::=	name
 			|	subtype_indication_with_constraint
+			|	primitive_type
 			;
 //de p85-persch, pag 88
 subtype_indication_with_constraint ::=	name range_constraint
@@ -390,6 +391,7 @@ selected_component		::=	name POINT identifier
 literal				::=	INTEGER_LITERAL
 				|	FLOATING_POINT_LITERAL
 				|	CHARACTER_LITERAL
+				|	BOOLEAN_LITERAL
 				|	NULL
 				;
 aggregate			::=	LEFTPAR component_association_list RIGHTPAR
