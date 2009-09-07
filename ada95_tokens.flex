@@ -213,9 +213,9 @@ boolean_literal="true"|"false"
 //{character_literal}	{return symbol(sym.CHARACTER_LITERAL,new Character(yytext()));}
 {character_literal}	{return symbol(sym.CHARACTER_LITERAL,yytext());}
 /*Avisar que no se aceptan números con base:*/
-{based_literal}		{System.err.println("<"+yytext()+"> Es un número con base, este compilador sólo acepta números enteros y de punto flotante sin exponente");}
+{based_literal}		{System.err.println("<"+yytext()+"> Es un número con base, este compilador sólo acepta números enteros y de punto flotante sin exponente; en línea "+(yyline+1)+", columna "+(yycolumn+1));}
 /*Avisar que tampoco se aceptan números con exponente: */
-{power_literal}		{System.err.println("<"+yytext()+"> Es un número con exponente, este compilador sólo acepta números enteros y de punto flotante sin exponente");}
+{power_literal}		{System.err.println("<"+yytext()+"> Es un número con exponente, este compilador sólo acepta números enteros y de punto flotante sin exponente en línea "+(yyline+1)+", columna "+(yycolumn+1));}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 
@@ -268,11 +268,11 @@ El RM no usa los siguientes cuatro como delimitadores ¿debería permitirlos?
 /*Todo lo que no sea salto de línea o cierre se vale*/
 [^\"\n\r]+	{string.append(yytext());}
 /*ADA no permite saltos de línea en string literals*/
-[\n\r]		{System.err.println("Error léxico: no es permitido un salto de línea en una cadena de caracteres. En línea "+yyline+", columna "+yycolumn);}
+[\n\r]		{System.err.println("Error léxico: no es permitido un salto de línea en una cadena de caracteres. En línea "+(yyline+1)+", columna "+(yycolumn+1));}
 }
 
 /*Si la entrada no pega con nada, devolver error léxico*/
 [^]    { /*throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumn);*/
-	System.err.println("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumn); }
+	System.err.println("Caracter inesperado: <"+yytext()+"> en línea "+(yyline+1)+", columna "+(yycolumn+1)); }
 
 

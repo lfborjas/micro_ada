@@ -33,6 +33,14 @@ parser code {:
    
         /* Create a StringBuffer called 'm' with the string 'Error' in it. */
         StringBuffer m = new StringBuffer("Error");
+        /* Add to the end of the StringBuffer error message created in
+           this method the message that was passed into this method. */
+	if(message.equalsIgnoreCase("Syntax error")){
+		message="Error Sintáctico";
+	}else if(message.equalsIgnoreCase("Couldn't repair and continue parse")){
+		message="No se pudo reparar y seguir parseando";
+	}
+        m.append(message+" : ");
    
         /* Check if the information passed to the method is the same
            type as the type java_cup.runtime.Symbol. */
@@ -57,9 +65,6 @@ parser code {:
             }
         }
    
-        /* Add to the end of the StringBuffer error message created in
-           this method the message that was passed into this method. */
-        m.append(" : "+message);
    
         /* Print the contents of the StringBuffer 'm', which contains
            an error message, out on a line. */
