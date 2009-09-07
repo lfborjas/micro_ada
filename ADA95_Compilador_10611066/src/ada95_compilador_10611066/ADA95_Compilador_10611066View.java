@@ -41,13 +41,13 @@ public class ADA95_Compilador_10611066View extends FrameView {
         super(app);
 
         initComponents();
-        this.jScrollPane1.setRowHeaderView(new TextLineNumber(this.jEditorPaneDocDisplay));
+        
         this.redirectSystemStreams();
         this.debug=false;
         
         /*Setear el highlighter del editor*/
-        this.jEditorPaneDocDisplay.setEditorKit(new highlightKit());
-        this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
+        jsyntaxpane.DefaultSyntaxKit.initKit();
+        this.jEditorPaneDocDisplay.setContentType("text/ada");
         this.jFileChooser1.setFileFilter(new AdaFilter());
         this.jTabbedPane1.setTitleAt(0, "Salida");
         this.errorArea.setForeground(Color.red);
@@ -211,11 +211,11 @@ public class ADA95_Compilador_10611066View extends FrameView {
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 1000, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 1176, Short.MAX_VALUE)
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 976, Short.MAX_VALUE)
+                    .addComponent(jTabbedPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 1152, Short.MAX_VALUE)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
@@ -224,9 +224,9 @@ public class ADA95_Compilador_10611066View extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 791, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -410,7 +410,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             archivo = this.jFileChooser1.getSelectedFile();
             if (archivo.exists()) {
                 textoDeArchivo = getContents(archivo);
-                this.jEditorPaneDocDisplay.setDocument(new HighlightDocumentAda95());
+                
                 this.jEditorPaneDocDisplay.setText(textoDeArchivo);                
             } else {
                 JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getAbsolutePath() + " no existe");
