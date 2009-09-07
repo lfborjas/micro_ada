@@ -32,15 +32,15 @@ parser code {:
     public void report_error(String message, Object info) {
    
         /* Create a StringBuffer called 'm' with the string 'Error' in it. */
-        StringBuffer m = new StringBuffer("Error");
+        StringBuffer m = new StringBuffer();
         /* Add to the end of the StringBuffer error message created in
            this method the message that was passed into this method. */
 	if(message.equalsIgnoreCase("Syntax error")){
-		message="Error Sintáctico";
+		message="Error Sintáctico : ";
 	}else if(message.equalsIgnoreCase("Couldn't repair and continue parse")){
-		message="No se pudo reparar y seguir parseando";
-	}
-        m.append(message+" : ");
+		message="No se pudo reparar y seguir parseando ";
+	}	
+        m.append(message);
    
         /* Check if the information passed to the method is the same
            type as the type java_cup.runtime.Symbol. */
@@ -262,6 +262,7 @@ declaration	::=	object_declaration
 		|	type_declaration
 		|	subprogram_declaration
 		|	subtype_declaration
+		|	number_declaration
 		;
 //de p85-persch, pag 87
 object_declaration	::=	identifier COLON constant_option subtype_indication initialization_option SEMICOLON
