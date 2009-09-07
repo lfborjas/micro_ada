@@ -24,7 +24,7 @@ import java_cup.runtime.*;
    line and column number of the error). */
 parser code {:
     /**Guardar los errores en un stringBuffer*/
-    StringBuffer errorMessages=new StringBuffer();
+    //StringBuffer errorMessages=new StringBuffer();
     /* Change the method report_error so it will display the line and
        column of where the error occurred in the input as well as the
        reason for the error which is passed into the method in the
@@ -83,6 +83,7 @@ parser code {:
 
         //System.exit(1);
     }
+
 :};
 
 /*SECCIÓN DE DECLARACIÓN DE TERMINALES Y NO TERMINALES*/
@@ -248,7 +249,7 @@ numeric_type		::=	INTEGER
 primitive_type 		::=	BOOLEAN
 			|	numeric_type
 			;
-identifier	::=	IDENTIFIER
+identifier	::=	IDENTIFIER:i {:RESULT=i;:}
 		;
 argument_list	::=	argument
 		|	argument_list COMMA argument
@@ -569,13 +570,13 @@ subprogram_declaration		::=	subprogram_specification SEMICOLON
 subprogram_specification	::=	PROCEDURE identifier formal_part_option
 				|	FUNCTION designator formal_part_option RETURN subtype_indication
 				;
-subprogram_specification_is	::=	PROCEDURE identifier IS
-				|	PROCEDURE identifier formal_part IS
-				|	FUNCTION designator formal_part_option RETURN subtype_indication IS
+subprogram_specification_is	::=	PROCEDURE identifier:i IS {:RESULT=i;:}
+				|	PROCEDURE identifier:i formal_part IS {:RESULT=i;:}
+				|	FUNCTION designator:i formal_part_option RETURN subtype_indication IS {:RESULT=i;:}
 				;
 //de p85-persch, pag 94
-designator			::=	identifier
-				|	operator_symbol
+designator			::=	identifier:i {:RESULT=i;:} 
+				|	operator_symbol:o {:RESULT=o;:}
 				;
 operator_symbol			::=	STRING_LITERAL
 				;
@@ -594,14 +595,19 @@ mode				::=
 				|	OUT
 				|	IN OUT
 				;
-subprogram_body			::=	subprogram_specification_is 
+subprogram_body			::=	subprogram_specification_is:s 
 						declarative_part 
 					BEGIN 
 						sequence_of_statements 
 					exception_option  
-					END designator_option SEMICOLON
+					END designator_option:e SEMICOLON
+				{:if(!(e==null)){ 
+				if(!(new String((String)s).equals((String)e))){
+					System.err.println("Error sintáctico, el nombre del subprograma debe coincidir (inicio:' "+s+"' fin: '"+e+"') en línea "+(sleft+1)+", columna "+(sright+1)); 
+					}
+					}:}
 				;
-designator_option		::=	| designator
+designator_option		::=	| designator:d {:RESULT=d;:}
 				;
 //estas parecen estar incompletas: cf scc 6.4 (pag 149 del pdf) del ADA-RM
 /*N.B todas, excepto las primeras, producciones de procedure y function call las agregué yo, no salen en p85-persch
