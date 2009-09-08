@@ -19,9 +19,31 @@
 /* Import the class java_cup.runtime.*  */
 import java_cup.runtime.*;
 
-   
-/* Parser code to change the way the parser reports errors (include
-   line and column number of the error). */
+/*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
+action code{:
+ /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
+   * @param start la palabra del inicio
+     @param sline, scolumn el left y right del símbolo start
+     @param end la palabra del final
+     @param eline, ecolumn el left y right del símbolo end
+ */
+ public void check_coherence(Object start, int sline, int scolumn, Object end, int eline, int ecolumn){
+	 String s=(String)start;
+	 String sInfo="inicio: "+s+" ["+String.valueOf(sline+1)+" , "+String.valueOf((scolumn-s.length()))+"]";
+	//la funciones pueden no tener el del final:
+	 if(end==null){return;}
+	 String e=(String)end;
+	 String eInfo=" y fin: "+e+" ["+String.valueOf(eline+1)+" , "+String.valueOf(ecolumn+1)+"]";
+	 //ver si son lo mismo:
+	if(!s.equals(e)){
+		System.err.println("Error sintáctico: el nombre del subprograma debe coincidir entre "+sInfo+eInfo);
+	}
+	
+
+ }
+:};
+
+/* Métodos que van en la clase del parser */
 parser code {:
     /**Guardar los errores en un stringBuffer*/
     //StringBuffer errorMessages=new StringBuffer();
@@ -601,11 +623,7 @@ subprogram_body			::=	subprogram_specification_is:s
 						sequence_of_statements 
 					exception_option  
 					END designator_option:e SEMICOLON
-				{:if(!(e==null)){ 
-				if(!(new String((String)s).equals((String)e))){
-					System.err.println("Error sintáctico, el nombre del subprograma debe coincidir (inicio:' "+s+"' fin: '"+e+"') en línea "+(sleft+1)+", columna "+(sright+1)); 
-					}
-					}:}
+				{:check_coherence(s,sleft, sright, e, eleft, eright);:}
 				;
 designator_option		::=	| designator:d {:RESULT=d;:}
 				;
