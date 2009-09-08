@@ -16,6 +16,7 @@ import java_cup.runtime.*;
 %ignorecase
 
 %{
+String lastToken="";
 StringBuffer string=new StringBuffer();
 /**Función para crear un nuevo símbolo de java_cup.runtime vacío*/
 private Symbol symbol(int type){
@@ -77,7 +78,8 @@ string_literal=\"({string_element})*\"
 */
 //las literales booleanas:
 boolean_literal="true"|"false"
-
+and_then="and"{whitespace}"then"
+or_else="or"{whitespace}"else"
 
 %state STRING
 %%
@@ -103,11 +105,12 @@ boolean_literal="true"|"false"
 "put"	{return symbol(sym.PUT);}
 "get"	{return symbol(sym.GET);}
 
-/*Los operadores compuestos: NO cumplen con la definición de operador del RM
-"and then"	{return symbol(sym.AND_THEN);}
-"or else"	{return symbol(sym.OR_ELSE);}
-"not in"	{return symbol(sym.NOT_IN);}
+/*Los operadores compuestos: NO cumplen con la definición de operador del RM*/
+{and_then}	{return symbol(sym.AND_THEN);}
+{or_else}	{return symbol(sym.OR_ELSE);}
+/*"not in"	{return symbol(sym.NOT_IN);}
 */
+/*Ahora, las advertencias léxicas*/
 /*Las palabras reservadas: declararlas como terminales en el .cup*/
 "abort"	{return symbol(sym.ABORT);}
 "abs"	{return symbol(sym.ABS);}
@@ -219,6 +222,9 @@ boolean_literal="true"|"false"
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 
+/*Advertencias léxicas*/
+"&&"	{System.err.println("Advertencia léxica: se encontró '&&' en línea"+(yyline+1)+", columna "+(yycolumn+1)+"¿no habrá querido decir 'and then'?");
+	return symbol(sym.AND_THEN);}
 
 /*Delimitadores como acciones de YYINITIAL*/
 "&"	{return symbol(sym.CONCATENATE);}

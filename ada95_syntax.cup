@@ -18,15 +18,18 @@
 
 /* Import the class java_cup.runtime.*  */
 import java_cup.runtime.*;
-
+import java.util.ArrayList;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
+ /**La variable donde guardar errores: */
+ //public ArrayList<String> errores =new ArrayList<String>();
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
    * @param start la palabra del inicio
      @param sline, scolumn el left y right del símbolo start
      @param end la palabra del final
      @param eline, ecolumn el left y right del símbolo end
  */
+
  public void check_coherence(Object start, int sline, int scolumn, Object end, int eline, int ecolumn){
 	 String s=(String)start;
 	 String sInfo="inicio: "+s+" ["+String.valueOf(sline+1)+" , "+String.valueOf((scolumn-s.length()))+"]";
@@ -41,6 +44,14 @@ action code{:
 	
 
  }
+ /**La función que guarda errores para luego ser impresos por el front-end
+*@param line, column la línea y columna del error
+*//*
+public void push_error(int line, int column){
+	errores.add(new String(String.valueOf(line)+"_"+String.valueOf(column)));
+	System.out.println(errores);
+}
+ */
 :};
 
 /* Métodos que van en la clase del parser */
@@ -80,10 +91,12 @@ parser code {:
                 m.append(" en línea "+(s.left+1));   
                 /* Check if the column number in the input is greater
                    or equal to zero. */
-                if (s.right >= 0)                    
+                if (s.right >= 0) {                   
                     /* Add to the end of the StringBuffer error message
                        the column number of the error in the input. */
                     m.append(", columna "+(s.right+1));
+		}
+	///guardar el error en la variable de errores:
             }
         }
    
@@ -105,6 +118,12 @@ parser code {:
 
         //System.exit(1);
     }
+ /**La función que guarda errores para luego ser impresos por el front-end
+*@param line, column la línea y columna del error/
+public void push_error(int line, int column){
+	errores.add(new String(String.valueOf(line)+"_"+String.valueOf(column)));
+	System.out.println(errores);
+}*/
 
 :};
 
@@ -154,7 +173,8 @@ terminal PUT, GET;
 terminal BOOLEAN, INTEGER, FLOAT;
 
 //los diz-que-operadores:
-//terminal AND_THEN, OR_ELSE, NOT_IN;
+terminal AND_THEN, OR_ELSE;
+//terminal NOT_IN;
 //ahora las que sí tienen valores de retorno:
 terminal String IDENTIFIER;
 //terminal Number	NUMERIC_LITERAL;
@@ -252,7 +272,7 @@ precedence left INEQUALITY, GT, LT, GTEQ, LTEQ;
 precedence left PLUS, MINUS, CONCATENATE;
 precedence left MULTIPLY, DIVIDE, MOD, REM;
 precedence left EXPONENTIATE, NOT, ABS;
-//precedence left AND_THEN, OR_ELSE;
+precedence left AND_THEN, OR_ELSE;
 //precedence left IN, NOT_IN;
 
 /*SECCIÓN DE LA GRAMÁTICA*/
@@ -454,11 +474,11 @@ or_expression			::=	relation OR relation
 xor_expression			::=	relation XOR relation
 				|	xor_expression XOR relation
 				;
-andthen_expression		::=	relation AND THEN relation
-				|	andthen_expression AND THEN relation
+andthen_expression		::=	relation AND_THEN relation
+				|	andthen_expression AND_THEN relation
 				;
-orelse_expression		::=	relation OR ELSE relation
-				|	orelse_expression OR ELSE relation
+orelse_expression		::=	relation OR_ELSE relation
+				|	orelse_expression OR_ELSE relation
 				;
 relation			::=	simple_expression
 				|	simple_expression relational_operator simple_expression
