@@ -299,7 +299,6 @@ identifier	::=	IDENTIFIER:i {:RESULT=i;:}
 		;
 argument_list	::=	argument
 		|	argument_list COMMA argument
-		|	error
 		;
 argument	::=	expression
 		|	identifier ARROW expression
@@ -545,7 +544,7 @@ sequence_of_statements		::=	statement
 //usaremos pragma? De ser así, aquí también produciría pragma:
 statement			::=	label_list simple_statement
 				|	label_list compound_statement
-				|	error SEMICOLON
+				|	error SEMICOLON 
 				;
 //de p85-persch, pag 92:
 label_list			::=	| label_list label
@@ -630,12 +629,12 @@ designator			::=	identifier:i {:RESULT=i;:}
 operator_symbol			::=	STRING_LITERAL
 				;
 formal_part			::=	LEFTPAR parameter_declaration_list RIGHTPAR
+				|	error
 				;
 formal_part_option		::=	| formal_part
 				;
 parameter_declaration_list	::=	parameter_declaration
 				|	parameter_declaration_list SEMICOLON parameter_declaration
-				|	error
 				;
 parameter_declaration		::=	identifier COLON mode subtype_indication initialization_option
 				|	identifier_list COLON mode subtype_indication initialization_option
@@ -677,7 +676,8 @@ supongo que queda para el semántico...
 */
 
 //actual_parameter_part		::=	 LEFTPAR parameter_association_list RIGHTPAR	
-actual_parameter_part		::=	 LEFTPAR argument_list RIGHTPAR	
+actual_parameter_part		::=	 LEFTPAR argument_list RIGHTPAR			
+				|	 error
 				;
 /*
 parameter_association_list	::=	parameter_association

@@ -290,7 +290,7 @@ El RM no usa los siguientes cuatro como delimitadores ¿debería permitirlos?
 /*Todo lo que no sea salto de línea o cierre se vale*/
 [^\"\n\r]+	{string.append(yytext());}
 /*ADA no permite saltos de línea en string literals*/
-[\n\r]		{System.err.println("Error léxico: no es permitido un salto de línea en una cadena de caracteres. En línea "+(yyline+1)+", columna "+(yycolumn+1));}
+[\n\r]		{System.err.println("Error léxico: literal de cadena de caracteres no cerrada. En línea "+(yyline+1)+", columna "+(yycolumn+1));yybegin(YYINITIAL); return symbol(sym.STRING_LITERAL, string.toString());}
 }
 
 /*Si la entrada no pega con nada, devolver error léxico*/
