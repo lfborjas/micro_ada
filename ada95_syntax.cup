@@ -299,6 +299,7 @@ identifier	::=	IDENTIFIER:i {:RESULT=i;:}
 		;
 argument_list	::=	argument
 		|	argument_list COMMA argument
+		|	error
 		;
 argument	::=	expression
 		|	identifier ARROW expression
@@ -310,6 +311,7 @@ declaration	::=	object_declaration
 		|	subprogram_declaration
 		|	subtype_declaration
 		|	number_declaration
+		|	error SEMICOLON
 		;
 //de p85-persch, pag 87
 object_declaration	::=	identifier COLON constant_option subtype_indication initialization_option SEMICOLON
@@ -374,6 +376,7 @@ component_declaration_list	::=	| component_declaration_list component_declaratio
 variant_part_option		::=	| variant_part
 				;
 component_declaration		::=	discriminant_declaration SEMICOLON 
+				|	error SEMICOLON
 				;
 discriminant_part		::=	LEFTPAR discriminant_declaration_list RIGHTPAR
 				;
@@ -632,6 +635,7 @@ formal_part_option		::=	| formal_part
 				;
 parameter_declaration_list	::=	parameter_declaration
 				|	parameter_declaration_list SEMICOLON parameter_declaration
+				|	error
 				;
 parameter_declaration		::=	identifier COLON mode subtype_indication initialization_option
 				|	identifier_list COLON mode subtype_indication initialization_option
