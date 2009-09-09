@@ -1,0 +1,207 @@
+/*Gramática del lenguaje de programación ADA95
+*Autor: Luis Felipe Borjas @ 26 Agosto 09 (fecha de inicio)
+*v. 2009083000
+*archivo basado en el artículo  http://www.linuxgazette.com/issue39/sevenich.html
+*incluido en los ejemplos de CUP que trae JFlex
+*REFERENCIAS:
+*==============
+*la gramática, basado en el manual de referencia de Ada95(http://www.adahome.com/rm95/)
+*y en el BNF de Ada-95 (http://www.seas.gwu.edu/~adagroup/ada95-syntax/)
+*
+*el paper:    An LALR(1) Grammar  for  (Revised) Ada
+ de: G. Persch, G. Winterstein, S. Drossopoulou, M. Dausmann
+
+*/
+
+/*SECCIÓN DE DECLARACIONES PRELIMINARES*/
+
+/* Import the class java_cup.runtime.*  */
+import java_cup.runtime.*;
+
+   
+/* Parser code to change the way the parser reports errors (include
+   line and column number of the error). */
+parser code {:
+    /**Guardar los errores en un stringBuffer*/
+    StringBuffer errorMessages=new StringBuffer();
+    /* Change the method report_error so it will display the line and
+       column of where the error occurred in the input as well as the
+       reason for the error which is passed into the method in the
+       String 'message'. */
+    public void report_error(String message, Object info) {
+   
+        /* Create a StringBuffer called 'm' with the string 'Error' in it. */
+        StringBuffer m = new StringBuffer("Error");
+   
+        /* Check if the information passed to the method is the same
+           type as the type java_cup.runtime.Symbol. */
+        if (info instanceof java_cup.runtime.Symbol) {
+            /* Declare a java_cup.runtime.Symbol object 's' with the
+               information in the object info that is being typecasted
+               as a java_cup.runtime.Symbol object. */
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+   
+            /* Check if the line number in the input is greater or
+               equal to zero. */
+            if (s.left >= 0) {                
+                /* Add to the end of the StringBuffer error message
+                   the line number of the error in the input. */
+                m.append(" en línea "+(s.left+1));   
+                /* Check if the column number in the input is greater
+                   or equal to zero. */
+                if (s.right >= 0)                    
+                    /* Add to the end of the StringBuffer error message
+                       the column number of the error in the input. */
+                    m.append(", columna "+(s.right+1));
+            }
+        }
+   
+        /* Add to the end of the StringBuffer error message created in
+           this method the message that was passed into this method. */
+        m.append(" : "+message);
+   
+        /* Print the contents of the StringBuffer 'm', which contains
+           an error message, out on a line. */
+        //System.err.println(m);
+	/*Guardar el error en el buffer, mas un salto de línea:*/
+	errorMessages.append(m+"\n");
+    }
+   
+    /* Change the method report_fatal_error so when it reports a fatal
+       error it will display the line and column number of where the
+       fatal error occurred in the input as well as the reason for the
+       fatal error which is passed into the method in the object
+       'message' and then exit.*/
+    public void report_fatal_error(String message, Object info) {
+        report_error(message, info);
+
+        System.exit(1);
+    }
+:};
+
+/*SECCIÓN DE DECLARACIÓN DE TERMINALES Y NO TERMINALES*/
+//primero, las terminales sin valor de retorno:
+//1. Palabras reservadas (en filas por orden alfabético):
+terminal ABORT, ABS, ABSTRACT, ACCEPT, ACCESS, ALIASED, ALL, AND, ARRAY, AT;
+terminal BEGIN, BODY;
+terminal CASE, CONSTANT;
+terminal DECLARE, DELAY, DELTA, DIGITS, DO;
+terminal ELSE, ELSIF, END, ENTRY, EXCEPTION, EXIT;
+terminal FOR, FUNCTION;
+terminal GENERIC, GOTO;
+terminal IF, IN, IS;
+terminal LIMITED, LOOP;
+terminal MOD;
+terminal NEW, NOT, NULL;
+terminal OF, OR, OTHERS, OUT;
+terminal PACKAGE, PRAGMA, PRIVATE,  PROCEDURE, PROTECTED;
+terminal RAISE, RANGE, RECORD, REM, RENAMES, REQUEUE, RETURN, REVERSE;
+terminal SELECT, SEPARATE, SUBTYPE;
+terminal TAGGED, TASK, TERMINATE, THEN, TYPE;
+terminal UNTIL, USE;
+terminal WHEN, WHILE, WITH;
+terminal XOR;
+//2. Delimitadores
+terminal CONCATENATE;
+terminal TICK;
+terminal LEFTPAR, RIGHTPAR;
+terminal MULTIPLY, DIVIDE;
+terminal PLUS, MINUS;
+terminal COMMA;
+terminal POINT;
+terminal COLON;
+terminal SEMICOLON;
+terminal GT, LT, EQUAL, INEQUALITY, GTEQ, LTEQ;
+terminal VERTICAL_LINE;
+terminal ARROW;
+terminal DOUBLEDOT;
+terminal EXPONENTIATE;
+terminal ASSIGNMENT;
+terminal LEFTLABEL, RIGHTLABEL;
+terminal BOX;
+//3. Las funciones empotradas:
+terminal PUT, GET;
+//4. los tipos primitivos:
+terminal BOOLEAN, INTEGER, FLOAT;
+
+//los diz-que-operadores:
+terminal AND_THEN, OR_ELSE, NOT_IN;
+//ahora las que sí tienen valores de retorno:
+terminal String IDENTIFIER;
+//terminal Number	NUMERIC_LITERAL;
+terminal Integer INTEGER_LITERAL;
+terminal Float	FLOATING_POINT_LITERAL;
+terminal Character CHARACTER_LITERAL;
+terminal String STRING_LITERAL;	
+terminal Boolean BOOLEAN_LITERAL;
+
+/*Sección de las no-terminales; iremos en el orden del RM*/
+//INICIALES:
+non terminal goal, compilation_unit;
+
+//RM-3. DECLARATIONS
+
+//RM-4: NAMES AND EXPRESSIONS
+
+//RM-5: STATEMENTS
+
+//RM-6: SUBPROGRAMS
+
+/*SECCIÓN DE PRECEDENCIA Y ASOCIATIVIDAD DE TERMINALES*/
+//ordenados de menor a mayor precedencia:
+precedence left AND;
+precedence left OR;
+precedence left XOR;
+precedence left EQUAL;
+precedence left INEQUALITY, GT, LT, GTEQ, LTEQ;
+precedence left PLUS, MINUS, CONCATENATE;
+precedence left MULTIPLY, DIVIDE, MOD, REM;
+precedence left EXPONENTIATE, NOT, ABS;
+precedence left AND_THEN, OR_ELSE;
+precedence left IN, NOT_IN;
+
+/*SECCIÓN DE LA GRAMÁTICA*/
+//elementos opcionales comunes:
+constant_option	::=	| CONSTANT;
+//empezamos con goal, que será una unidad de compilación:
+start with goal;
+
+goal ::=	compilation_unit
+	;
+
+//RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
+primitive_type 		::=	BOOLEAN
+			|	INTEGER
+			|	FLOAT
+			;
+
+argument_list	::=	argument
+		|	argument_list COMMA argument
+		;
+argument	::=	expression
+		|	IDENTIFIER ARROW expression
+		; 
+
+//RM-3: DECLARATIONS
+declaration	::=	object_declaration
+		|	type_declaration
+		|	subprogram_declaration
+		|	subtype_declaration
+		;
+
+object_declaration	::=	IDENTIFIER COLON constant_option subtype_indication initialization_option SEMICOLON
+			|	identifier_list	COLON constant_option 	subtype_indication initialization_option SEMICOLON
+			;
+initialization_option	::=	| ASSIGNMENT expression
+			;
+number_declaration	::=	IDENTIFIER COLON CONSTANT ASSIGNMENT expression SEMICOLON
+			|	identifier_list COLON CONSTANT ASSIGNMENT expression SEMICOLON
+			;
+identifier_list		::=	identifier COMMA identifier 
+			|	 identifier_list COMMA identifier
+			;
+
+
+
+
+

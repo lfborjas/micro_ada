@@ -18,7 +18,7 @@
 
 /* Import the class java_cup.runtime.*  */
 import java_cup.runtime.*;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
  /**La variable donde guardar errores: */
@@ -95,6 +95,10 @@ parser code {:
                     /* Add to the end of the StringBuffer error message
                        the column number of the error in the input. */
                     m.append(", columna "+(s.right+1));
+		   //ver si se puede sacar el texto:
+		   if(getScanner() instanceof Ada95Lexer){
+			m.append("; cerca de '"+((Ada95Lexer)getScanner()).getCurrentText()+"'");
+		   }
 		}
 	///guardar el error en la variable de errores:
             }
