@@ -224,21 +224,22 @@ or_else="or"{whitespace}"else"
 \"	{string.setLength(0);yybegin(STRING);}
 
 /*Advertencias léxicas*/
-"&&"	{System.err.println("Advertencia léxica: se encontró '&&' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" ¿no habrá querido decir 'and then'?");
+"&&"	{System.err.println("Advertencia léxica: se encontró '&&' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser 'and then'");
 	currentText=yytext();return symbol(sym.AND_THEN);}
-"||"	{System.err.println("Advertencia léxica: se encontró '||' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" ¿no habrá querido decir 'or else'?");
+"||"	{System.err.println("Advertencia léxica: se encontró '||' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser 'or else'");
 	currentText=yytext();return symbol(sym.OR_ELSE);}
-"=="	{System.err.println("Advertencia léxica: se encontró '==' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" ¿no habrá querido decir '='?");
+"=="	{System.err.println("Advertencia léxica: se encontró '==' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser '='");
 	currentText=yytext();return symbol(sym.EQUAL);}
-"!="	{System.err.println("Advertencia léxica: se encontró '!=' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" ¿no habrá querido decir '/='?");
+"!="	{System.err.println("Advertencia léxica: se encontró '!=' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser '/='");
 	currentText=yytext();return symbol(sym.INEQUALITY);}
-"["	{System.err.println("Advertencia léxica: se encontró '[' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" ¿no habrá querido decir '('?");
+"["	{System.err.println("Advertencia léxica: se encontró '[' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y se ha reemplazado por '('");
 	currentText=yytext();return symbol(sym.LEFTPAR);}
-"]"	{System.err.println("Advertencia léxica: se encontró ']' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" ¿no habrá querido decir ')'?");
+"]"	{System.err.println("Advertencia léxica: se encontró ']' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y se ha reemplazado por ')'");
 	currentText=yytext();return symbol(sym.RIGHTPAR);}
-"{"	{System.err.println("Advertencia léxica: se encontró '{' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y ha sido ignorado");
+/*Debería ignorarlo o retornar paréntesis? El compilador GNAT de ADA tira paréntesis*/
+"{"	{System.err.println("Advertencia léxica: se encontró '{' en línea "+(yyline+1)+", columna "+(yycolumn+1));
 	currentText=yytext();}
-"}"	{System.err.println("Advertencia léxica: se encontró '}' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y ha sido ignorado");
+"}"	{System.err.println("Advertencia léxica: se encontró '}' en línea "+(yyline+1)+", columna "+(yycolumn+1));
 	currentText=yytext();}
 
 
