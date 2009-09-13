@@ -1,0 +1,23 @@
+
+//YA RESUELTOS:
+Warning : Non terminal "generalized_expression_list" was declared but never used
+Warning : Non terminal "indexed_component" was declared but never used
+Warning : Non terminal "generalized_expression" was declared but never used
+Warning : *** Production "private_type_definition ::= PRIVATE " never reduced
+Warning : *** Production "private_type_definition ::= LIMITED PRIVATE " never reduced
+Warning : *** Production "semicolon_parameter_part ::= actual_parameter_part SEMICOLON " never reduced
+Warning : *** Production "discrete_range_list ::= discrete_range_list COMMA discrete_range " never reduced
+Warning : *** Production "discrete_range_list ::= discrete_range " never reduced
+
+//declaraciones borradas
+
+
+//producciones borradas
+
+
+//producciones reescritas
+
+
+//producciones nuevas:
+//puse incomplete type declaration. Cf. pág 93 del RM para referencia
+
