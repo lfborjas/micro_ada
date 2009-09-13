@@ -327,6 +327,7 @@ identifier_list		::=	identifier COMMA identifier
 			|	 identifier_list COMMA identifier
 			;
 type_declaration	::=	TYPE identifier discriminant_part_option IS type_definition SEMICOLON
+			|	incomplete_type_declaration
 			;
 discriminant_part_option ::=	| discriminant_part
 			;
