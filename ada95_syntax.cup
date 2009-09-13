@@ -398,11 +398,9 @@ choice_list			::=	choice
 				|	choice_list VERTICAL_LINE choice
 				; 
 declarative_part		::=	declarative_item_list
-				|	declarative_item_list	representation_spec_list  program_component_list
 				;
 declarative_item_list		::=	| declarative_item_list declaration
-				|	declarative_item_list use_clause
-				|	declarative_item_list body_or_stub
+				|	declarative_item_list body
 				;
 
 //de p85-persch, pag 90
