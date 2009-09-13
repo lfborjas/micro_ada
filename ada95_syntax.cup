@@ -212,6 +212,7 @@ non terminal component_declaration_list, variant_part_option, component_declarat
 non terminal discriminant_declaration_list, discriminant_declaration;
 non terminal variant_part, variant_list;
 non terminal choice, choice_list;
+non terminal incomplete_type_declaration;
 non terminal declarative_part, declarative_item_list;
 //de p85-persch, pag 90
 non terminal body;
@@ -395,6 +396,8 @@ choice				::=	simple_expression
 				;
 choice_list			::=	choice 
 				|	choice_list VERTICAL_LINE choice
+				;
+incomplete_type_declaration	::=	TYPE identifier discriminant_part_option SEMICOLON
 				; 
 declarative_part		::=	declarative_item_list
 				;
