@@ -214,8 +214,7 @@ non terminal variant_part, variant_list;
 non terminal choice, choice_list;
 non terminal declarative_part, declarative_item_list;
 //de p85-persch, pag 90
-non terminal representation_spec_list_empty, representation_spec_list;
-non terminal body_or_stub, program_component_list, program_component, body;
+non terminal body;
 non terminal name;
 non terminal selected_component, literal, aggregate, component_association_list, component_association;
 non terminal expression;
@@ -404,22 +403,7 @@ declarative_item_list		::=	| declarative_item_list declaration
 				;
 
 //de p85-persch, pag 90
-representation_spec_list_empty	::=	| representation_spec_list
-				;
-representation_spec_list	::= 	representation_specification
-				|	representation_spec_list representation_specification
-				;
-body_or_stub			::=	body 
-				|       body_stub
-				;
-program_component_list		::=	| program_component_list program_component
-				;
-program_component		::=	body
-				|	package_declaration
-				|	body_stub
-				;
 body				::=	subprogram_body
-				|	package_body
 				;
 //"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
 //quité la de indexed_component:
@@ -428,19 +412,6 @@ name				::=	identifier
 				|	function_call
 				|	operator_symbol
 				;
-/*
-indexed_component		::=	name LEFTPAR generalized_expression_list RIGHTPAR
-				;
-generalized_expression_list	::=	generalized_expression
-				|	generalized_expression_list COMMA generalized_expression
-				;
-generalized_expression		::=	expression
-				|	range
-				|	subtype_indication_with_constraint
-				|	choice_list ARROW expression
-				|	choice_list ARROW subtype_indication_with_constraint
-				;
-*/
 selected_component		::=	name POINT identifier
 				|	name POINT ALL
 				|	name POINT operator_symbol
