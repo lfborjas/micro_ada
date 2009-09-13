@@ -69,9 +69,9 @@ parser code {:
         /* Add to the end of the StringBuffer error message created in
            this method the message that was passed into this method. */
 	if(message.equalsIgnoreCase("Syntax error")){
-		message="Error Sintáctico : ";
+		message="Error Sintáctico  ";
 	}else if(message.equalsIgnoreCase("Couldn't repair and continue parse")){
-		message="No se pudo reparar y seguir parseando ";
+		message="Error ";
 	}	
         m.append(message);
    
@@ -88,7 +88,7 @@ parser code {:
             if (s.left >= 0) {                
                 /* Add to the end of the StringBuffer error message
                    the line number of the error in the input. */
-                m.append(" en línea "+(s.left+1));   
+                m.append(": en línea "+(s.left+1));   
                 /* Check if the column number in the input is greater
                    or equal to zero. */
                 if (s.right >= 0) {                   
@@ -97,11 +97,14 @@ parser code {:
                     m.append(", columna "+(s.right+1));
 		   //ver si se puede sacar el texto:
 		   if(getScanner() instanceof Ada95Lexer){
-			m.append("; cerca de '"+((Ada95Lexer)getScanner()).getCurrentText()+"'");
+			m.append("; no se esperaba '"+((Ada95Lexer)getScanner()).getCurrentText()+"'");
 		   }
 		}
 	///guardar el error en la variable de errores:
-            }
+            }else if(s.toString().equals("#0")){
+			m.append(": final de archivo inesperado");
+		}
+
         }
    
    
@@ -724,6 +727,7 @@ compilation			::=	compilation_list
 //a esta le falta una tal lista de pragmas, pero como no manejaremos pragmas, no la pongo:
 compilation_list		::= 	compilation_unit
 				|	compilation_list compilation_unit
+				|	error
 				;
 //de p85-persch, pag 97:
 compilation_unit		::=	context_specification subprogram_declaration
