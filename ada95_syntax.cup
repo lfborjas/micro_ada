@@ -39,7 +39,7 @@ action code{:
 	 String eInfo=" y fin: "+e+" ["+String.valueOf(eline+1)+" , "+String.valueOf(ecolumn+1)+"]";
 	 //ver si son lo mismo:
 	if(!s.equals(e)){
-		System.err.println("Error sintáctico: el nombre del subprograma debe coincidir entre "+sInfo+eInfo);
+		System.err.println("Error sintáctico  : el nombre del subprograma debe coincidir entre "+sInfo+eInfo);
 	}
 	
 
