@@ -237,7 +237,7 @@ non terminal if_statement, elsif_list, else_option, condition;
 non terminal loop_statement, basic_loop;
 //de p85-persch, pag 93:
 non terminal iteration_clause_option;
-non terminal block, declare_part_option, exception_option, exception_handler_list;
+non terminal block, declare_part_option, ;
 non terminal exit_statement, name_option, when_option;
 non terminal return_statement, goto_statement;
 non terminal subprogram_declaration, subprogram_specification, subprogram_specification_is;
@@ -262,7 +262,6 @@ non terminal compilation, compilation_list;
 non terminal compilation_unit;
 non terminal context_specification, use_clause_option, with_clause;
 non terminal subunit, body_stub;
-non terminal exception_handler, exception_choice_list, exception_choice;
 //de p85-persch, pag 98:
 non terminal representation_specification, length_specification, record_type_representation;
 non terminal location_list, alignment_clause_option, address_specification;
@@ -559,18 +558,11 @@ iteration_clause_option		::=
 				|	FOR identifier IN REVERSE discrete_range
 				|	WHILE condition
 				;
-block				::=	declare_part_option BEGIN sequence_of_statements exception_option END SEMICOLON
-				|	identifier COLON declare_part_option BEGIN sequence_of_statements exception_option END identifier SEMICOLON
+block				::=	declare_part_option BEGIN sequence_of_statements END SEMICOLON
+				|	identifier COLON declare_part_option BEGIN sequence_of_statements END identifier SEMICOLON
 				;
 declare_part_option		::=	
 				|	 DECLARE declarative_part
-				;
-//probablemente quite esto de exceptions:
-exception_option		::=	
-				|	EXCEPTION exception_handler_list
-				;
-exception_handler_list		::=	
-				|	exception_handler_list exception_handler
 				;
 exit_statement			::=	EXIT name_option when_option SEMICOLON
 				;
@@ -620,7 +612,6 @@ subprogram_body			::=	subprogram_specification_is:s
 						declarative_part 
 					BEGIN 
 						sequence_of_statements 
-					exception_option  
 					END designator_option:e SEMICOLON
 				{:check_coherence(s,sleft, sright, e, eleft, eright);:}
 				;
@@ -674,7 +665,7 @@ identifier_option		::=	| identifier
 package_body			::=	PACKAGE BODY identifier IS declarative_part statements_option END identifier_option SEMICOLON
 				;
 //de p85-persch, pag 95:
-statements_option		::=	| BEGIN sequence_of_statements exception_option
+statements_option		::=	| BEGIN sequence_of_statements 
 				;
 use_clause			::=	USE name_list SEMICOLON 
 				;
@@ -711,15 +702,6 @@ subunit				::=	SEPARATE LEFTPAR name RIGHTPAR body
 				;
 body_stub			::=	subprogram_specification_is 	SEPARATE SEMICOLON
 				|	PACKAGE BODY identifier IS 	SEPARATE SEMICOLON
-				;
-//hay que quitar todo esto de exceptions!
-exception_handler		::=	WHEN exception_choice_list ARROW sequence_of_statements
-				;
-exception_choice_list		::=	exception_choice 
-				|	exception_choice_list VERTICAL_LINE exception_choice
-				;
-exception_choice		::=	name 
-				|	OTHERS
 				;
 //de p85-persch, pag 98:
 representation_specification	::=	length_specification
