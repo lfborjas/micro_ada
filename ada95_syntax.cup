@@ -205,7 +205,7 @@ non terminal subtype_declaration, subtype_indication;
 //de p85-persch, pag 88
 non terminal subtype_indication_with_constraint, range_constraint, range;
 non terminal accuracy_constraint, floating_point_constraint, range_constraint_option, fixed_point_constraint;
-non terminal discrete_range_list, discrete_range;
+non terminal discrete_range;
 non terminal record_type_definition, component_list;
 //de p85-persch, pag 89
 non terminal component_declaration_list, variant_part_option, component_declaration, discriminant_part;
@@ -216,7 +216,7 @@ non terminal declarative_part, declarative_item_list;
 //de p85-persch, pag 90
 non terminal representation_spec_list_empty, representation_spec_list;
 non terminal body_or_stub, program_component_list, program_component, body;
-non terminal name, indexed_component, generalized_expression_list, generalized_expression;
+non terminal name;
 non terminal selected_component, literal, aggregate, component_association_list, component_association;
 non terminal expression;
 //de p85-persch, pag 91
@@ -249,12 +249,11 @@ non terminal mode;
 non terminal subprogram_body;
 non terminal designator_option;
 non terminal procedure_call,function_call;
-non terminal actual_parameter_part, semicolon_parameter_part;
+non terminal actual_parameter_part;
 //non terminal actual_parameter_part, parameter_association_list, parameter_association, formal_parameter_option, explicit_actual_parameter;
 non terminal package_declaration, package_specification, private_part_option, identifier_option, package_body;
 //de p85-persch, pag 95:
 non terminal statements_option;
-non terminal private_type_definition;
 non terminal use_clause;
 non terminal name_list;
 //de p85-persch, pag 96:
@@ -360,9 +359,6 @@ range_constraint_option		::=	| range_constraint
 fixed_point_constraint		::=	DELTA simple_expression range_constraint_option
 				;
 //no pongo lo de array ni index
-discrete_range_list		::=	discrete_range
-				|	discrete_range_list COMMA discrete_range
-				;
 discrete_range			::=	name range_constraint_option
 				|	numeric_type range_constraint_option
 				|	range
@@ -669,8 +665,6 @@ function_call			::=	name LEFTPAR RIGHTPAR
 				|	PUT actual_parameter_part
 				|	GET actual_parameter_part
 				;
-semicolon_parameter_part	::=	actual_parameter_part SEMICOLON
-				;
 /*Esta no me parece tan poderosa:
 put_call	::= PUT LEFTPAR actual_parameter_list RIGHTPAR
 y simil para get
@@ -708,9 +702,6 @@ package_body			::=	PACKAGE BODY identifier IS declarative_part statements_option
 				;
 //de p85-persch, pag 95:
 statements_option		::=	| BEGIN sequence_of_statements exception_option
-				;
-private_type_definition		::=	LIMITED PRIVATE
-				|	PRIVATE
 				;
 use_clause			::=	USE name_list SEMICOLON 
 				;
