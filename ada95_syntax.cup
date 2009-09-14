@@ -237,7 +237,7 @@ non terminal if_statement, elsif_list, else_option, condition;
 non terminal loop_statement, basic_loop;
 //de p85-persch, pag 93:
 non terminal iteration_clause_option;
-non terminal block, declare_part_option, ;
+non terminal block, declare_part_option;
 non terminal exit_statement, name_option, when_option;
 non terminal return_statement, goto_statement;
 non terminal subprogram_declaration, subprogram_specification, subprogram_specification_is;
@@ -250,8 +250,6 @@ non terminal subprogram_body;
 non terminal designator_option;
 non terminal procedure_call,function_call;
 non terminal actual_parameter_part;
-//non terminal actual_parameter_part, parameter_association_list, parameter_association, formal_parameter_option, explicit_actual_parameter;
-non terminal package_declaration, package_specification, private_part_option, identifier_option, package_body;
 //de p85-persch, pag 95:
 non terminal statements_option;
 non terminal use_clause;
@@ -636,33 +634,8 @@ pero quería sólo dejar que pusieran expresiones booleanas, enteras y float all
 supongo que queda para el semántico...
 */
 
-//actual_parameter_part		::=	 LEFTPAR parameter_association_list RIGHTPAR	
 actual_parameter_part		::=	 LEFTPAR argument_list RIGHTPAR			
 				|	 error
-				;
-/*
-parameter_association_list	::=	parameter_association
-				|	parameter_association_list COMMA parameter_association
-				;
-//aquí iría selector_name::= identifier | character_literal |operator_symbol según el RM
-parameter_association		::=	formal_parameter_option explicit_actual_parameter
-				;
-formal_parameter_option		::=	| identifier ARROW
-				;
-explicit_actual_parameter	::=	expression
-				|	name
-				;	*/
-
-//si usásemos generic, aquí faltarían dos producciones:
-package_declaration		::=	package_specification SEMICOLON 
-				;	
-package_specification		::=	PACKAGE identifier IS declarative_item_list private_part_option END identifier_option
-				;
-private_part_option		::=	| PRIVATE declarative_item_list representation_spec_list_empty
-				;
-identifier_option		::=	| identifier
-				;
-package_body			::=	PACKAGE BODY identifier IS declarative_part statements_option END identifier_option SEMICOLON
 				;
 //de p85-persch, pag 95:
 statements_option		::=	| BEGIN sequence_of_statements 
@@ -687,8 +660,6 @@ compilation_list		::= 	compilation_unit
 //de p85-persch, pag 97:
 compilation_unit		::=	context_specification subprogram_declaration
 				|	context_specification subprogram_body
-				|	context_specification package_declaration
-				|	context_specification package_body
 				|	context_specification subunit
 				;
 //esto de context specification y las clauses va a desaparecer...
