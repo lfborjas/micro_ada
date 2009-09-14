@@ -213,9 +213,8 @@ non terminal discriminant_declaration_list, discriminant_declaration;
 non terminal variant_part, variant_list;
 non terminal choice, choice_list;
 non terminal incomplete_type_declaration;
-non terminal declarative_part, declarative_item_list;
+non terminal declarative_part, declarative_item_list, declarative_item;
 //de p85-persch, pag 90
-non terminal body;
 non terminal name;
 non terminal selected_component, literal, aggregate, component_association_list, component_association;
 non terminal expression;
@@ -302,7 +301,6 @@ declaration	::=	object_declaration
 		|	subprogram_declaration
 		|	subtype_declaration
 		|	number_declaration
-		|	error SEMICOLON
 		;
 //de p85-persch, pag 87
 object_declaration	::=	identifier COLON constant_option subtype_indication initialization_option SEMICOLON
@@ -391,13 +389,13 @@ incomplete_type_declaration	::=	TYPE identifier discriminant_part_option SEMICOL
 				; 
 declarative_part		::=	declarative_item_list
 				;
-declarative_item_list		::=	| declarative_item_list declaration
-				|	declarative_item_list body
+declarative_item_list		::=	| declarative_item_list declarative_item
 				;
-
+declarative_item		::=	declaration
+				|	subprogram_body
+				|	error SEMICOLON
+				;
 //de p85-persch, pag 90
-body				::=	subprogram_body
-				;
 //"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
 //quité la de indexed_component:
 name				::=	identifier
@@ -506,7 +504,7 @@ sequence_of_statements		::=	statement
 //usaremos pragma? De ser así, aquí también produciría pragma:
 statement			::=	label_list simple_statement
 				|	label_list compound_statement
-				|	error SEMICOLON 
+				|	error 
 				;
 //de p85-persch, pag 92:
 label_list			::=	| label_list label
@@ -584,7 +582,6 @@ designator			::=	identifier:i {:RESULT=i;:}
 operator_symbol			::=	STRING_LITERAL
 				;
 formal_part			::=	LEFTPAR parameter_declaration_list RIGHTPAR
-				|	error
 				;
 formal_part_option		::=	| formal_part
 				;
@@ -628,7 +625,6 @@ supongo que queda para el semántico...
 */
 
 actual_parameter_part		::=	 LEFTPAR argument_list RIGHTPAR			
-				|	 error
 				;
 //de p85-persch, pag 95: quité todo
 
