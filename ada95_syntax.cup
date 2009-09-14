@@ -256,8 +256,6 @@ non terminal compilation, compilation_list;
 //de p85-persch, pag 97:
 non terminal compilation_unit;
 //de p85-persch, pag 98:
-non terminal representation_specification, length_specification, record_type_representation;
-non terminal location_list, alignment_clause_option, address_specification;
 non terminal code_statement;
 
 /*SECCIÓN DE PRECEDENCIA Y ASOCIATIVIDAD DE TERMINALES*/
@@ -651,27 +649,5 @@ compilation_unit		::=	subprogram_declaration
 				|	subprogram_body
 				;
 //de p85-persch, pag 98:
-representation_specification	::=	length_specification
-				|	record_type_representation
-				|	address_specification
-				;
-length_specification		::=	FOR name USE expression SEMICOLON
-				;
-record_type_representation	::=	FOR name USE
-						RECORD alignment_clause_option 
-							location_list
-						END RECORD SEMICOLON
-				;
-location_list			::=	| location_list name AT simple_expression RANGE range SEMICOLON
-				;
-alignment_clause_option		::=	| AT MOD simple_expression SEMICOLON
-				;
-address_specification		::=	FOR name USE AT simple_expression SEMICOLON
-				;
 code_statement			::=	qualified_expression SEMICOLON
-				;
-					
-				
-	
-
-
+				;				
