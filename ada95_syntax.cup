@@ -215,7 +215,6 @@ non terminal choice, choice_list;
 non terminal incomplete_type_declaration;
 non terminal declarative_part, declarative_item_list, declarative_item;
 //de p85-persch, pag 90
-non terminal body;
 non terminal name;
 non terminal selected_component, literal, aggregate, component_association_list, component_association;
 non terminal expression;
@@ -393,12 +392,10 @@ declarative_part		::=	declarative_item_list
 declarative_item_list		::=	| declarative_item_list declarative_item
 				;
 declarative_item		::=	declaration
-				|	body
+				|	subprogram_body
 				|	error SEMICOLON
 				;
 //de p85-persch, pag 90
-body				::=	subprogram_body
-				;
 //"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
 //quité la de indexed_component:
 name				::=	identifier
@@ -585,7 +582,6 @@ designator			::=	identifier:i {:RESULT=i;:}
 operator_symbol			::=	STRING_LITERAL
 				;
 formal_part			::=	LEFTPAR parameter_declaration_list RIGHTPAR
-				|	error
 				;
 formal_part_option		::=	| formal_part
 				;
