@@ -255,7 +255,6 @@ non terminal actual_parameter_part;
 non terminal compilation, compilation_list;
 //de p85-persch, pag 97:
 non terminal compilation_unit;
-non terminal subunit, body_stub;
 //de p85-persch, pag 98:
 non terminal representation_specification, length_specification, record_type_representation;
 non terminal location_list, alignment_clause_option, address_specification;
@@ -650,12 +649,6 @@ compilation_list		::= 	compilation_unit
 //de p85-persch, pag 97:
 compilation_unit		::=	subprogram_declaration
 				|	subprogram_body
-				|	subunit
-				;
-subunit				::=	SEPARATE LEFTPAR name RIGHTPAR body
-				;
-body_stub			::=	subprogram_specification_is 	SEPARATE SEMICOLON
-				|	PACKAGE BODY identifier IS 	SEPARATE SEMICOLON
 				;
 //de p85-persch, pag 98:
 representation_specification	::=	length_specification
