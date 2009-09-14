@@ -251,14 +251,10 @@ non terminal designator_option;
 non terminal procedure_call,function_call;
 non terminal actual_parameter_part;
 //de p85-persch, pag 95:
-non terminal statements_option;
-non terminal use_clause;
-non terminal name_list;
 //de p85-persch, pag 96:
 non terminal compilation, compilation_list;
 //de p85-persch, pag 97:
 non terminal compilation_unit;
-non terminal context_specification, use_clause_option, with_clause;
 non terminal subunit, body_stub;
 //de p85-persch, pag 98:
 non terminal representation_specification, length_specification, record_type_representation;
@@ -637,14 +633,8 @@ supongo que queda para el semántico...
 actual_parameter_part		::=	 LEFTPAR argument_list RIGHTPAR			
 				|	 error
 				;
-//de p85-persch, pag 95:
-statements_option		::=	| BEGIN sequence_of_statements 
-				;
-use_clause			::=	USE name_list SEMICOLON 
-				;
-name_list			::=  	name
-				|	name_list COMMA name
-				;
+//de p85-persch, pag 95: quité todo
+
 /*acá irían las renaming declaration, y comienza lo relacionado con tasks:
 * entry, accept, select y abort
 */
@@ -658,16 +648,9 @@ compilation_list		::= 	compilation_unit
 				|	error
 				;
 //de p85-persch, pag 97:
-compilation_unit		::=	context_specification subprogram_declaration
-				|	context_specification subprogram_body
-				|	context_specification subunit
-				;
-//esto de context specification y las clauses va a desaparecer...
-context_specification		::=	| context_specification  with_clause use_clause_option
-				;
-use_clause_option		::=	| use_clause
-				;
-with_clause			::=	WITH name_list SEMICOLON
+compilation_unit		::=	subprogram_declaration
+				|	subprogram_body
+				|	subunit
 				;
 subunit				::=	SEPARATE LEFTPAR name RIGHTPAR body
 				;
