@@ -213,7 +213,7 @@ non terminal discriminant_declaration_list, discriminant_declaration;
 non terminal variant_part, variant_list;
 non terminal choice, choice_list;
 non terminal incomplete_type_declaration;
-non terminal declarative_part, declarative_item_list;
+non terminal declarative_part, declarative_item_list, declarative_item;
 //de p85-persch, pag 90
 non terminal body;
 non terminal name;
@@ -302,7 +302,6 @@ declaration	::=	object_declaration
 		|	subprogram_declaration
 		|	subtype_declaration
 		|	number_declaration
-		|	error SEMICOLON
 		;
 //de p85-persch, pag 87
 object_declaration	::=	identifier COLON constant_option subtype_indication initialization_option SEMICOLON
@@ -391,10 +390,12 @@ incomplete_type_declaration	::=	TYPE identifier discriminant_part_option SEMICOL
 				; 
 declarative_part		::=	declarative_item_list
 				;
-declarative_item_list		::=	| declarative_item_list declaration
-				|	declarative_item_list body
+declarative_item_list		::=	| declarative_item_list declarative_item
 				;
-
+declarative_item		::=	declaration
+				|	body
+				|	error SEMICOLON
+				;
 //de p85-persch, pag 90
 body				::=	subprogram_body
 				;
