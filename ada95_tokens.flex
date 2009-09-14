@@ -30,7 +30,12 @@ private Symbol symbol(int type){
 private Symbol symbol(int type, Object value){
 	return new Symbol(type, yyline, yycolumn, value);
 }
-
+/**Función para truncar a entero un valor con base y luego convertirlo a un entero de base decimal*/
+public Integer unbase_literal(String based){
+        String clean=based.replaceAll("[_]|(\\.[_a-zA-Z0-9]*)", "");
+        String[] terms=clean.split("#");
+        return Integer.parseInt(terms[1],Integer.parseInt(terms[0]));
+    }
 %}
 
 /*Los elementos léxicos de ADA*/
@@ -217,9 +222,9 @@ or_else="or"{whitespace}"else"
 //{character_literal}	{currentText=yytext();return symbol(sym.CHARACTER_LITERAL,new Character(yytext()));}
 {character_literal}	{currentText=yytext();return symbol(sym.CHARACTER_LITERAL,yytext());}
 /*Avisar que no se aceptan números con base:*/
-{based_literal}		{System.err.println("Error léxico: <"+yytext()+"> Es un número con base, este compilador sólo acepta números enteros y de punto flotante sin exponente; en línea "+(yyline+1)+", columna "+(yycolumn+1));}
+{based_literal}		{System.err.println("Advertencia Léxica: Número ilegal (con base) '"+yytext()+"' sustituido por su equivalente entero:"+ unbase_literal(yytext()).toString()+" en línea "+(yyline+1)+", columna "+(yycolumn+1)); return symbol(sym.INTEGER_LITERAL,unbase_literal(yytext()));}
 /*Avisar que tampoco se aceptan números con exponente: */
-{power_literal}		{System.err.println("Error léxico: <"+yytext()+"> Es un número con exponente, este compilador sólo acepta números enteros y de punto flotante sin exponente en línea "+(yyline+1)+", columna "+(yycolumn+1));}
+{power_literal}		{System.err.println("Advertencia léxica: Número ilegal (con exponente) '"+yytext()+"' sustituido por :"+Float.parseFloat(yytext().replaceAll("_",""))+" en línea "+(yyline+1)+", columna "+(yycolumn+1));return symbol(sym.FLOATING_POINT_LITERAL,new Float(Float.parseFloat(yytext().replaceAll("_",""))));}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 
@@ -296,6 +301,6 @@ El RM no usa los siguientes cuatro como delimitadores ¿debería permitirlos?
 
 /*Si la entrada no pega con nada, devolver error léxico*/
 [^]    { /*throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumn);*/
-	System.err.println("Error léxico: caracter inesperado: <"+yytext()+"> en línea "+(yyline+1)+", columna "+(yycolumn+1)); }
+	System.err.println("Error léxico: caracter inesperado: '"+yytext()+"' en línea "+(yyline+1)+", columna "+(yycolumn+1)); }
 
 
