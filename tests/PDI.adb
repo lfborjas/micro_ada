@@ -1,5 +1,3 @@
-WITH numbers;
-WITH text_io;
 PROCEDURE pdi IS
 
    -- Maximum length of input line

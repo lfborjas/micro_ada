@@ -9,10 +9,6 @@
 -- For documentation see the following URL:
 --   http://www.adahome.com//Tutorials/Lovelace/small.htm
 
-with Text_IO, Ada.Strings.Unbounded, Ustrings, World;
-use  Text_IO, Ada.Strings.Unbounded, Ustrings;
-
-with Parser;
 
 procedure Small is
   Command : Unbounded_String; -- Contains user's current command.
