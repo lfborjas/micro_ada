@@ -393,7 +393,7 @@ declarative_item_list		::=	| declarative_item_list declarative_item
 				;
 declarative_item		::=	declaration
 				|	subprogram_body
-				|	error 
+				|	error SEMICOLON 
 				;
 //de p85-persch, pag 90
 //"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
