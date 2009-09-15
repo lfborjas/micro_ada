@@ -363,7 +363,7 @@ component_declaration_list	::=	| component_declaration_list component_declaratio
 variant_part_option		::=	| variant_part
 				;
 component_declaration		::=	discriminant_declaration SEMICOLON 
-				|	error SEMICOLON
+				|	error 
 				;
 discriminant_part		::=	LEFTPAR discriminant_declaration_list RIGHTPAR
 				;
