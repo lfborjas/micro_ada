@@ -18,9 +18,11 @@
 
 /* Import the class java_cup.runtime.*  */
 import java_cup.runtime.*;
+import java.util.Stack;
 //import java.util.ArrayList;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
+
  /**La variable donde guardar errores: */
  //public ArrayList<String> errores =new ArrayList<String>();
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
@@ -56,6 +58,16 @@ public void push_error(int line, int column){
 
 /* Métodos que van en la clase del parser */
 parser code {:
+    boolean EOFReported=false;
+    Stack<String> unClosed=new Stack<String>();
+    public String getUnclosed(){return unClosed.pop();}
+    public void setUnclosed(String faltante,String abierto, int line, int col){
+	String addToUnClosed="'"+faltante+"'"+" faltante para el '"+abierto+"' abierto en línea "+(line+1)+", columna "+(col+1);
+	unClosed.push(addToUnClosed);
+
+    }
+    public void emptyLastUnclosed(){String tempUnClosed=unClosed.pop();tempUnClosed=null;}
+    	
     /**Guardar los errores en un stringBuffer*/
     //StringBuffer errorMessages=new StringBuffer();
     /* Change the method report_error so it will display the line and
@@ -63,7 +75,10 @@ parser code {:
        reason for the error which is passed into the method in the
        String 'message'. */
     public void report_error(String message, Object info) {
-   
+   	
+	/*If the EOF was already reported, just return (to avoid that horrible unexpected EOF...)*/
+	if(EOFReported)
+		return;
         /* Create a StringBuffer called 'm' with the string 'Error' in it. */
         StringBuffer m = new StringBuffer();
         /* Add to the end of the StringBuffer error message created in
@@ -102,7 +117,13 @@ parser code {:
 		}
 	///guardar el error en la variable de errores:
             }else if(s.toString().equals("#0")){
-			m.append(": final de archivo inesperado");
+			if(unClosed.empty()){				
+				m.append(": final de archivo inesperado");
+			}else{
+				m.append(": "+getUnclosed());
+				EOFReported=true;
+			}
+
 		}
 
         }
@@ -319,7 +340,7 @@ type_declaration	::=	TYPE identifier discriminant_part_option IS type_definition
 			;
 discriminant_part_option ::=	| discriminant_part
 			;
-type_definition		::=	record_type_definition
+type_definition		::=	record_type_definition {:parser.emptyLastUnclosed();:}
 			;
 subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
 			;
@@ -352,7 +373,10 @@ discrete_range			::=	name range_constraint_option
 				|	numeric_type range_constraint_option
 				|	range
 				;
-record_type_definition		::=	RECORD component_list END RECORD
+record_type_definition		::=	RECORD:r  
+					{:parser.setUnclosed("end record;", "record", rleft,rright );:} 
+						component_list
+					END RECORD 
 				;
 component_list			::=	component_declaration_list variant_part_option 
 				|	NULL SEMICOLON
@@ -517,9 +541,9 @@ simple_statement		::=	null_statement
 				|	procedure_call
 				|	code_statement
 				;
-compound_statement		::=	if_statement
-				|	loop_statement
-				|	block
+compound_statement		::=	if_statement{:parser.emptyLastUnclosed();:}
+				|	loop_statement{:parser.emptyLastUnclosed();:}
+				|	block{:parser.emptyLastUnclosed();:}
 				;
 label				::=	LEFTLABEL identifier RIGHTLABEL
 				;
@@ -527,7 +551,12 @@ null_statement			::=	NULL SEMICOLON
 				;
 assignment_statement		::=	name ASSIGNMENT expression SEMICOLON
 				;
-if_statement			::=	IF condition THEN sequence_of_statements elsif_list else_option END IF SEMICOLON
+if_statement			::=	IF:i  condition THEN 
+					{:parser.setUnclosed("end if;", "if", ileft, iright);:}
+						sequence_of_statements 
+						elsif_list 
+						else_option 
+					END IF SEMICOLON 
 				;
 elsif_list			::=	| elsif_list ELSIF condition THEN sequence_of_statements
 				;
@@ -539,7 +568,10 @@ condition			::=	expression
 loop_statement			::=	iteration_clause_option basic_loop SEMICOLON
 				|	identifier COLON iteration_clause_option basic_loop identifier SEMICOLON
 				;
-basic_loop			::=	LOOP sequence_of_statements END LOOP
+basic_loop			::=	LOOP:l 
+					{:parser.setUnclosed("end loop;", "loop",lleft,lright);:}
+						sequence_of_statements 
+					END LOOP  
 				;
 //de p85-persch, pag 93
 iteration_clause_option		::=
@@ -547,8 +579,15 @@ iteration_clause_option		::=
 				|	FOR identifier IN REVERSE discrete_range
 				|	WHILE condition
 				;
-block				::=	declare_part_option BEGIN sequence_of_statements END SEMICOLON
-				|	identifier COLON declare_part_option BEGIN sequence_of_statements END identifier SEMICOLON
+block				::=	declare_part_option BEGIN:b 
+					{:parser.setUnclosed("end;", "begin del bloque",bleft, bright);:}
+						sequence_of_statements 
+					END SEMICOLON  
+				|	identifier:i  COLON declare_part_option
+						 BEGIN 
+						 {:parser.setUnclosed((" end "+((String)i)+ ";"), ("begin del bloque "+((String)i)),ileft, iright);:}	
+							sequence_of_statements 
+						 END identifier SEMICOLON  
 				;
 declare_part_option		::=	
 				|	 DECLARE declarative_part
@@ -598,9 +637,10 @@ mode				::=
 				;
 subprogram_body			::=	subprogram_specification_is:s 
 						declarative_part 
-					BEGIN 
+					BEGIN:b  
+					{:parser.setUnclosed((" end "+((String)s)+";"), "begin",bleft, bright);:}
 						sequence_of_statements 
-					END designator_option:e SEMICOLON
+					END designator_option:e SEMICOLON  
 				{:check_coherence(s,sleft, sright, e, eleft, eright);:}
 				;
 designator_option		::=	| designator:d {:RESULT=d;:}
