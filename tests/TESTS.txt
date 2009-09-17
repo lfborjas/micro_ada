@@ -1,0 +1,22 @@
+Sobre los casos de prueba:
+
+Casos correctos:
+1. Un programa simple con declaraciones, llamadas a funciones y algunas estructuras de control.
+2. Records: declaración e instanciación de distintas maneras (las permitidas, a través de selected_components)
+3. Anidamiento: de subprogramas y estructuras de control. Además de records.
+
+Casos incorrectos:
+1. Strings no cerradas y errores a nivel de instrucción:
+	1.1 Punto y coma faltante/sobrante.
+	1.2 Declaraciones en lugar de funciones.
+	1.3 Llamadas incorrectas, expresiones mal escritas (unario con operadores bin, etc).
+	1.4 Statement compuesto no cerrado.
+2. Errores a nivel de declaraciones y record no cerrado.
+3. Números ilegales, operadores de C sustituibles, subprograma no cerrado.
+
+
+Donde errores comunes son: falta de caracteres de cierre, o no balanceados; uso de expresiones en lugares incorrectos
+etc.
+
+AUTOR:
+	Luis Felipe Borjas @ 16 Septiembre 2009, 2227
