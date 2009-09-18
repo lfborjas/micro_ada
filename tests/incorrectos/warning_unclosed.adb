@@ -1,6 +1,6 @@
 --caso de prueba 6 (incorrecto 3)
 --subprograma no cerrado, advertencias numéricas y de operadores
---expresiones mal escritas, tratar de usar arreglos
+--expresiones mal escritas, tratar de usar cosas de arreglos
 --sacado de http://www.cs.fit.edu/~ryan/ada/programs/recurse/binary_search-adb.html
 
    -- binary_search.adb:  recursive search for an element in a sorted array

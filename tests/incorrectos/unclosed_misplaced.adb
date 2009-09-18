@@ -1,7 +1,7 @@
 --caso de prueba 5 (incorrecto 2)
 --pone llamadas a funciones en la parte declarativa, errores dentro de la declaración de un record, loop no cerrado
 --y subprograma con nombres incoherentes
-
+--fuente: http://www.cs.fit.edu/~ryan/ada/programs/for/pythagorean-adb.html
  -- pythagorean.adb:  search for pythagorean triples up to N
    -- A pythagorean triple (A,B,C) has the property that A**2+B**2 = C**2.
   -- Note:  if (A,B,C) is a pythagorean triple, then so is (B,A,C).
