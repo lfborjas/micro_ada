@@ -36,7 +36,7 @@
     Skip_Line;
     Put ("Skip every ");
     Put (Interval, Width=>1);
-    Put_Line (" soldiers.);
+    Put(" soldiers.);
  
     -- get names (one per line) from the standard input
     declare
