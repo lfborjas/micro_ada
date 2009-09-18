@@ -33,6 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java_cup.runtime.*;
+
 /**
  * The application's main frame.
  */
@@ -42,11 +43,14 @@ public class ADA95_Compilador_10611066View extends FrameView {
         super(app);
 
         initComponents();
-        
-        this.redirectSystemStreams();
-        this.debug=false;
-        
+
+        //this.redirectSystemStreams();
+        this.debug = false;
+
         /*Setear el highlighter del editor*/
+        /*El control jSyntaxPane encontrado en: http://code.google.com/p/jsyntaxpane/
+         El lexer para ADA escrito por mí.
+         */
         jsyntaxpane.DefaultSyntaxKit.initKit();
         this.jEditorPaneDocDisplay.setContentType("text/ada");
         this.jFileChooser1.setFileFilter(new AdaFilter());
@@ -343,35 +347,38 @@ public class ADA95_Compilador_10611066View extends FrameView {
     /*Lo hace en un thread:*/
     private void updateTextArea(final String text) {
         SwingUtilities.invokeLater(new Runnable() {
-        public void run() {
-        errorArea.append(text);
-        }
-         });
+
+            public void run() {
+                errorArea.append(text);
+            }
+        });
     }
 
     /*Los redirige:*/
     private void redirectSystemStreams() {
-   OutputStream out = new OutputStream() {  
-     @Override
-     public void write(int b) throws IOException {
-       updateTextArea(String.valueOf((char) b));
-     }
+        OutputStream out = new OutputStream() {
 
-     @Override
-     public void write(byte[] b, int off, int len) throws IOException {
-       updateTextArea(new String(b, off, len));
-     }
+            @Override
+            public void write(int b) throws IOException {
+                updateTextArea(String.valueOf((char) b));
+            }
 
-     @Override
-     public void write(byte[] b) throws IOException {
-       write(b, 0, b.length);
-     }
-   };
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                updateTextArea(new String(b, off, len));
+            }
 
-   System.setOut(new PrintStream(out, true));
-   System.setErr(new PrintStream(out, true));
- }
-    /**Para leer el contenido de un archivo de texto: sacado de 
+            @Override
+            public void write(byte[] b) throws IOException {
+                write(b, 0, b.length);
+            }
+        };
+
+        System.setOut(new PrintStream(out, true));
+        System.setErr(new PrintStream(out, true));
+    }
+
+    /**Para leer el contenido de un archivo de texto: sacado de
     http://www.javapractices.com/topic/TopicAction.do?Id=42*/
     static public String getContents(File aFile) {
         //...checks on aFile are elided
@@ -411,8 +418,8 @@ public class ADA95_Compilador_10611066View extends FrameView {
             archivo = this.jFileChooser1.getSelectedFile();
             if (archivo.exists()) {
                 textoDeArchivo = getContents(archivo);
-                
-                this.jEditorPaneDocDisplay.setText(textoDeArchivo);                
+
+                this.jEditorPaneDocDisplay.setText(textoDeArchivo);
             } else {
                 JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getAbsolutePath() + " no existe");
             }
@@ -425,9 +432,9 @@ public class ADA95_Compilador_10611066View extends FrameView {
         // TODO add your handling code here:
         //Handle open button action.
 //    if (evt.getSource() == openButton) {
-        if(archivo==null){
+        if (archivo == null) {
             abrirArchivo();
-        }else{//si ya hay un archivo, preguntarle si quiere guardarlo antes:
+        } else {//si ya hay un archivo, preguntarle si quiere guardarlo antes:
             int confirmacion = JOptionPane.showConfirmDialog(mainPanel, "¿Desea guardar el archivo " + archivo.getName() + " antes de abrir otro?");
             if (confirmacion == JOptionPane.OK_OPTION) {
                 //guardar el archivo que está abierto
@@ -449,29 +456,28 @@ public class ADA95_Compilador_10611066View extends FrameView {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
     private void guardarArchivoActivo(boolean prompt) {
         //si el archivo no existe, crearlo:
-        if (archivo==null) {
+        if (archivo == null) {
             this.jFileChooser1.setDialogTitle("Nombrar archivo");
             int returnVal = this.jFileChooser1.showOpenDialog(this.mainPanel);
             if (returnVal == JFileChooser.APPROVE_OPTION) {
-            //poner vacío el display
+                //poner vacío el display
                 archivo = this.jFileChooser1.getSelectedFile();
             }
 
         }
-            try {
+        try {
 
-                //FileWriter aGuardar = new FileWriter(archivo.getName());
-                FileWriter aGuardar = new FileWriter(archivo.getAbsolutePath());
-                aGuardar.write(this.jEditorPaneDocDisplay.getText());
-                aGuardar.close();
-                if(prompt){
-                    JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getName() + " se ha guardado exitosamente");
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
+            //FileWriter aGuardar = new FileWriter(archivo.getName());
+            FileWriter aGuardar = new FileWriter(archivo.getAbsolutePath());
+            aGuardar.write(this.jEditorPaneDocDisplay.getText());
+            aGuardar.close();
+            if (prompt) {
+                JOptionPane.showMessageDialog(mainPanel, "El archivo " + archivo.getName() + " se ha guardado exitosamente");
             }
+        } catch (IOException ex) {
+            Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
         }
-    
+    }
 
     private void jMenuGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuGuardarActionPerformed
         guardarArchivoActivo(true);
@@ -487,12 +493,11 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 //guardar el archivo que está abierto
                 guardarArchivoActivo(true);
                 //borrar
-                
+
 
             } else if (confirmacion == JOptionPane.NO_OPTION) {
                 //solo borrar:
                 //this.jEditorPaneDocDisplay.setText("");
-
             }//fin NO
         }//fin EXISTS
 
@@ -507,65 +512,102 @@ public class ADA95_Compilador_10611066View extends FrameView {
     }//GEN-LAST:event_jMenuINuevoActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-
-        
+        this.jTabbedPane1.setTitleAt(0, archivo.getName() + " (Compilación)");
         //prepararla para el output:
         this.errorArea.setForeground(Color.black);
         this.errorArea.setText("");
-        
 
 
-        
-        if(archivo==null){
+
+
+        if (archivo == null) {
             this.errorArea.setForeground(Color.red);
-            System.err.println("No hay un archivo abierto");
-        }else{//si sí hay archivo:
+            //System.err.println("No hay un archivo abierto");
+            errorArea.setText("No hay un archivo abierto");
+        } else {//si sí hay archivo:
             //guardar el archivo activo
             this.guardarArchivoActivo(false);
-            long start=System.currentTimeMillis();
+            long start = System.currentTimeMillis();
             try {
                 //lo de parsear:
-                
+
                 parser p = new parser(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));
-                if(debug){
-                    Object result=p.debug_parse();
-                }else{
-                    Object result=p.parse();
+                if (debug) {
+                    Object result = p.debug_parse();
+                } else {
+                    Object result = p.parse();
                 }
+                //sacar los errores y advertencias del parser
+                ArrayList<String> parserErrores = p.getErrores();
+                ArrayList<String> parserAdvertencias = p.getAdvertencias();
+                //imprimir advertencias primero
+                for (String advertencia : parserAdvertencias) {
+                    //poner color de advertencia:
+                    errorArea.setForeground(new Color(195,86, 23));
+                    //imprimirlas:
+                    errorArea.append(advertencia+"\n");
+                    
+                }
+                //ahora, imprimir errores:
+                for (String error : parserErrores) {
+                    //poner color de error:
+                    errorArea.setForeground(Color.red);
+                    errorArea.append(error+"\n");
+                }
+                //en todo caso, imprimir sumario de advertencias:
+                String pluralize_warnings = "advertencia";
+                pluralize_warnings += (parserAdvertencias.size() == 1) ? "" : "s";
+                if (parserAdvertencias.size() > 0) {
+                    errorArea.append(String.valueOf(parserAdvertencias.size()) + " " + pluralize_warnings + ".\n");
+                }
+                //terminar la medición:
+                long end = System.currentTimeMillis();
+                float elapsed = (end - start);
+                //sumario de errores
+                if (parserErrores.size() == 0) {
+                    if(parserAdvertencias.size()==0)
+                        errorArea.setForeground(new Color(52,124,23));
+                    errorArea.append("Compilación exitosa, (" + String.valueOf(elapsed)+ ") milisegundos\n");
+                } else {
+                    String pluralize_finding = "encontr";
+                    String pluralize_errors = "error";
+                    pluralize_finding += (parserErrores.size() == 1) ? "ó" : "aron";
+                    pluralize_errors += (parserErrores.size() == 1) ? "" : "es";
+                    errorArea.append("Se " + pluralize_finding + " " + String.valueOf(parserErrores.size()) + " " + pluralize_errors + ".\n");
+                    errorArea.append("Compilación fallida, (" + String.valueOf(elapsed)+ ") milisegundos\n");
+                }
+
                 //p.parse();
             } catch (FileNotFoundException ex) {
                 //Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
-
-            } catch(Exception e){
-                
+            } catch (Exception e) {
             }
-            long end=System.currentTimeMillis();
-            float elapsed=(end-start);
-            //si no dio errores:
-            if(!this.errorArea.getForeground().equals(Color.red)){
-                this.errorArea.setForeground(Color.black);
-            }
-            System.out.println("Compilación exitosa ("+elapsed+" milisegundos)");
-            this.jTabbedPane1.setTitleAt(0, archivo.getName()+" (Compilación)");
+//            long end = System.currentTimeMillis();
+//            float elapsed = (end - start);
+//            //si no dio errores:
+//            if (!this.errorArea.getForeground().equals(Color.red)) {
+//                this.errorArea.setForeground(Color.black);
+//            }
+//            System.out.println("Compilación exitosa (" + elapsed + " milisegundos)");
+            
         }
-        
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
         // TODO add your handling code here:
-
     }//GEN-LAST:event_jCheckBox1ActionPerformed
 
     private void jCheckBox1ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1ItemStateChanged
         // TODO add your handling code here:
-        if(evt.getStateChange()==ItemEvent.DESELECTED){
-            debug=false;
-        }else if(evt.getStateChange()==ItemEvent.SELECTED){
-            debug=true;
+        if (evt.getStateChange() == ItemEvent.DESELECTED) {
+            debug = false;
+        } else if (evt.getStateChange() == ItemEvent.SELECTED) {
+            debug = true;
         }
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
 //variables de lfborjas:
-    File archivo=null;
+    File archivo = null;
     /**El contenido del archivo en texto:*/
     String textoDeArchivo;
     boolean debug;
