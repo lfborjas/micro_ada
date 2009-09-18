@@ -19,7 +19,7 @@
 /* Import the class java_cup.runtime.*  */
 import java_cup.runtime.*;
 import java.util.Stack;
-//import java.util.ArrayList;
+import java.util.ArrayList;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
 
@@ -41,7 +41,8 @@ action code{:
 	 String eInfo=" y fin: "+e+" ["+String.valueOf(eline+1)+" , "+String.valueOf(ecolumn+1)+"]";
 	 //ver si son lo mismo:
 	if(!s.equals(e)){
-		System.err.println("Error sintáctico  : el nombre del subprograma debe coincidir entre "+sInfo+eInfo);
+		//System.err.println("Error sintáctico  : el nombre del subprograma debe coincidir entre "+sInfo+eInfo);
+		parser.errores.add("Error sintáctico  : el nombre del subprograma debe coincidir entre "+sInfo+eInfo);
 	}
 	
 
@@ -58,6 +59,8 @@ public void push_error(int line, int column){
 
 /* Métodos que van en la clase del parser */
 parser code {:
+    public ArrayList<String> errores=new ArrayList<String>();
+    public ArrayList<String> getErrores(){return errores;}
     boolean EOFReported=false;
     Stack<String> unClosed=new Stack<String>();
     public String getUnclosed(){return unClosed.pop();}
@@ -131,7 +134,8 @@ parser code {:
    
         /* Print the contents of the StringBuffer 'm', which contains
            an error message, out on a line. */
-        System.err.println(m);
+        //System.err.println(m);
+	errores.add(m.toString());
 	/*Guardar el error en el buffer, mas un salto de línea:*/
 	//	errorMessages.append(m+"\n");
     }

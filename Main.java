@@ -92,13 +92,34 @@ public class Main {
     /* Start the parser */
     String filename=argv[argv.length-1];
     try {     	
+      long start=System.currentTimeMillis();
       parser p = new parser(new Ada95Lexer(new FileReader(filename)));
       if(debug){	
 	      Object result = p.debug_parse().value;
 	}else{
 	     Object result = p.parse().value;
 	}
-
+	//sacar los errores del parser
+	ArrayList<String> parserErrores=p.getErrores();
+	long end=System.currentTimeMillis();
+	float elapsed=(end-start);
+	if(parserErrores.size()==0){
+		System.out.println("Compilación exitosa, ("+elapsed+") milisegundos");	
+	}else{
+		for(String error:parserErrores){
+			System.err.println(error);
+		}
+		end=System.currentTimeMillis();
+		elapsed=(end-start);
+		String pluralize_finding="encontr";
+		String pluralize_errors="error";
+		pluralize_finding+= (parserErrores.size()==1)? "ó":"aron";
+		pluralize_errors+= (parserErrores.size()==1)? "":"es";		
+		System.err.println("Se "+pluralize_finding+" "+(parserErrores.size())+" "+pluralize_errors+".");
+		System.err.println("Compilación fallida, ("+elapsed+") milisegundos");
+	}
+	
+	
     }catch (FileNotFoundException fnfex){
 	System.err.println("No se encuentra el archivo \""+filename+"\"");
 	System.err.println(usage);

@@ -14,16 +14,16 @@ procedure Small is
   Command : Unbounded_String; -- Contains user's current command.
   Quit    : Boolean := False;
 begin
- Put_Line("Welcome to a Small World!");
+ Put_Line("Welcome to a Small World!";
 
- World.Setup;
+ World.Setup
 
  while not Quit loop
   New_Line;
   Put_Line("Your Command?");
   Get_Line(Command);
   Parser.Execute(Command, Quit);
- --end loop;
+ end loop;
 
  Put_Line("Bye!");
 end Small;
