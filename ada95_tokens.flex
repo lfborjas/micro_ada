@@ -4,7 +4,7 @@
 */
 /*Correr después del parser!*/
 import java_cup.runtime.*;
-
+import java.util.ArrayList;
 %%
 /*El código de usuario*/
 %class Ada95Lexer
@@ -16,6 +16,8 @@ import java_cup.runtime.*;
 %ignorecase
 
 %{
+public ArrayList<String> lexical_errors=new ArrayList<String>();
+public ArrayList<String> lexical_warnings=new ArrayList<String>();
 private String currentText="";
 public String getCurrentText(){return currentText;}
 StringBuffer string=new StringBuffer();
@@ -222,29 +224,29 @@ or_else="or"{whitespace}"else"
 //{character_literal}	{currentText=yytext();return symbol(sym.CHARACTER_LITERAL,new Character(yytext()));}
 {character_literal}	{currentText=yytext();return symbol(sym.CHARACTER_LITERAL,yytext());}
 /*Avisar que no se aceptan números con base:*/
-{based_literal}		{System.err.println("Advertencia Léxica: Número ilegal (con base) '"+yytext()+"' sustituido por su equivalente entero:"+ unbase_literal(yytext()).toString()+" en línea "+(yyline+1)+", columna "+(yycolumn+1)); return symbol(sym.INTEGER_LITERAL,unbase_literal(yytext()));}
+{based_literal}		{lexical_warnings.add("Advertencia Léxica: Número ilegal (con base) '"+yytext()+"' sustituido por su equivalente entero:"+ unbase_literal(yytext()).toString()+" en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)); return symbol(sym.INTEGER_LITERAL,unbase_literal(yytext()));}
 /*Avisar que tampoco se aceptan números con exponente: */
-{power_literal}		{System.err.println("Advertencia léxica: Número ilegal (con exponente) '"+yytext()+"' sustituido por :"+Float.parseFloat(yytext().replaceAll("_",""))+" en línea "+(yyline+1)+", columna "+(yycolumn+1));return symbol(sym.FLOATING_POINT_LITERAL,new Float(Float.parseFloat(yytext().replaceAll("_",""))));}
+{power_literal}		{lexical_warnings.add("Advertencia léxica: Número ilegal (con exponente) '"+yytext()+"' sustituido por :"+Float.parseFloat(yytext().replaceAll("_",""))+" en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1));return symbol(sym.FLOATING_POINT_LITERAL,new Float(Float.parseFloat(yytext().replaceAll("_",""))));}
 /*Manejar las strings: */
 \"	{string.setLength(0);yybegin(STRING);}
 
 /*Advertencias léxicas*/
-"&&"	{System.err.println("Advertencia léxica: se encontró '&&' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser 'and then'");
+"&&"	{lexical_warnings.add("Advertencia léxica: se encontró '&&' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)+" y debería ser 'and then'");
 	currentText=yytext();return symbol(sym.AND_THEN);}
-"||"	{System.err.println("Advertencia léxica: se encontró '||' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser 'or else'");
+"||"	{lexical_warnings.add("Advertencia léxica: se encontró '||' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)+" y debería ser 'or else'");
 	currentText=yytext();return symbol(sym.OR_ELSE);}
-"=="	{System.err.println("Advertencia léxica: se encontró '==' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser '='");
+"=="	{lexical_warnings.add("Advertencia léxica: se encontró '==' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)+" y debería ser '='");
 	currentText=yytext();return symbol(sym.EQUAL);}
-"!="	{System.err.println("Advertencia léxica: se encontró '!=' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y debería ser '/='");
+"!="	{lexical_warnings.add("Advertencia léxica: se encontró '!=' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)+" y debería ser '/='");
 	currentText=yytext();return symbol(sym.INEQUALITY);}
-"["	{System.err.println("Advertencia léxica: se encontró '[' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y se ha reemplazado por '('");
+"["	{lexical_warnings.add("Advertencia léxica: se encontró '[' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)+" y se ha reemplazado por '('");
 	currentText=yytext();return symbol(sym.LEFTPAR);}
-"]"	{System.err.println("Advertencia léxica: se encontró ']' en línea "+(yyline+1)+", columna "+(yycolumn+1)+" y se ha reemplazado por ')'");
+"]"	{lexical_warnings.add("Advertencia léxica: se encontró ']' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)+" y se ha reemplazado por ')'");
 	currentText=yytext();return symbol(sym.RIGHTPAR);}
 /*Debería ignorarlo o retornar paréntesis? El compilador GNAT de ADA tira paréntesis*/
-"{"	{System.err.println("Advertencia léxica: se encontró '{' en línea "+(yyline+1)+", columna "+(yycolumn+1));
+"{"	{lexical_warnings.add("Advertencia léxica: se encontró '{' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1));
 	currentText=yytext();}
-"}"	{System.err.println("Advertencia léxica: se encontró '}' en línea "+(yyline+1)+", columna "+(yycolumn+1));
+"}"	{lexical_warnings.add("Advertencia léxica: se encontró '}' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1));
 	currentText=yytext();}
 
 
@@ -296,11 +298,11 @@ El RM no usa los siguientes cuatro como delimitadores ¿debería permitirlos?
 /*Todo lo que no sea salto de línea o cierre se vale*/
 [^\"\n\r]+	{string.append(yytext());}
 /*ADA no permite saltos de línea en string literals*/
-[\n\r]		{System.err.println("Error léxico: literal de cadena de caracteres no cerrada. En línea "+(yyline+1)+", columna "+(yycolumn+1));yybegin(YYINITIAL); return symbol(sym.STRING_LITERAL, string.toString());}
+[\n\r]		{lexical_errors.add("Error léxico: literal de cadena de caracteres no cerrada. En línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1));yybegin(YYINITIAL); return symbol(sym.STRING_LITERAL, string.toString());}
 }
 
 /*Si la entrada no pega con nada, devolver error léxico*/
 [^]    { /*throw new Error("Caracter inesperado: <"+yytext()+"> en línea "+yyline+", columna "+yycolumn);*/
-	System.err.println("Error léxico: caracter inesperado: '"+yytext()+"' en línea "+(yyline+1)+", columna "+(yycolumn+1)); }
+	lexical_errors.add("Error léxico: caracter inesperado: '"+yytext()+"' en línea "+String.valueOf(yyline+1)+", columna "+String.valueOf(yycolumn+1)); }
 
 
