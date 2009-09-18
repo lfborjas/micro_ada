@@ -1,0 +1,1 @@
+--caso de prueba incorrecto 4 (incorrecto 1): strings no cerradas y errores en la declarative part
