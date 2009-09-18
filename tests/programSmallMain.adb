@@ -12,7 +12,7 @@
 
 procedure Small is
   Command : Unbounded_String; -- Contains user's current command.
-  Quit    : Boolean := False;
+  Quit    : Boolean := (False && true) || false ;
 begin
  Put_Line("Welcome to a Small World!";
 

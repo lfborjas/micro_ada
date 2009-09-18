@@ -99,18 +99,30 @@ public class Main {
 	}else{
 	     Object result = p.parse().value;
 	}
-	//sacar los errores del parser
+	//sacar los errores y advertencias del parser
 	ArrayList<String> parserErrores=p.getErrores();
+	ArrayList<String> parserAdvertencias=p.getAdvertencias();
+	//imprimir advertencias primero
+	for(String advertencia: parserAdvertencias){
+		System.err.println(advertencia);
+	}
+	//ahora, imprimir errores:
+	for(String error:parserErrores){
+		System.err.println(error);
+	}
+	//en todo caso, imprimir sumario de advertencias:
+	String pluralize_warnings="advertencia";
+	pluralize_warnings+= (parserAdvertencias.size()==1)? "":"s";
+	if(parserAdvertencias.size()>0){		
+		System.err.println((parserAdvertencias.size())+" "+pluralize_warnings+".");
+	}
+	//terminar la medición:
 	long end=System.currentTimeMillis();
 	float elapsed=(end-start);
-	if(parserErrores.size()==0){
+	//sumario de errores
+	if(parserErrores.size()==0){		
 		System.out.println("Compilación exitosa, ("+elapsed+") milisegundos");	
 	}else{
-		for(String error:parserErrores){
-			System.err.println(error);
-		}
-		end=System.currentTimeMillis();
-		elapsed=(end-start);
 		String pluralize_finding="encontr";
 		String pluralize_errors="error";
 		pluralize_finding+= (parserErrores.size()==1)? "ó":"aron";
@@ -125,7 +137,6 @@ public class Main {
 	System.err.println(usage);
 	System.exit(1);
     }catch (Exception e) {
-      /* do cleanup here -- possibly rethrow e */
       e.printStackTrace();
     }
   }
