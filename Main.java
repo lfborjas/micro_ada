@@ -114,21 +114,21 @@ public class Main {
 	String pluralize_warnings="advertencia";
 	pluralize_warnings+= (parserAdvertencias.size()==1)? "":"s";
 	if(parserAdvertencias.size()>0){		
-		System.err.println((parserAdvertencias.size())+" "+pluralize_warnings+".");
+		System.err.print((parserAdvertencias.size())+" "+pluralize_warnings+". ");
 	}
 	//terminar la medición:
 	long end=System.currentTimeMillis();
 	float elapsed=(end-start);
 	//sumario de errores
 	if(parserErrores.size()==0){		
-		System.out.println("Compilación exitosa, ("+elapsed+") milisegundos");	
+		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");	
 	}else{
 		String pluralize_finding="encontr";
 		String pluralize_errors="error";
 		pluralize_finding+= (parserErrores.size()==1)? "ó":"aron";
 		pluralize_errors+= (parserErrores.size()==1)? "":"es";		
 		System.err.println("Se "+pluralize_finding+" "+(parserErrores.size())+" "+pluralize_errors+".");
-		System.err.println("Compilación fallida, ("+elapsed+") milisegundos");
+		System.err.println("Compilación fallida (Tiempo total: "+elapsed+" milisegundos)");
 	}
 	
 	
