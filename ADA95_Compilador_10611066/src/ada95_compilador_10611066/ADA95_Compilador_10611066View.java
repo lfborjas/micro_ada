@@ -15,6 +15,7 @@ import org.jdesktop.application.TaskMonitor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
@@ -43,7 +44,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         super(app);
 
         initComponents();
-
+        jButton1.setMnemonic(KeyEvent.VK_C);
         //this.redirectSystemStreams();
         this.debug = false;
 
@@ -159,6 +160,11 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
         mainPanel.setName("mainPanel"); // NOI18N
         mainPanel.setPreferredSize(new java.awt.Dimension(1000, 1000));
+        mainPanel.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                mainPanelKeyPressed(evt);
+            }
+        });
 
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
@@ -512,7 +518,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
     }//GEN-LAST:event_jMenuINuevoActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        this.jTabbedPane1.setTitleAt(0, archivo.getName() + " (Compilación)");
+
         //prepararla para el output:
         this.errorArea.setForeground(Color.black);
         this.errorArea.setText("");
@@ -525,6 +531,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             //System.err.println("No hay un archivo abierto");
             errorArea.setText("No hay un archivo abierto");
         } else {//si sí hay archivo:
+            this.jTabbedPane1.setTitleAt(0, archivo.getName() + " (Compilación)");
             //guardar el archivo activo
             this.guardarArchivoActivo(false);
             long start = System.currentTimeMillis();
@@ -558,7 +565,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 String pluralize_warnings = "advertencia";
                 pluralize_warnings += (parserAdvertencias.size() == 1) ? "" : "s";
                 if (parserAdvertencias.size() > 0) {
-                    errorArea.append(String.valueOf(parserAdvertencias.size()) + " " + pluralize_warnings + ".\n");
+                    errorArea.append(String.valueOf(parserAdvertencias.size()) + " " + pluralize_warnings + ". ");
                 }
                 //terminar la medición:
                 long end = System.currentTimeMillis();
@@ -567,14 +574,14 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 if (parserErrores.size() == 0) {
                     if(parserAdvertencias.size()==0)
                         errorArea.setForeground(new Color(52,124,23));
-                    errorArea.append("Compilación exitosa, (" + String.valueOf(elapsed)+ ") milisegundos\n");
+                    errorArea.append("Compilación exitosa (Tiempo total: " + String.valueOf(elapsed)+ " milisegundos)\n");
                 } else {
                     String pluralize_finding = "encontr";
                     String pluralize_errors = "error";
                     pluralize_finding += (parserErrores.size() == 1) ? "ó" : "aron";
                     pluralize_errors += (parserErrores.size() == 1) ? "" : "es";
                     errorArea.append("Se " + pluralize_finding + " " + String.valueOf(parserErrores.size()) + " " + pluralize_errors + ".\n");
-                    errorArea.append("Compilación fallida, (" + String.valueOf(elapsed)+ ") milisegundos\n");
+                    errorArea.append("Compilación fallida (Tiempo total: " + String.valueOf(elapsed)+ " milisegundos)\n");
                 }
 
                 //p.parse();
@@ -606,6 +613,10 @@ public class ADA95_Compilador_10611066View extends FrameView {
             debug = true;
         }
     }//GEN-LAST:event_jCheckBox1ItemStateChanged
+
+    private void mainPanelKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mainPanelKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mainPanelKeyPressed
 //variables de lfborjas:
     File archivo = null;
     /**El contenido del archivo en texto:*/
