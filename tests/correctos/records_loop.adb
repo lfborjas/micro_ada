@@ -40,6 +40,6 @@ begin --Main
 	loop
 		ComplexPrompt:= getPrompt(rPrompt, iPrompt);
 		put(getPrompt);
-		exit when ComplexPrompt.Real_Part>=0 && ComplexPrompt.Imaginary_Part != -1;
+		exit when ComplexPrompt.Real_Part>=0 and then ComplexPrompt.Imaginary_Part /= -1;
 	end loop;
 end Main;
