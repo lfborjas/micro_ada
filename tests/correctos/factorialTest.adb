@@ -15,6 +15,16 @@ procedure Main is
 			 end if;
 		end Factorial;
 	Var2: Float := "300_000.257_890";
+
+	function Minimum (A, B : Integer) return Integer is
+	begin
+	   if A <= B then
+	      return A;
+	   else
+	      return B;
+	   end if;
+	end Minimum;
+
 	Var3: Boolean := TRue;
 	Prompt: Integer;
 --inicio de Main
@@ -24,6 +34,8 @@ begin
 		For i in 1..10 loop
 			if i mod 2 then 
 				put(Factorial(Var1));	
+			else
+				put(Minimum(i,var1));
 			end if;
 		end loop;--end del for
 	Prompt := get("¿Desea continuar (1/0)?");

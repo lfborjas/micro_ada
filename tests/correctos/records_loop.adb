@@ -29,7 +29,7 @@ procedure Main is
 	rPrompt: Float:=0.0;
 	iPrompt: Float:=0.0;
 --otra función:
-	function getPrompt(r:Float; i:Float) return Complex is
+	function getPrompt(r,i:Float) return Complex is
 		retVal: Complex;
 		begin						
 			retVal.Real_part:= get("escriba algún número...");  
