@@ -11,7 +11,10 @@
 	arg: Integer--punto y coma faltante
 	none:INTEger;
      end record;
-    	
+     function print_random(debug: boolean, in out seed: integer) return Float is --coma en vez de ;     	
+	begin
+		put("not supported yet");
+	end;
    --procedure con nombres incoherentes:
      procedure New_Line is
 		begin 

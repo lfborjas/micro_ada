@@ -33,7 +33,12 @@
  
     -- get interval from the standard input
     Get (Interval);
-    Skip_Line;
+    
+    if (! debug) then --no se puede usar ese not...
+	put("\n");
+    else
+	Skip_Line;
+    end if;
     Put ("Skip every ");
     Put (Interval, Width=>1);
     --string no cerrada
