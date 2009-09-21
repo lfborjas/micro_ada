@@ -4,7 +4,7 @@
 procedure Main is
 --parte declarativa
 	Var1: Integer := "2_300";
-	function Factorial(A : in Integer) return Integer is
+	function Factorial(A : in Integer:=1) return Integer is
 		begin
 			 if A < 0 then                -- Stop recursion if A <= 0.
 		         Put("Error numérico");
@@ -30,7 +30,7 @@ procedure Main is
 --inicio de Main
 begin 
 	Prompt:= get("¿Desea continuar?(1/0)");
-	while Prompt != 0 loop
+	while Prompt /= 0 loop
 		For i in 1..10 loop
 			if i mod 2 then 
 				put(Factorial(Var1));	
