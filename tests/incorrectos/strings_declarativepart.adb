@@ -12,11 +12,11 @@
        Alive : Boolean;
 	end record;
  
-    Max_Number_Of_Soldiers: constant := 100;
-    Number_Of_Soldiers    : Integer range 0..Max_Number_Of_Soldiers := 0;
+    Max_Number_Of_Soldiers: constant access:= 100;--no se puede usar access
+    Number_Of_Soldiers    : Integer range 0..Max_Number_Of_Soldiers = 0;--mala asignación
  
  
-    procedure Next (Index: in out Integer; Interval: Positive is
+    procedure Next (Index: in out Integer; Interval: Positive is --paréntesis no cerrado
 	 begin
 	       for I in 1..Interval loop
 	          loop
@@ -26,7 +26,7 @@
 	       end loop;
     	end Next;
 
-    Interval : Integer
+    Interval : Integer --punto y coma faltante
     Man      : Integer := Soldiers;
  
  begin
@@ -36,6 +36,7 @@
     Skip_Line;
     Put ("Skip every ");
     Put (Interval, Width=>1);
+    --string no cerrada
     Put(" soldiers.);
  
     -- get names (one per line) from the standard input
@@ -52,7 +53,7 @@
  
     for I in 1..Number_Of_Soldiers-1 loop
        Soldiers(Man).Alive := False;
-       Put (Soldiers(Man).Name.all)
+       Put (Soldiers(Man).Name.all) --punto y coma faltante (pero sí lo detecta)
        Put_Line (" commits suicide.");
        Next (Man, Interval);
     end loop;

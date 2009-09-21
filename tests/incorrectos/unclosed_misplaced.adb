@@ -8,7 +8,7 @@
    -- Also:  there are no pythagorean triples of the form (A,A,C).
   procedure Pythagorean is
      type Argument is record
-	arg: Integer
+	arg: Integer--punto y coma faltante
 	none:INTEger;
      end record;
     	
@@ -20,7 +20,7 @@
 
    --función con nombres de inicio y fin incoherentes:   
      function getArgument(useless:in out boolean) return Integer is
-	Argumento: Argument;
+	Argumento Argument;--faltan dos puntos
 	begin
 		Argument.arg:=GET("introduzca el argumento");
 		Argument.none:=16#FF.0A#E2;
@@ -31,7 +31,7 @@
 		end if;
         end get_argument;--se puso un nombre incoherente
 
-     Arg: constant Integer:= getArgument(false);
+     constant Arg: Integer:= getArgument(false);--'constant' mal puesto
      N  : Integer;   -- (from the user) maximum number allowed in triple
      L  : BOOLEAN;  -- last postion in string (ignored)
   
