@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java_cup.runtime.*;
+import jsyntaxpane.actions.CaretMonitor;
 
 /**
  * The application's main frame.
@@ -54,6 +55,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
          */
         jsyntaxpane.DefaultSyntaxKit.initKit();
         this.jEditorPaneDocDisplay.setContentType("text/ada");
+        new CaretMonitor(this.jEditorPaneDocDisplay, this.statusMessageLabel);
         this.jFileChooser1.setFileFilter(new AdaFilter());
         this.jTabbedPane1.setTitleAt(0, "Salida");
         this.errorArea.setForeground(Color.red);
@@ -75,7 +77,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
             public void actionPerformed(ActionEvent e) {
                 busyIconIndex = (busyIconIndex + 1) % busyIcons.length;
-                statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);
+                statusAnimationLabel.setIcon(busyIcons[busyIconIndex]);                
             }
         });
         idleIcon = resourceMap.getIcon("StatusBar.idleIcon");
@@ -154,7 +156,6 @@ public class ADA95_Compilador_10611066View extends FrameView {
         statusPanel = new javax.swing.JPanel();
         statusMessageLabel = new javax.swing.JLabel();
         statusAnimationLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
         progressBar = new javax.swing.JProgressBar();
         jFileChooser1 = new javax.swing.JFileChooser();
 
@@ -235,7 +236,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
             .addGroup(mainPanelLayout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 647, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 657, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 184, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -295,49 +296,19 @@ public class ADA95_Compilador_10611066View extends FrameView {
         menuBar.add(helpMenu);
 
         statusPanel.setName("statusPanel"); // NOI18N
-        statusPanel.setPreferredSize(new java.awt.Dimension(1027, 50));
+        statusPanel.setPreferredSize(new java.awt.Dimension(1027, 20));
+        statusPanel.setLayout(new java.awt.GridLayout());
 
         statusMessageLabel.setName("statusMessageLabel"); // NOI18N
+        statusPanel.add(statusMessageLabel);
 
         statusAnimationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         statusAnimationLabel.setName("statusAnimationLabel"); // NOI18N
+        statusPanel.add(statusAnimationLabel);
 
-        jSeparator1.setName("jSeparator1"); // NOI18N
-
+        progressBar.setToolTipText(resourceMap.getString("progressBar.toolTipText")); // NOI18N
         progressBar.setName("progressBar"); // NOI18N
-
-        javax.swing.GroupLayout statusPanelLayout = new javax.swing.GroupLayout(statusPanel);
-        statusPanel.setLayout(statusPanelLayout);
-        statusPanelLayout.setHorizontalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(1160, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, statusPanelLayout.createSequentialGroup()
-                .addContainerGap(835, Short.MAX_VALUE)
-                .addComponent(statusAnimationLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(278, 278, 278))
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addGap(23, 23, 23)
-                .addComponent(statusMessageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 961, Short.MAX_VALUE)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        statusPanelLayout.setVerticalGroup(
-            statusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusAnimationLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, statusPanelLayout.createSequentialGroup()
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(statusMessageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(20, 20, 20))
-            .addGroup(statusPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
-        );
+        statusPanel.add(progressBar);
 
         jFileChooser1.setName("jFileChooser1"); // NOI18N
 
@@ -522,22 +493,26 @@ public class ADA95_Compilador_10611066View extends FrameView {
         //prepararla para el output:
         this.errorArea.setForeground(Color.black);
         this.errorArea.setText("");
-
-
-
+        this.progressBar.setVisible(true);
+        this.progressBar.setStringPainted(true);
+        //this.progressBar.setIndeterminate(true);
+        
 
         if (archivo == null) {
             this.errorArea.setForeground(Color.red);
             //System.err.println("No hay un archivo abierto");
             errorArea.setText("No hay un archivo abierto");
         } else {//si sí hay archivo:
+            this.progressBar.setString("Parseando...");
+            this.progressBar.setValue(0);
+            busyIconTimer.start();
             this.jTabbedPane1.setTitleAt(0, archivo.getName() + " (Compilación)");
             //guardar el archivo activo
             this.guardarArchivoActivo(false);
             long start = System.currentTimeMillis();
             try {
                 //lo de parsear:
-
+                this.progressBar.setValue(25);
                 parser p = new parser(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));
                 if (debug) {
                     Object result = p.debug_parse();
@@ -545,6 +520,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
                     Object result = p.parse();
                 }
                 //sacar los errores y advertencias del parser
+                this.progressBar.setValue(75);
                 ArrayList<String> parserErrores = p.getErrores();
                 ArrayList<String> parserAdvertencias = p.getAdvertencias();
                 //imprimir advertencias primero
@@ -570,6 +546,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 //terminar la medición:
                 long end = System.currentTimeMillis();
                 float elapsed = (end - start);
+
                 //sumario de errores
                 if (parserErrores.size() == 0) {
                     if(parserAdvertencias.size()==0)
@@ -583,8 +560,10 @@ public class ADA95_Compilador_10611066View extends FrameView {
                     errorArea.append("Se " + pluralize_finding + " " + String.valueOf(parserErrores.size()) + " " + pluralize_errors + ".\n");
                     errorArea.append("Compilación fallida (Tiempo total: " + String.valueOf(elapsed)+ " milisegundos)\n");
                 }
-
-                //p.parse();
+                this.progressBar.setValue(100);                
+                this.progressBar.setString("Listo");                
+                busyIconTimer.stop();
+                
             } catch (FileNotFoundException ex) {
                 //Logger.getLogger(ADA95_Compilador_10611066View.class.getName()).log(Level.SEVERE, null, ex);
             } catch (Exception e) {
@@ -633,7 +612,6 @@ public class ADA95_Compilador_10611066View extends FrameView {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel mainPanel;
