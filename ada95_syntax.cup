@@ -235,7 +235,7 @@ terminal Boolean BOOLEAN_LITERAL;
 
 /*Sección de las no-terminales; iremos en el orden del RM*/
 //INICIALES:
-non terminal goal;
+non terminal goal, placeholder;
 //lexicos y varios
 //de p85-persch, pag 87
 non terminal constant_option;
@@ -320,7 +320,8 @@ constant_option	::=	| CONSTANT;
 
 goal	::=	compilation
 	;
-
+//works as a marker, as described in the book, to let action code be executed at otherwise impossible places (like the end)
+placeholder ::= ;
 //RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
 numeric_type		::=	INTEGER
 			|	FLOAT
