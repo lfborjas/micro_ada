@@ -20,11 +20,10 @@
 import java_cup.runtime.*;
 import java.util.Stack;
 import java.util.ArrayList;
+import AdaSemantic.*;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
 
- /**La variable donde guardar errores: */
- //public ArrayList<String> errores =new ArrayList<String>();
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
    * @param start la palabra del inicio
      @param sline, scolumn el left y right del símbolo start
@@ -47,14 +46,9 @@ action code{:
 	
 
  }
- /**La función que guarda errores para luego ser impresos por el front-end
-*@param line, column la línea y columna del error
-*//*
-public void push_error(int line, int column){
-	errores.add(new String(String.valueOf(line)+"_"+String.valueOf(column)));
-	System.out.println(errores);
-}
- */
+
+/**The current symbol table*/
+LinkedSymbolTable currentScope = new LinkedSymbolTable();
 :};
 
 /* Métodos que van en la clase del parser */
@@ -323,11 +317,11 @@ goal	::=	compilation
 //works as a marker, as described in the book, to let action code be executed at otherwise impossible places (like the end)
 placeholder ::= ;
 //RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
-numeric_type		::=	INTEGER
-			|	FLOAT
+numeric_type		::=	INTEGER	{:RESULT=new ParserResult(new IntegerType());:}
+			|	FLOAT   {:RESULT=new ParserResult(new FloatType());:}
 			;
-primitive_type 		::=	BOOLEAN
-			|	numeric_type
+primitive_type 		::=	BOOLEAN {:RESULT=new ParserResult(new BooleanType());:}
+			|	numeric_type:t {:RESULT=(ParserResult)t;:}
 			;
 identifier	::=	IDENTIFIER:i {:RESULT=i;:}
 		;
@@ -346,8 +340,8 @@ declaration	::=	object_declaration
 		|	number_declaration
 		;
 //de p85-persch, pag 87
-object_declaration	::=	identifier COLON constant_option subtype_indication initialization_option SEMICOLON
-			|	identifier_list	COLON constant_option subtype_indication initialization_option SEMICOLON
+object_declaration	::=	identifier COLON constant_option subtype_indication:s {:RESULT=(ParserResult)s;:} initialization_option SEMICOLON
+			|	identifier_list	COLON constant_option subtype_indication:s {:RESULT=(ParserResult)s;:} initialization_option SEMICOLON
 			;
 initialization_option	::=	| ASSIGNMENT expression
 			;
@@ -366,9 +360,11 @@ type_definition		::=	record_type_definition {:parser.emptyLastUnclosed();:}
 			;
 subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
 			;
-subtype_indication	::=	name
+/*Searching for a name actually checks if the type is declared*/
+subtype_indication	::=	name:n {:Type t; 
+				       if((t=currentScope.get(n))!=null) RESULT=new ParserResult(t) else report_error(/*Type name not declared*/);:}
 			|	subtype_indication_with_constraint
-			|	primitive_type
+			|	primitive_type:t {:RESULT=(ParserResult)t;:}
 			;
 //de p85-persch, pag 88
 subtype_indication_with_constraint ::=	name range_constraint

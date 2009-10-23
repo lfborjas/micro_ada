@@ -8,17 +8,17 @@ import java.util.HashMap;
 
 public class LinkedSymbolTable{
 	/**The Symbol table for this scope*/
-	private HashMap<String, Type> table;
+	private HashMap<String, AdaSymbol> table;
 	/**The inmedeate outer scope*/
 	private LinkedSymbolTable ancestor;
 	
 	public LinkedSymbolTable(LinkedSymbolTable ancestor){
-		table=new HashMap<String, Type>();
+		table=new HashMap<String, AdaSymbol>();
 		this.ancestor= ancestor;
 	}
 	
 	public LinkedSymbolTable(){
-		table=new HashMap<String, Type>();
+		table=new HashMap<String, AdaSymbol>();
 		this.ancestor=null;	
 	}
 	
@@ -26,11 +26,12 @@ public class LinkedSymbolTable{
 		return this.ancestor;
 	}
 	
-	public HashMap<String, Type> getTable(){
+	public HashMap<String, AdaSymbol> getTable(){
 		return this.table;
 	}	
 
-	public boolean put(String id, Type tipo){
+	public boolean put(Object oid, AdaSymbol tipo){
+		String id=(String)oid;
 		//because of the case insensitiveness of ada:
 		id=id.toLowerCase();
 		if(!(this.table.containsKey(id))){
@@ -45,11 +46,12 @@ public class LinkedSymbolTable{
 	   cf. The book by Aho, Lam; pp 88-89.	
 	   @param id the id to search for	
 	*/
-	public Type get(String id){
+	public AdaSymbol get(Object oid){
+		String id=(String)oid;
 		//because of ada's case insensitiveness:
 		id=id.toLowerCase();
 		for(LinkedSymbolTable t=this; t != null; t= t.getAncestor()){
-			Type found=t.getTable().get(id);
+			AdaSymbol found=t.getTable().get(id);
 			if(found != null)
 				return found;
 		}
