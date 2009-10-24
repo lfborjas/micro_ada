@@ -24,6 +24,8 @@ import AdaSemantic.*;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
 
+/**The current symbol table*/
+LinkedSymbolTable currentScope = new LinkedSymbolTable();
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
    * @param start la palabra del inicio
      @param sline, scolumn el left y right del símbolo start
@@ -46,9 +48,37 @@ action code{:
 	
 
  }
+/**Método para comprobar errores semánticos de tipo. Los agrega también a la lista de errores. Se vale del método equals de las clases
+   que heredan de Type.
+   @param expected el tipo esperado
+   @param found el tipo encontrado
+   @param foundLine, foundColumn, etc la línea y columna donde se encuentra la declaración.
+*/
+public boolean compare_types(Object expected, Object found, int foundLine, int foundColumn){
+	Type e=(Type)expected;
+	Type f=(Type)found;
+	if(! e.equals(f)){
+		StringBuffer errorMessage=new StringBuffer();
+		errorMessage.append("Error semántico  : ");
+		errorMessage.append(" Se esperaba el tipo "+e.toString());
+		errorMessage.append(" Y se encontró "+f.toString());
+		errorMessage.append(" En línea "+String.valueOf(foundLine+1)+", columna "+String.valueOf(foundColumn+1));
+		parser.errores.add(errorMessage.toString());
+		return false;		
+	}
+	return true;
+}
+/**Método para determinar si un tipo está o no declarado*/
+public boolean find_type(Object id, int line, int column){
+	if(!currentScope.get(id)){
+		parser.errores.add(" El tipo "+(String)id+"no está definido. En línea "+(String.valueOf(line+1))+", columna "+String.valueOf(column+1));
+		return false;
+	}
+	return true;
+	
+}
 
-/**The current symbol table*/
-LinkedSymbolTable currentScope = new LinkedSymbolTable();
+
 :};
 
 /* Métodos que van en la clase del parser */
@@ -340,18 +370,69 @@ declaration	::=	object_declaration
 		|	number_declaration
 		;
 //de p85-persch, pag 87
-object_declaration	::=	identifier COLON constant_option subtype_indication:s {:RESULT=(ParserResult)s;:} initialization_option SEMICOLON
-			|	identifier_list	COLON constant_option subtype_indication:s {:RESULT=(ParserResult)s;:} initialization_option SEMICOLON
+/*si las variables están inicializadas, chequear los tipos, y si concuerdan, ponerla en la tabla de símbolos actual */
+object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
+				{:s=(ParserResult)s; o=(ParserResult)o;
+				if(o != null){				
+					boolean compare=compare_types(s.type, o.type, oleft, oright);
+					Type tipo=compare ? s.type : new ErrorType(s.type);					
+					if(!currentScope.put(i, new AdaSymbol(tipo)))
+						parser.errores.add("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado.");
+						
+				}else{//there's no initialization expression:
+					if(!currentScope.put(i, new AdaSymbol(s.type)))
+						parser.errores.add("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado.");
+				}:}
+			|	identifier_list:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
+				{:s=(ParserResult)s; o=(ParserResult)o;
+				i=(ArrayList<String>)i;
+				if(o != null){				
+					boolean compare=compare_types(s.type, o.type, oleft, oright);
+					Type tipo=compare ? s.type : new ErrorType(s.type);					
+					for(String id:i){
+						if(!currentScope.put(id, new AdaSymbol(tipo)))
+							parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+					}	
+				}else{//there's no initialization expression:
+					for(String id:i){
+						if(!currentScope.put(id, new AdaSymbol(s.type)))
+							parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+					}	
+				}:}
 			;
 initialization_option	::=	| ASSIGNMENT expression
 			;
-number_declaration	::=	identifier COLON CONSTANT ASSIGNMENT expression SEMICOLON
-			|	identifier_list COLON CONSTANT ASSIGNMENT expression SEMICOLON
+number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
+				{:o=(ParserResult)o;
+			          if(!currentScope.put(i, new AdaSymbol(o.type)))
+					parser.errores.add("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado.");
+				  	
+				:}
+			|	identifier_list:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
+				{:o=(ParserResult)o;i=(ArrayList<String>)i;
+				for(String id:i){
+					if(!currentScope.put(id, new AdaSymbol(o.type)))
+						parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+				}	
+				  		
+				:}
 			;
-identifier_list		::=	identifier COMMA identifier 
-			|	 identifier_list COMMA identifier
+identifier_list		::=	identifier:i COMMA identifier:j 
+				{:ArrayList<String>r=new ArrayList<String>();
+				  r.add((String)i); r.add((String)j);
+				  RESULT=r;		
+				:}
+			|	 identifier_list:i COMMA identifier:j
+				{:ArrayList<String> r =new ArrayList<String>();
+				  r.addAll((ArrayList<String>)i);r.add((String)j);	
+				  RESULT=r;	
+				:}
 			;
-type_declaration	::=	TYPE identifier discriminant_part_option IS type_definition SEMICOLON
+type_declaration	::=	TYPE identifier:i discriminant_part_option:p IS type_definition SEMICOLON 
+				{:
+				if(!currentScope.put(id, new AdaSymbol(new RecordType((ArrayList<Type>)p))))
+					parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+				:}
 			|	incomplete_type_declaration
 			;
 discriminant_part_option ::=	| discriminant_part

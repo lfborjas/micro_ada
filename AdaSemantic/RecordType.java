@@ -6,6 +6,9 @@ public class RecordType extends Type{
 		super();
 	}
 	
+	public RecordType(ArrayList<Type> product){
+		super(product);
+	}	
 
 	public String toString(){
 		StringBuilder retVal=new StringBuilder("Record ");
