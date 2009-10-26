@@ -69,15 +69,16 @@ public boolean compare_types(Object expected, Object found, int foundLine, int f
 	return true;
 }
 /**Método para determinar si un tipo está o no declarado*/
-public boolean find_type(Object id, int line, int column){
-	if(!currentScope.get(id)){
+public Type find_type(Object id, int line, int column){
+	Type found;
+	found=currentScope.get(id).type;
+	if(found == null)){
 		parser.errores.add(" El tipo "+(String)id+"no está definido. En línea "+(String.valueOf(line+1))+", columna "+String.valueOf(column+1));
-		return false;
+		return null;
 	}
-	return true;
+	return found;
 	
 }
-
 
 :};
 
@@ -372,7 +373,8 @@ declaration	::=	object_declaration
 //de p85-persch, pag 87
 /*si las variables están inicializadas, chequear los tipos, y si concuerdan, ponerla en la tabla de símbolos actual */
 object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
-				{:s=(ParserResult)s; o=(ParserResult)o;
+				{:if (s != null){//the subtype CAN be null (p.e. if the type doesn't exist
+				s=(ParserResult)s; o=(ParserResult)o;
 				if(o != null){				
 					boolean compare=compare_types(s.type, o.type, oleft, oright);
 					Type tipo=compare ? s.type : new ErrorType(s.type);					
@@ -382,9 +384,11 @@ object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  
 				}else{//there's no initialization expression:
 					if(!currentScope.put(i, new AdaSymbol(s.type)))
 						parser.errores.add("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado.");
+				}
 				}:}
 			|	identifier_list:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
-				{:s=(ParserResult)s; o=(ParserResult)o;
+				{:if (s != null){
+				s=(ParserResult)s; o=(ParserResult)o;
 				i=(ArrayList<String>)i;
 				if(o != null){				
 					boolean compare=compare_types(s.type, o.type, oleft, oright);
@@ -398,6 +402,7 @@ object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  
 						if(!currentScope.put(id, new AdaSymbol(s.type)))
 							parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
 					}	
+				}
 				}:}
 			;
 initialization_option	::=	| ASSIGNMENT expression
@@ -442,16 +447,31 @@ type_definition		::=	record_type_definition {:parser.emptyLastUnclosed();:}
 subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
 			;
 /*Searching for a name actually checks if the type is declared*/
-subtype_indication	::=	name:n {:Type t; 
-				       if((t=currentScope.get(n))!=null) RESULT=new ParserResult(t) else report_error(/*Type name not declared*/);:}
-			|	subtype_indication_with_constraint
+subtype_indication	::=	name:n
+				 {:ParserResult namen=(ParserResult)n;
+				   //if the type is null, it could be either an identifier or an operator symbol:				   				               //try to get it from the symbol table:
+				if(n.type == null){	
+				  AdaSymbol f=currentScope.get(namen.value);		
+				  Type t=null;
+				  if (f != null)
+					t=f.type;
+				  else
+					System.err.println("Error Semántico  : No se puede encontrar el tipo "+
+					((String)namen.value)+" en el ámbito actual. En línea"+(oleft+1)+", columna "+(oright+1));	
+				
+				  RESULT=new ParserResult(os, t);
+				 }else{//the type does exist, so it must be either a selected component or a function call:
+				   RESULT=n;
+				  }								
+				 :}				       
+			|	subtype_indication_with_constraint:c {:RESULT=():}
 			|	primitive_type:t {:RESULT=(ParserResult)t;:}
 			;
 //de p85-persch, pag 88
 subtype_indication_with_constraint ::=	name range_constraint
 				   |	name accuracy_constraint
 				   |	numeric_type range_constraint
-				   |	FLOAT 	accuracy_constraint
+				   |	FLOAT 	accuracy_constraint {:RESULT=new ParserResult(new FloatType());:}
 		         	   ;
 range_constraint		   ::= RANGE range
 				   ;
@@ -516,18 +536,35 @@ declarative_item_list		::=	| declarative_item_list declarative_item
 				;
 declarative_item		::=	declaration
 				|	subprogram_body
-				|	error SEMICOLON 
+				(|	error SEMICOLON 
 				;
 //de p85-persch, pag 90
 //"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
 //quité la de indexed_component:
-name				::=	identifier
-				|	selected_component
-				|	function_call
-				|	operator_symbol
+name				::=	identifier:i {:RESULT=new ParserResult(i);:}
+				|	selected_component:s {:RESULT=s;:}
+				|	function_call:f {:RESULT=f;:}
+				|	operator_symbol:o {:RESULT=new ParserResult(o);:}
 				;
-selected_component		::=	name POINT identifier
-				|	name POINT ALL
+/*The only case of this is in records, isn't it?*/
+selected_component		::=	name:n POINT identifier:i 
+					{:
+					//the selected component query:
+						ParserResult namen=(ParserResult)n;
+						String valex=((String)namen.value)+"."+((String)i);
+						Type t=null;
+					//query for it in the current scope:
+						AdaSymbol f=currentScope.get(valex);		
+						if (f !=null)//found:
+							t=f.type;
+						else
+							System.err.println("Error Semántico  : No se puede encontrar el componente "+((String)i)+
+							" para el prefijo "+((String)namen.value)+ ". En línea "+(nleft+1)+", columna "+(nright+1));						    //return the value and type found:
+						RESULT=new ParserResult(valex, t);
+					:}
+				/*Actually, all is for referring to the pointed to object by an access name (a pointer?)*/
+				|	name:n POINT ALL {:RESULT=new ParserResult(n, currentScope.get(n));:}
+				/*This would have a code similar to the first alternative, BUT this one is not applicable to records...*/
 				|	name POINT operator_symbol
 				;
 //pongo acá los string literals?
@@ -717,7 +754,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS {:RESULT=i;:}
 designator			::=	identifier:i {:RESULT=i;:} 
 				|	operator_symbol:o {:RESULT=o;:}
 				;
-operator_symbol			::=	STRING_LITERAL
+operator_symbol			::=	STRING_LITERAL:s {:RESULT=s;:}
 				;
 formal_part			::=	LEFTPAR parameter_declaration_list RIGHTPAR
 				;
