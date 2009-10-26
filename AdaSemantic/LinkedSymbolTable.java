@@ -50,12 +50,41 @@ public class LinkedSymbolTable{
 		String id=(String)oid;
 		//because of ada's case insensitiveness:
 		id=id.toLowerCase();
+		AdaSymbol found=new AdaSymbol();
+		//for records:
+		String [] splitId=id.split("\\.");
 		for(LinkedSymbolTable t=this; t != null; t= t.getAncestor()){
-			AdaSymbol found=t.getTable().get(id);
-			if(found != null)
-				return found;
+			found=t.getTable().get(splitId[0]);
+			if(found != null){
+				if(splitId.length == 1)//is not a selected component query
+					return found;
+				else//it IS a selected component query
+					break;
+			}
 		}
-		return null;
+		//the old one: if it's NOT a selected component query NOR was the id found:
+		if (found == null)	
+			return null;
+		//as it is a selected component query, then the type of this found object MUST be selectable (i.e. Record)			
+		if(!(found.type instanceof RecordType))
+			return null;					
+		//it is a record, so, try to fetch it's next components (>splitId[1])		
+		RecordType f;
+		for(int i=1; i<splitId.length-1; i++){
+			f=(RecordType)found.type;		
+			found=f.symbolTable.getTable().get(splitId[i]);
+			if(found != null){
+				if(!(found.type instanceof RecordType))
+					return null;				
+			}else{
+				return null;
+			}
+			
+		}
+		//got to the end, try to fetch the last one (which may be null):
+		f=(RecordType)found.type;
+		found=f.symbolTable.getTable().get(splitId[splitId.length-1]);
+		return found;
 	}	
 	
 }

@@ -3,12 +3,15 @@ import java.util.ArrayList;
 
 public class RecordType extends Type{
 	public LinkedSymbolTable symbolTable;
+	public String name;
 	public RecordType(){
 		super();
 		symbolTable=new LinkedSymbolTable();
+		name="";
 	}
 	/**Receives a symbol table, as it is important to know the names of the components*/
-	public RecordType(LinkedSymbolTable st){
+	public RecordType(String name, LinkedSymbolTable st){
+		this.name=name;
 		this.symbolTable=st;
 		ArrayList<Type> product=new ArrayList<Type>();
 		for(AdaSymbol e: st.getTable().values())
@@ -21,7 +24,11 @@ public class RecordType extends Type{
 	
 	/**Get a component's type, based on the component name*/	
 	public Type getComponentType(Object name){
-		return this.symbolTable.get(name).type;
+		AdaSymbol component= this.symbolTable.get(name);
+		if (component != null)
+			return component.type;
+		else
+			return null;
 	}
 
 	public String toString(){
