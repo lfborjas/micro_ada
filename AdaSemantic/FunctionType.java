@@ -43,7 +43,7 @@ public class FunctionType extends Type{
 			retVal.append("Void ");
 		else
 			retVal.append(this.range.toString());
-		retVal.append(" function");
+		retVal.append(" function with (");
 		if (this.product.isEmpty()){
 			retVal.append(" with no parameters.");
 			return retVal.toString();

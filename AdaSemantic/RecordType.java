@@ -2,13 +2,27 @@ package AdaSemantic;
 import java.util.ArrayList;
 
 public class RecordType extends Type{
+	public LinkedSymbolTable symbolTable;
 	public RecordType(){
 		super();
+		symbolTable=new LinkedSymbolTable();
 	}
+	/**Receives a symbol table, as it is important to know the names of the components*/
+	public RecordType(LinkedSymbolTable st){
+		this.symbolTable=st;
+		ArrayList<Type> product=new ArrayList<Type>();
+		for(AdaSymbol e: st.getTable().values())
+			product.add(e.type);
+		this.product=product;
+                for(Type t: this.product)
+                        this.width+=t.getWidth();
 	
-	public RecordType(ArrayList<Type> product){
-		super(product);
 	}	
+	
+	/**Get a component's type, based on the component name*/	
+	public Type getComponentType(Object name){
+		return this.symbolTable.get(name).type;
+	}
 
 	public String toString(){
 		StringBuilder retVal=new StringBuilder("Record ");
