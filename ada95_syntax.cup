@@ -623,10 +623,10 @@ selected_component		::=	name:n POINT identifier:i
 //pongo acá los string literals?
 literal				::=	INTEGER_LITERAL:i	{:RESULT=new ParserResult(i, new IntegerType());:}
 				|	FLOATING_POINT_LITERAL:f	{:RESULT= new ParserResult(f, new FloatType());:}
-				|	CHARACTER_LITERAL:c	{:RESULT= new ParserResult(c, new StringType());:}
+				|	CHARACTER_LITERAL:c	{:RESULT= new ParserResult(c, new StringType(1));:}
 				|	BOOLEAN_LITERAL:b	{:RESULT= new ParserResult(b, new BooleanType());:}
 				|	NULL:n		  	{:RESULT= new ParserResult(n);:}
-				|	STRING_LITERAL:s {:RESULT=new ParserResult(s, new StringType());:}
+				|	STRING_LITERAL:s {:RESULT=new ParserResult(s, new StringType(((String)s).length());:}
 				;
 aggregate			::=	LEFTPAR component_association_list RIGHTPAR
 				|	LEFTPAR choice_list ARROW expression RIGHTPAR
