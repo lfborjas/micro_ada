@@ -26,6 +26,11 @@ action code{:
 
 /**The current symbol table*/
 LinkedSymbolTable currentScope = new LinkedSymbolTable();
+//pongo cualquier cosa, sólo para que ya estén en la st (y no deje declarar otras fn con estos nombres):
+currentScope.put("put", new IntegerType());
+currentScope.put("get", new IntegerType());
+
+
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
    * @param start la palabra del inicio
      @param sline, scolumn el left y right del símbolo start
@@ -68,18 +73,43 @@ public boolean compare_types(Object expected, Object found, int foundLine, int f
 	}
 	return true;
 }
-/**Método para determinar si un tipo está o no declarado*/
-public Type find_type(Object id, int line, int column){
-	Type found;
-	found=currentScope.get(id).type;
+/**Método para determinar si un símbolo está o no declarado*/
+public AdaSymbol findSymbol(Object id, int line, int column){
+	AdaSymbol found;
+	found=currentScope.get(id);
 	if(found == null)){
-		parser.errores.add(" El tipo "+(String)id+"no está definido. En línea "+(String.valueOf(line+1))+", columna "+String.valueOf(column+1));
+		parser.errores.add(" No se encuentra el símbolo '"+(String)id+"'. En línea "+(String.valueOf(line+1))+", columna "+String.valueOf(column+1));
 		return null;
 	}
 	return found;
 	
 }
+/*Agrega un error a los errores del parser*/
+public void agregarError(String mensaje, int linea, int columna){
+	parser.errores.add(mensaje+". En línea "+String.valueOf(linea+1)+", columna "+String.valueOf(columna+1));
+}
 
+public boolean validateBuiltIn(String method, Object val, int line, int col){
+	if(method.equalsIgnoreCase("put") || method.equalsIgnoreCase("get")){
+	//the value must be an arraylist of Parser Results:
+		if(!(val instanceof ArrayList<ParserResult>))
+			return false;
+	//if it is, cast:
+		ArrayList<ParserResult> l=(ArrayList<ParserResult>)val;
+	//now, check that it has only one parameter:
+		if(l.size()!=1){
+			agregarError("La función '"+method"' solamente admite 1 parámetro, "+String.valueOf(l.size())+" suministrados.", line, col);
+			return false;
+		}
+	//it has, so, check that the type is valid: it must be one of the primitive types:
+		return l.get(0).type.isPrimitive();
+		
+	}	
+
+	
+	//invalid method:
+	return false;
+}
 :};
 
 /* Métodos que van en la clase del parser */
@@ -356,11 +386,23 @@ primitive_type 		::=	BOOLEAN {:RESULT=new ParserResult(new BooleanType());:}
 			;
 identifier	::=	IDENTIFIER:i {:RESULT=i;:}
 		;
-argument_list	::=	argument
-		|	argument_list COMMA argument
+argument_list	::=	argument:a
+			{:ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+			  r.add((ParserResult)a);
+			  RESULT=r;
+			:}
+		|	argument_list:l COMMA argument:a
+			{:ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+			  r.addAll((ArrayList<ParserResult>)l);
+			  r.add((ParserResult)a);
+			  RESULT=r;
+			:}
 		;
-argument	::=	expression
+argument	::=	expression:e 
+			{:RESULT=e;:}
+/*In subprogram calls, named parameter notation (i.e. the name of the formal parameter followed of the symbol => and then the actual parameter) allows the rearrangement of the parameters in the call: ¡Habría que tener una tabla de símbolos en la función también!*/		
 		|	identifier ARROW expression
+			/*Habría que, mágicamente, saber el nombre de la función para buscar los ids en la tabla de símbolos...O pasarlos y buscar arriba*/
 		; 
 
 //RM-3: DECLARATIONS
@@ -373,51 +415,54 @@ declaration	::=	object_declaration
 //de p85-persch, pag 87
 /*si las variables están inicializadas, chequear los tipos, y si concuerdan, ponerla en la tabla de símbolos actual */
 object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
-				{:if (s != null){//the subtype CAN be null (p.e. if the type doesn't exist
-				s=(ParserResult)s; o=(ParserResult)o;
-				if(o != null){				
-					boolean compare=compare_types(s.type, o.type, oleft, oright);
-					Type tipo=compare ? s.type : new ErrorType(s.type);					
+				{:ParserResult ps=(ParserResult)s; 
+				//if the type is null, there was an error down the tree (and is already reported)
+				if (ps.type != null){
+				if(o != null){			
+					ParserResult po=(ParserResult)o;
+					boolean compare=compare_types(ps.type, po.type, oleft, oright);
+					Type tipo=compare ? ps.type : new ErrorType(ps.type);					
 					if(!currentScope.put(i, new AdaSymbol(tipo)))
-						parser.errores.add("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado.");
+						agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 						
 				}else{//there's no initialization expression:
-					if(!currentScope.put(i, new AdaSymbol(s.type)))
-						parser.errores.add("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado.");
+					if(!currentScope.put(i, new AdaSymbol(ps.type)))
+						agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 				}
 				}:}
 			|	identifier_list:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
 				{:if (s != null){
-				s=(ParserResult)s; o=(ParserResult)o;
+				ParserResult ps=(ParserResult)s; 
 				i=(ArrayList<String>)i;
 				if(o != null){				
-					boolean compare=compare_types(s.type, o.type, oleft, oright);
-					Type tipo=compare ? s.type : new ErrorType(s.type);					
+					ParserResult po=(ParserResult)o;
+					boolean compare=compare_types(ps.type, po.type, oleft, oright);
+					Type tipo=compare ? ps.type : new ErrorType(ps.type);					
 					for(String id:i){
 						if(!currentScope.put(id, new AdaSymbol(tipo)))
-							parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
 				}else{//there's no initialization expression:
 					for(String id:i){
-						if(!currentScope.put(id, new AdaSymbol(s.type)))
-							parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+						if(!currentScope.put(id, new AdaSymbol(ps.type)))
+							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
 				}
 				}:}
 			;
-initialization_option	::=	| ASSIGNMENT expression
+initialization_option	::=	| ASSIGNMENT expression:e {:RESULT=e;:}
 			;
 number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
-				{:o=(ParserResult)o;
-			          if(!currentScope.put(i, new AdaSymbol(o.type)))
-					parser.errores.add("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado.");
+				{:ParserResult po=(ParserResult)o;
+			          if(!currentScope.put(i, new AdaSymbol(po.type)))
+					agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 				  	
 				:}
 			|	identifier_list:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
-				{:o=(ParserResult)o;i=(ArrayList<String>)i;
-				for(String id:i){
-					if(!currentScope.put(id, new AdaSymbol(o.type)))
-						parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+				{:ParserResult po=(ParserResult)o;ArrayList<String> pi=(ArrayList<String>)i;
+				for(String id:pi){
+					if(!currentScope.put(id, new AdaSymbol(po.type)))
+						agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 				}	
 				  		
 				:}
@@ -436,7 +481,7 @@ identifier_list		::=	identifier:i COMMA identifier:j
 type_declaration	::=	TYPE identifier:i discriminant_part_option:p IS type_definition SEMICOLON 
 				{:
 				if(!currentScope.put(id, new AdaSymbol(new RecordType((ArrayList<Type>)p))))
-					parser.errores.add("Error semántico  : el identificador "+id+" ya ha sido declarado.");
+					agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 				:}
 			|	incomplete_type_declaration
 			;
@@ -447,30 +492,15 @@ type_definition		::=	record_type_definition {:parser.emptyLastUnclosed();:}
 subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
 			;
 /*Searching for a name actually checks if the type is declared*/
-subtype_indication	::=	name:n
-				 {:ParserResult namen=(ParserResult)n;
-				   //if the type is null, it could be either an identifier or an operator symbol:				   				               //try to get it from the symbol table:
-				if(n.type == null){	
-				  AdaSymbol f=currentScope.get(namen.value);		
-				  Type t=null;
-				  if (f != null)
-					t=f.type;
-				  else
-					System.err.println("Error Semántico  : No se puede encontrar el tipo "+
-					((String)namen.value)+" en el ámbito actual. En línea"+(oleft+1)+", columna "+(oright+1));	
-				
-				  RESULT=new ParserResult(os, t);
-				 }else{//the type does exist, so it must be either a selected component or a function call:
-				   RESULT=n;
-				  }								
-				 :}				       
-			|	subtype_indication_with_constraint:c {:RESULT=():}
-			|	primitive_type:t {:RESULT=(ParserResult)t;:}
+subtype_indication	::=	name:n {:RESULT=n;:}
+			|	subtype_indication_with_constraint:c {:RESULT=c;:}
+			|	primitive_type:t {:RESULT=t;:}
 			;
 //de p85-persch, pag 88
+//TODO: define this, the constraints must be of the same type as the name...
 subtype_indication_with_constraint ::=	name range_constraint
 				   |	name accuracy_constraint
-				   |	numeric_type range_constraint
+				   |	numeric_type:n range_constraint {:RESULT=n;:}
 				   |	FLOAT 	accuracy_constraint {:RESULT=new ParserResult(new FloatType());:}
 		         	   ;
 range_constraint		   ::= RANGE range
@@ -536,15 +566,31 @@ declarative_item_list		::=	| declarative_item_list declarative_item
 				;
 declarative_item		::=	declaration
 				|	subprogram_body
-				(|	error SEMICOLON 
+				|	error SEMICOLON 
 				;
 //de p85-persch, pag 90
 //"No vamos a manejar atributos", por tanto, quité la regla que produce attribute
 //quité la de indexed_component:
-name				::=	identifier:i {:RESULT=new ParserResult(i);:}
+/*Siempre que se llama a name se asume que ya está en la tabla de símbolos, por tanto, lo buscaremos aquí. Como un selected component
+ya busca en la tabla de símbolos y también una llamada a función, así las dejaremos. (Además, éstas se sirven de name!)*/
+name				::=	identifier:i 
+					{://buscar el nombre en la tabla de símbolos:
+					  AdaSymbol f=findSymbol(i, ileft, iright);
+					  if(f!= null)
+						RESULT=new ParserResult(i, f.type);						 
+					  else
+						RESULT=new ParserResult(i);
+					:}
 				|	selected_component:s {:RESULT=s;:}
 				|	function_call:f {:RESULT=f;:}
-				|	operator_symbol:o {:RESULT=new ParserResult(o);:}
+				|	operator_symbol:o 
+					{://buscar el nombre en la tabla de símbolos:
+					  AdaSymbol f=findSymbol(i, ileft, iright);
+					  if(f!= null)
+						RESULT=new ParserResult(i, f.type);						 
+					  else
+						RESULT=new ParserResult(i);
+					:}
 				;
 /*The only case of this is in records, isn't it?*/
 selected_component		::=	name:n POINT identifier:i 
@@ -558,21 +604,29 @@ selected_component		::=	name:n POINT identifier:i
 						if (f !=null)//found:
 							t=f.type;
 						else
-							System.err.println("Error Semántico  : No se puede encontrar el componente "+((String)i)+
-							" para el prefijo "+((String)namen.value)+ ". En línea "+(nleft+1)+", columna "+(nright+1));						    //return the value and type found:
+							parser.errores.add("Error Semántico  : No se puede encontrar el componente "+((String)i)+
+							" para el prefijo "+((String)namen.value)+ ". En línea "+String.valueOf(nleft+1)+
+							", columna "+String.valueOf(nright+1));
 						RESULT=new ParserResult(valex, t);
 					:}
 				/*Actually, all is for referring to the pointed to object by an access name (a pointer?)*/
-				|	name:n POINT ALL {:RESULT=new ParserResult(n, currentScope.get(n));:}
+				|	name:n POINT ALL {:
+					AdaSymbol f=findSymbol(n, nleft, nright);
+					if(f != null)
+						RESULT=new ParserResult(n, f.type);
+					else
+						RESULT=new ParserResult(n);
+					:}
 				/*This would have a code similar to the first alternative, BUT this one is not applicable to records...*/
 				|	name POINT operator_symbol
 				;
 //pongo acá los string literals?
-literal				::=	INTEGER_LITERAL
-				|	FLOATING_POINT_LITERAL
-				|	CHARACTER_LITERAL
-				|	BOOLEAN_LITERAL
-				|	NULL
+literal				::=	INTEGER_LITERAL:i	{:RESULT=new ParserResult(i, new IntegerType());:}
+				|	FLOATING_POINT_LITERAL:f	{:RESULT= new ParserResult(f, new FloatType());:}
+				|	CHARACTER_LITERAL:c	{:RESULT= new ParserResult(c, new StringType());:}
+				|	BOOLEAN_LITERAL:b	{:RESULT= new ParserResult(b, new BooleanType());:}
+				|	NULL:n		  	{:RESULT= new ParserResult(n);:}
+				|	STRING_LITERAL:s {:RESULT=new ParserResult(s, new StringType());:}
 				;
 aggregate			::=	LEFTPAR component_association_list RIGHTPAR
 				|	LEFTPAR choice_list ARROW expression RIGHTPAR
@@ -788,10 +842,96 @@ designator_option		::=	| designator:d {:RESULT=d;:}
 */
 procedure_call			::=	name SEMICOLON
 				;
-function_call			::=	name LEFTPAR RIGHTPAR
-				|	name actual_parameter_part
-				|	PUT actual_parameter_part
-				|	GET actual_parameter_part
+/*Llamadas a funciones: si no tiene parámetros, sólo buscar la función (y que sea una que no tenga parámetros, eh)
+Si sí, habrá también que ver que cumplan con el dominio.*/
+function_call			::=	name:n LEFTPAR RIGHTPAR
+				 	{:	
+						AdaSymbol f=findSymbol(n, nleft, nright);	
+					        if (f==null)
+							RESULT=new ParserResult(n);
+					  	else{//found, check if the function complies...
+						//check if it IS a function:
+							if(!(f.type instanceof FunctionType)){
+								agregarError("Error Semántico  : '"+((String)n)+"' no es una función", nleft, nright);
+								RESULT=new ParserResult(n);
+						//check if it is an empty parameter function:
+							}else if(!f.type.getProduct().isEmpty()){
+								agregarError("Error Semántico  : la función '"+((String)n)+
+								"' recibe "+(f.type.getProduct().size())+" parámetros. O suministrados", nleft, nright);
+								RESULT=new ParserResult(n);
+						//if it is a function with empty parameters, then return
+							}else{
+								RESULT=new ParserResult(n, f.type);
+							}
+						}
+					:}
+				|	name:n actual_parameter_part:p 
+					{:
+					AdaSymbol f=findSymbol(n, nleft, nright);
+					if(f==null)
+						RESULT=new ParserResult(n);
+					else{
+						if(!(f.type instanceof FunctionType)){
+							agregarError("Error Semántico  : '"+((String)n)+"' no es una función", nleft, nright);
+							RESULT=new ParserResult(n);
+						}else{//la función existe: 
+						//ver si está llamado con el número correcto de parámetros:
+							if(!(f.type.getProduct().size()==((ArrayList<ParserResult>)p).size())){
+								agregarError("Error Semántico  : la función '"+((String)n)+
+								"' recibe "+(f.type.getProduct().size())+" parámetros."+
+								String.valueOf(((ArrayList<ParserResult>)p).size())
+								+"  suministrados", nleft, nright);
+								
+							}else{//el número de parámetros es correcto, vamos a ver si son iguales:
+								int i=0;
+								ArrayList<ParserResult> pr=(ArrayList<ParserResult>)p;
+								Type found;Type expected;			
+								for(;i<f.type.getProduct().size();i++){
+									found=p.get(i).type;
+									expected=f.type.getProduct().get(i);		
+									if(!expected.equals(found)){
+										agregarError("Argumento incorrecto para la función '"+((String)n)+"'"+
+										" encontrado '"+found.toString()+"', se esperaba '"+expected.toString()+"'",
+										nleft, nright);
+										break;			
+									}
+								}//si termina, el tipo de los parámetros es correcto
+								if(i==f.type.getProduct().size())
+									RESULT=new ParserResult(n, f.type);
+								else
+									RESULT=new ParserResult(n);
+								
+							}//el número de parámetros es correcto 
+								
+						}//es una función
+					}//se encontró el id
+					//create a new dummy function to compare it with this.
+					:}
+				//TODO: poner en la tabla de símbolos, inicialmente, todas las sobrecargas de put y get. Y definir una función para sacarlos
+				//ya que no se permiten en la ST nombres repetidos...
+				|	PUT actual_parameter_part:p
+					{://ver si cumple con: sólo un parámetro, el tipo es o String, int, float o boolean
+						boolean v=validateBuiltIn("PUT", p, pleft, pright);						
+						if(!v){
+							RESULT=new ParserResult("put");							
+						}else{
+							//assume it has only one element:
+							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
+							RESULT=new ParserResult("put", uP.type);
+						}
+						
+					:}
+				|	GET actual_parameter_part:p
+					{://mismos criterios que el put...
+						boolean v=validateBuiltIn("GET", p, pleft, pright);
+						if(!v){
+							RESULT=new ParserResult("get");							
+						}else{
+							//assume it has only one element:
+							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
+							RESULT=new ParserResult("get", uP.type);
+						}
+					:}
 				;
 /*Esta no me parece tan poderosa:
 put_call	::= PUT LEFTPAR actual_parameter_list RIGHTPAR
@@ -800,7 +940,7 @@ pero quería sólo dejar que pusieran expresiones booleanas, enteras y float all
 supongo que queda para el semántico...
 */
 
-actual_parameter_part		::=	 LEFTPAR argument_list RIGHTPAR			
+actual_parameter_part		::=	 LEFTPAR argument_list:a RIGHTPAR {:RESULT=a;:}			
 				;
 //de p85-persch, pag 95: quité todo
 
