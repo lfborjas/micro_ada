@@ -431,19 +431,20 @@ object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  
 				}
 				}:}
 			|	identifier_list:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
-				{:if (s != null){
+				{:
 				ParserResult ps=(ParserResult)s; 
-				i=(ArrayList<String>)i;
+				if (ps.type != null){
+				ArrayList<String> il=(ArrayList<String>)i;
 				if(o != null){				
 					ParserResult po=(ParserResult)o;
 					boolean compare=compare_types(ps.type, po.type, oleft, oright);
 					Type tipo=compare ? ps.type : new ErrorType(ps.type);					
-					for(String id:i){
+					for(String id:il){
 						if(!currentScope.put(id, new AdaSymbol(tipo)))
 							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
 				}else{//there's no initialization expression:
-					for(String id:i){
+					for(String id:il){
 						if(!currentScope.put(id, new AdaSymbol(ps.type)))
 							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
@@ -478,18 +479,29 @@ identifier_list		::=	identifier:i COMMA identifier:j
 				  RESULT=r;	
 				:}
 			;
-type_declaration	::=	TYPE identifier:i discriminant_part_option:p IS type_definition SEMICOLON 
+/*TODO: ver qué ondas con la discriminant part: cf. en.wikibooks.org/wiki/Ada_Programming/Types/record */
+type_declaration	::=	TYPE identifier:i discriminant_part_option:p IS type_definition:t SEMICOLON 
 				{:
-				if(!currentScope.put(id, new AdaSymbol(new RecordType((ArrayList<Type>)p))))
-					agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
+				//viene una tabla de símbolos: porque siempre son records
+				LinkedSymbolTable table=(LinkedSymbolTable)t;				
+				if(!currentScope.put(i, new AdaSymbol(new RecordType(((String)i),table))))
+					agregarError("Error semántico  : el tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
 				:}
 			|	incomplete_type_declaration
 			;
 discriminant_part_option ::=	| discriminant_part
 			;
-type_definition		::=	record_type_definition {:parser.emptyLastUnclosed();:}
+type_definition		::=	record_type_definition:r {:parser.emptyLastUnclosed();RESULT=r;:}
 			;
-subtype_declaration	::=	SUBTYPE identifier IS subtype_indication SEMICOLON
+subtype_declaration	::=	SUBTYPE identifier:i IS subtype_indication:s SEMICOLON
+				{:
+					ParserResult ps=(ParserResult)s;
+					if(ps.type!= null){
+						if(!currentScope.put(i, s.type)){
+							agregarError("Error semántico  : el tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
+						}
+					}
+				:}
 			;
 /*Searching for a name actually checks if the type is declared*/
 subtype_indication	::=	name:n {:RESULT=n;:}
@@ -524,18 +536,47 @@ discrete_range			::=	name range_constraint_option
 				;
 record_type_definition		::=	RECORD:r  
 					{:parser.setUnclosed("end record;", "record", rleft,rright );:} 
-						component_list
+						component_list:l //returns a symbol table
+						{:RESULT=l;:}
 					END RECORD 
 				;
-component_list			::=	component_declaration_list variant_part_option 
-				|	NULL SEMICOLON
+/*TODO: ver qué ondas con la variant part*/
+component_list			::=	component_declaration_list:l {:RESULT=l;:} variant_part_option 
+				|	NULL {:RESULT=new LinkedSymbolTable();:}SEMICOLON
 				;
 //de p85-persch, pag 89			
-component_declaration_list	::=	| component_declaration_list component_declaration
+/*TODO: check that this works, having code in a lambda production...*/
+component_declaration_list	::=	{:RESULT=new LinkedSymbolTable();:}
+				|	 component_declaration_list:l component_declaration:c
+					{:LinkedSymbolTable t=(LinkedSymbolTable)l;
+					  //the components are parserResults: en el valor viene el nombre.
+					//c puede ser una lista o un solo elemento:
+					if(c != null){	
+					  if(!(c instanceof ArrayList<ParserResult>)){
+					 	 ParserResult p=(ParserResult)c;
+						  if(!t.put(p.value, p.type)){
+							agregarError("El componente '"+((String)p.value)+
+							"' ya ha sido declarado en este registro.", cleft, cright);
+						  }
+					  }else{//sí es una lista:
+						ArrayList<ParserResult> lc=(ArrayList<ParserResult>)c;
+						for(ParserResult p: lc){
+						  if(!t.put(p.value, p.type)){
+							agregarError("El componente '"+((String)p.value)+
+							"' ya ha sido declarado en este registro.", cleft, cright);
+						  }//no se pudo meter el id
+							
+						}//iterar en c
+					  }//c es una lista
+				
+					}//c existe
+					//subir la tabla de símbolos:
+					RESULT=t;
+					:}
 				;
 variant_part_option		::=	| variant_part
 				;
-component_declaration		::=	discriminant_declaration SEMICOLON 
+component_declaration		::=	discriminant_declaration:d {:RESULT=d;:} SEMICOLON 
 				|	error 
 				;
 discriminant_part		::=	LEFTPAR discriminant_declaration_list RIGHTPAR
@@ -543,8 +584,50 @@ discriminant_part		::=	LEFTPAR discriminant_declaration_list RIGHTPAR
 discriminant_declaration_list	::=	discriminant_declaration
 				|	discriminant_declaration_list SEMICOLON discriminant_declaration
 				;
-discriminant_declaration	::=	identifier COLON subtype_indication initialization_option
-				|	identifier_list COLON subtype_indication initialization_option
+/*=Hier*/
+discriminant_declaration	::=	identifier:i COLON subtype_indication:s initialization_option:o
+					{://ver si el tipo existe. Si existe, ver si coincide con la inicialización.
+					  //si algo malo pasa, devolver null.
+					  ParserResult ps=(ParserResult)s;
+					  if(ps.type != null){//si el tipo sí fue encontrado:
+						if(o != null){//ver si el tipo de o coincide con el de s:
+							 ParserResult po=(ParserResult)o;
+		                                         boolean compare=compare_types(ps.type, po.type, oleft, oright);
+                 		                         Type tipo=compare ? ps.type : new ErrorType(ps.type);
+							 RESULT=new ParserResult(i, tipo);
+						}else{//no hay inicialización:
+							RESULT=new ParserResult(i, ps.type);
+						}
+					  }else{//el tipo no fue encontrado
+						RESULT=null;
+					  }
+					:}
+				|	identifier_list:l COLON subtype_indication:s initialization_option:o
+					{:
+					  ParserResult ps=(ParserResult)s;
+					  ArrayList<String> il=(ArrayList<String>)l;
+					  if(ps.type != null){//si el tipo sí fue encontrado:
+						if(o != null){//ver si el tipo de o coincide con el de s:
+							 ParserResult po=(ParserResult)o;
+		                                         boolean compare=compare_types(ps.type, po.type, oleft, oright);
+                 		                         Type tipo=compare ? ps.type : new ErrorType(ps.type);
+							 ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+							 for(String id: il){						
+							 	r.add(new ParserResult(id, tipo));					
+						         }
+							 RESULT=r;
+						}else{//no hay inicialización:
+							 ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+							 for(String id: il){						
+							 	r.add(new ParserResult(id, tipo));					
+						         }
+							 RESULT=r;
+						}
+					  }else{
+						RESULT=null;
+					  }
+						
+					:}
 				;
 variant_part 			::=	CASE name IS variant_list END CASE SEMICOLON
 				;
