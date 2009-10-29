@@ -584,7 +584,6 @@ discriminant_part		::=	LEFTPAR discriminant_declaration_list RIGHTPAR
 discriminant_declaration_list	::=	discriminant_declaration
 				|	discriminant_declaration_list SEMICOLON discriminant_declaration
 				;
-/*=Hier*/
 discriminant_declaration	::=	identifier:i COLON subtype_indication:s initialization_option:o
 					{://ver si el tipo existe. Si existe, ver si coincide con la inicialización.
 					  //si algo malo pasa, devolver null.
@@ -879,9 +878,24 @@ goto_statement			::=	GOTO name SEMICOLON
 //no vamos a usar generics, o sí? En este caso, acá faltarían dos producciones
 subprogram_declaration		::=	subprogram_specification SEMICOLON
 				;	 
-					
-subprogram_specification	::=	PROCEDURE identifier formal_part_option
-				|	FUNCTION designator formal_part_option RETURN subtype_indication
+/*Hier*/					
+subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
+					{::}
+				|	FUNCTION designator:d formal_part_option:f RETURN subtype_indication:s
+					{:
+						ParserResult ps=(ParserResult)s;
+						if(f != null){//si la formal part está correcta:
+							/*Si los nombres de los parámetros me importaran: */
+							//ArrayList<ParserResult> pf=(ArrayList<ParserResult>)f;
+							//sólo me importan los types?
+							LinkedSymbolTable ft=(LinkedSymbolTable)f;	 
+							if(ps.type != null){
+							//comparar la formal_part con el tipo de s y d debe traer una arraylist
+							//de parserResults (o una symbol table...) para declarar la función d.
+								if(!currentScope.put(d, new FunctionType(ps.type, ft)))
+							}
+						}
+					:}
 				;
 subprogram_specification_is	::=	PROCEDURE identifier:i IS {:RESULT=i;:}
 				|	PROCEDURE identifier:i formal_part IS {:RESULT=i;:}
