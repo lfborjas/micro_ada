@@ -497,7 +497,10 @@ subtype_declaration	::=	SUBTYPE identifier:i IS subtype_indication:s SEMICOLON
 				{:
 					ParserResult ps=(ParserResult)s;
 					if(ps.type!= null){
-						if(!currentScope.put(i, s.type)){
+						Type t=ps.type;
+						t.name=(String)i;
+						//se pone un nuevo tipo con otro nombre:
+						if(!currentScope.put(i, t)){
 							agregarError("Error semántico  : el tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
 						}
 					}
