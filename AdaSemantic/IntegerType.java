@@ -4,11 +4,20 @@ public class IntegerType extends PrimitiveType{
 	public IntegerType(){
 		super();
 		this.width=Type.INTEGER_WIDTH;
-	}	
-	
-	public String toString(){
-		return "Integer";
+		this.name="integer";
 	}
+	
+	public IntegerType(String name){
+                super();
+                this.width=Type.INTEGER_WIDTH;
+                this.name=name;
+        }
+
+	public String toString(){
+                String n=(name.equalsIgnoreCase("integer"))? "" : name+": ";
+                return n+"Integer";
+        }
+	
 
 	public boolean equals(Object o){
 		if(o==null)
@@ -18,6 +27,6 @@ public class IntegerType extends PrimitiveType{
 		if(o==this)
 			return true;
 		//if(((IntegerType) o).getValue()==this.value)
-		return true;
+		return this.name.equalsIgnoreCase(((IntegerType)o).name);
 	}
 }

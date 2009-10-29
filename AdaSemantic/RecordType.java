@@ -3,7 +3,6 @@ import java.util.ArrayList;
 
 public class RecordType extends Type{
 	public LinkedSymbolTable symbolTable;
-	public String name;
 	public RecordType(){
 		super();
 		symbolTable=new LinkedSymbolTable();
@@ -32,7 +31,8 @@ public class RecordType extends Type{
 	}
 
 	public String toString(){
-		StringBuilder retVal=new StringBuilder("Record ");
+		String n=(this.name.equals(""))? "": name+": ";
+		StringBuilder retVal=new StringBuilder(n+"Record ");
 		if (!this.product.isEmpty())
 			retVal.append(" of (");
 		else
@@ -58,7 +58,7 @@ public class RecordType extends Type{
 			return true;
 		RecordType temp=(RecordType) o;
 		//porque ADA hace la comprobación nominal, no estructural
-		return this.name=temp.name;
+		return this.name.equalsIgnoreCase(temp.name);
 		//TODO: should I consider the name or the number, type and order of the params?
 		/*
 		if (!temp.getName().equalsIgnoreCase(this.name))

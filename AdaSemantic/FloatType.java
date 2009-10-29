@@ -4,12 +4,19 @@ public class FloatType extends PrimitiveType{
         public FloatType(){
                 super();
                 this.width=Type.FLOAT_WIDTH;
+		this.name="float";
         }
+	
+	public FloatType(String name){
+		super();
+		this.width=Type.FLOAT_WIDTH;
+		this.name=name;
+	}
 
-        public String toString(){
-                return "Float";
+	public String toString(){
+                String n=(name.equalsIgnoreCase("float"))? "" : name+": ";
+                return n+"Float";
         }
-
         public boolean equals(Object o){
                 if(o==null)
                         return false;
@@ -18,7 +25,7 @@ public class FloatType extends PrimitiveType{
                 if(o==this)
                         return true;
                 //if(((FloatType) o).getValue()==this.value)
-                return true;
+                return this.name.equalsIgnoreCase(((FloatType)o).name);
         }
 }
 
