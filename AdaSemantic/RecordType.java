@@ -57,11 +57,13 @@ public class RecordType extends Type{
 		if(o==this)
 			return true;
 		RecordType temp=(RecordType) o;
+		//porque ADA hace la comprobación nominal, no estructural
+		return this.name=temp.name;
 		//TODO: should I consider the name or the number, type and order of the params?
 		/*
 		if (!temp.getName().equalsIgnoreCase(this.name))
 			return false;	
-		*/
+		
 		//must have the same width!
 		if (temp.getWidth() != this.width)
 			return false;
@@ -73,6 +75,6 @@ public class RecordType extends Type{
 		for(int i=0;i<this.product.size();i++)
 			if(!(tempProduct.get(i).equals(this.product.get(i))))
 				return false;
-		return true;
+		return true;*/
 	}
 }
