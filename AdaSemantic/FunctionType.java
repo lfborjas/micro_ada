@@ -8,24 +8,28 @@ public class FunctionType extends Type{
 	public FunctionType(){
 		this.range=null;
 		this.width=0;
+		this.name="function";
 	}
 		
 	public FunctionType(Type range){
 		super();
 		this.range=range;
 		this.width=range.width;
+		this.name="function";
 	}
 
 	public FunctionType(Type range, ArrayList<Type> domain){
 		this.product=domain;
 		this.range=range;
 		this.width=range.width;
+		this.name="function";
 	}
 
 	public FunctionType(ArrayList<Type> domain){
 		this.product=domain;
 		this.width=0;
 		this.range=null;//Should I create a void class?
+		this.name="function";
 	}
 
 	
