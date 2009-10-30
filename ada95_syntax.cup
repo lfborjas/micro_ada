@@ -27,8 +27,8 @@ action code{:
 /**The current symbol table*/
 LinkedSymbolTable currentScope = new LinkedSymbolTable();
 //pongo cualquier cosa, sólo para que ya estén en la st (y no deje declarar otras fn con estos nombres):
-currentScope.put("put", new IntegerType());
-currentScope.put("get", new IntegerType());
+currentScope.put("put", new AdaSymbol(new IntegerType()));
+currentScope.put("get", new AdaSymbol(new IntegerType()));
 
 
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
@@ -500,7 +500,7 @@ subtype_declaration	::=	SUBTYPE identifier:i IS subtype_indication:s SEMICOLON
 						Type t=ps.type;
 						t.name=(String)i;
 						//se pone un nuevo tipo con otro nombre:
-						if(!currentScope.put(i, t)){
+						if(!currentScope.put(i, new AdaSymbol(t))){
 							agregarError("Error semántico  : el tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
 						}
 					}
@@ -557,14 +557,14 @@ component_declaration_list	::=	{:RESULT=new LinkedSymbolTable();:}
 					if(c != null){	
 					  if(!(c instanceof ArrayList<ParserResult>)){
 					 	 ParserResult p=(ParserResult)c;
-						  if(!t.put(p.value, p.type)){
+						  if(!t.put(p.value, new Symbol(p.type))){
 							agregarError("El componente '"+((String)p.value)+
 							"' ya ha sido declarado en este registro.", cleft, cright);
 						  }
 					  }else{//sí es una lista:
 						ArrayList<ParserResult> lc=(ArrayList<ParserResult>)c;
 						for(ParserResult p: lc){
-						  if(!t.put(p.value, p.type)){
+						  if(!t.put(p.value, new AdaSymbol(p.type))){
 							agregarError("El componente '"+((String)p.value)+
 							"' ya ha sido declarado en este registro.", cleft, cright);
 						  }//no se pudo meter el id
@@ -881,9 +881,19 @@ goto_statement			::=	GOTO name SEMICOLON
 //no vamos a usar generics, o sí? En este caso, acá faltarían dos producciones
 subprogram_declaration		::=	subprogram_specification SEMICOLON
 				;	 
-/*Hier*/					
+/*Esta es una de las cosas que cambiaría de usar tablas de símbolos en las funciones. Por ahora asumiré que las formal_part
+devuelven una lista de tipos, ya que sólo me importan los tipos...*/	
 subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
-					{::}
+					{:
+						if(f != null){
+							ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
+							ArrayList<Type> ft=new ArrayList<Type>();
+							for (ParserResult p:fl)
+								ft.add(p.type);
+							if(!currentScope.put(d, new AdaSymbol(new FunctionType(ft))))
+								agregarError("'"+((String)i)"' ya ha sido declarado.", ileft, iright);
+						}
+					:}
 				|	FUNCTION designator:d formal_part_option:f RETURN subtype_indication:s
 					{:
 						ParserResult ps=(ParserResult)s;
@@ -891,18 +901,63 @@ subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
 							/*Si los nombres de los parámetros me importaran: */
 							//ArrayList<ParserResult> pf=(ArrayList<ParserResult>)f;
 							//sólo me importan los types?
-							LinkedSymbolTable ft=(LinkedSymbolTable)f;	 
+							//LinkedSymbolTable ft=(LinkedSymbolTable)f;	 
+							ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
+							ArrayList<Type> ft=new ArrayList<Type>();
+							for (ParserResult p:fl)
+								ft.add(p.type);							
 							if(ps.type != null){
-							//comparar la formal_part con el tipo de s y d debe traer una arraylist
-							//de parserResults (o una symbol table...) para declarar la función d.
-								if(!currentScope.put(d, new FunctionType(ps.type, ft)))
+								if(!currentScope.put(d, new AdaSymbol(new FunctionType(ps.type, ft))))
+									agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
 							}
 						}
 					:}
 				;
-subprogram_specification_is	::=	PROCEDURE identifier:i IS {:RESULT=i;:}
-				|	PROCEDURE identifier:i formal_part IS {:RESULT=i;:}
-				|	FUNCTION designator:i formal_part_option RETURN subtype_indication IS {:RESULT=i;:}
+subprogram_specification_is	::=	PROCEDURE identifier:i IS 	
+					{:
+					if(!currentScope.put(i, new AdaSymbol(new FunctionType()))){
+						agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
+					}else{
+					  currentScope=new LinkedSymbolTable(currentScope);
+					}
+					  RESULT=i;
+					:}
+				|	PROCEDURE identifier:i formal_part:f IS 
+					{:
+					  //formal part es una lista de parser results:
+					  if( f!= null){											  	
+						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
+						ArrayList<Type> ft=new ArrayList<Type>();
+						for (ParserResult p:fl)
+							ft.add(p.type);
+						if(!currentScope.put(d, new AdaSymbol(new FunctionType(ft))))
+							agregarError("'"+((String)i)"' ya ha sido declarado.", ileft, iright);
+						else
+							currentScope=new LinkedSymbolTable(currentScope);
+					  }
+					
+					RESULT=i;:}
+				|	FUNCTION designator:i formal_part_option:f RETURN subtype_indication:s IS 
+					{:
+					ParserResult ps=(ParserResult)s;
+					if(f != null){
+						
+						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
+						ArrayList<Type> ft=new ArrayList<Type>();
+						for (ParserResult p:fl)
+							ft.add(p.type);							
+						if(ps.type != null){
+							if(!currentScope.put(d, new AdaSymbol(new FunctionType(ps.type, ft))))
+								agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
+							else{
+								currentScope=new LinkedSymbolTable(currentScope);
+							}
+						}
+						
+		
+					}
+					 RESULT=i;
+					:}
 				;
 //de p85-persch, pag 94
 designator			::=	identifier:i {:RESULT=i;:} 
@@ -910,28 +965,95 @@ designator			::=	identifier:i {:RESULT=i;:}
 				;
 operator_symbol			::=	STRING_LITERAL:s {:RESULT=s;:}
 				;
-formal_part			::=	LEFTPAR parameter_declaration_list RIGHTPAR
+formal_part			::=	LEFTPAR parameter_declaration_list:l {:RESULT=l;:} RIGHTPAR
 				;
-formal_part_option		::=	| formal_part
+formal_part_option		::=	| formal_part:f {:RESULT=f;:}
 				;
-parameter_declaration_list	::=	parameter_declaration
-				|	parameter_declaration_list SEMICOLON parameter_declaration
+parameter_declaration_list	::=	parameter_declaration:d {:
+					if(d != null){
+					if (!(d instanceof ArrayList<ParserResult>)){
+						ArrayList<ParserResult> r=new ArrayList<ParserResult>;
+						//asumimos que, si no es una lista, es un parser result
+						r.add((ParserResult)d);
+						RESULT=r;
+					}else{
+						RESULT=r;
+					}
+					}
+					:}
+				|	parameter_declaration_list:l SEMICOLON parameter_declaration:d
+					{:
+					if(l != null){
+						ArrayList<ParserResult> ll=(ArrayList<ParserResult>)ll;
+						//puede venir un solo elemento o una lista:
+						if(d != null){
+							if(!(d instanceof ArrayList<ParserResult>)){
+								ll.add((ParserResult)d);
+							}else{
+								ll.addAll((ArrayList<ParserResult>)d);
+							}
+						}
+						RESULT=ll;
+					}
+					:}
 				;
-parameter_declaration		::=	identifier COLON mode subtype_indication initialization_option
-				|	identifier_list COLON mode subtype_indication initialization_option
+parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initialization_option:o
+					{:
+					ParserResult ps=(ParserResult)s;
+                                	//if the type is null, there was an error down the tree (and is already reported)
+	                                if (ps.type != null){
+        		                        if(o != null){
+                        		                ParserResult po=(ParserResult)o;
+                                        		boolean compare=compare_types(ps.type, po.type, oleft, oright);
+		                                        Type tipo=compare ? ps.type : new ErrorType(ps.type);
+							ParserResult r=new ParserResult(i, tipo);
+							RESULT=r;
+		                                }else{//there's no initialization expression:
+							RESULT=new ParserResult(i, ps.type);
+		                                }
+                	                }else{
+						RESULT=null;
+					}
+					:}
+				|	identifier_list:l COLON mode:m subtype_indication:s initialization_option:o
+					{:
+					
+					ParserResult ps=(ParserResult)s;
+                                	//if the type is null, there was an error down the tree (and is already reported)
+	                                if (ps.type != null){
+					ArrayList<String> il=(ArrayList<String>)l;
+					ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+        		                        if(o != null){
+                        		                ParserResult po=(ParserResult)o;
+                                        		boolean compare=compare_types(ps.type, po.type, oleft, oright);
+		                                        Type tipo=compare ? ps.type : new ErrorType(ps.type);
+							for(String id :il)
+								r.add(new ParserResult(id, tipo));
+							RESULT=r;
+		                                }else{//there's no initialization expression:
+							for(String id: il)
+								r.add(new ParserResult(i, ps.type));
+							RESULT=r;
+		                                }
+                	                }else{
+						RESULT=null;
+					}
+					:}
 				;
 mode				::=	
-				|	IN
-				|	OUT
-				|	IN OUT
+				|	IN {:RESULT="IN";:}
+				|	OUT {:RESULT="OUT";:}
+				|	IN OUT {:RESULT="INOUT":}
 				;
 subprogram_body			::=	subprogram_specification_is:s 
 						declarative_part 
 					BEGIN:b  
 					{:parser.setUnclosed((" end "+((String)s)+";"), "begin",bleft, bright);:}
 						sequence_of_statements 
-					END designator_option:e SEMICOLON  
-				{:check_coherence(s,sleft, sright, e, eleft, eright);:}
+					END designator_option:e SEMICOLON
+					//salir del subprograma:
+					{:currentScope=currentScope.getAncestor():} placeholder 
+					{:check_coherence(s,sleft, sright, e, eleft, eright);:}
 				;
 designator_option		::=	| designator:d {:RESULT=d;:}
 				;
