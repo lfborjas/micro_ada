@@ -5,7 +5,11 @@ public class FunctionType extends Type{
 	/**a.k.a. the return type of the function*/
 	private Type range;
 	/*The domain of the function is the product of this Type*/
-	
+	public FunctionType(){
+		this.range=null;
+		this.width=0;
+	}
+		
 	public FunctionType(Type range){
 		super();
 		this.range=range;
