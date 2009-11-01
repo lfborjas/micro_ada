@@ -31,6 +31,9 @@ public class ErrorType extends PrimitiveType{
 		else 
 			return true;
 	}
-	
+
+	public boolean isNumeric(){
+		return false;
+	}	
 }
 

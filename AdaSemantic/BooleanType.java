@@ -28,5 +28,9 @@ public class BooleanType extends PrimitiveType{
                 //if(((BooleanType) o).getValue()==this.value)		
                 return this.name.equalsIgnoreCase(((BooleanType)o).name);
         }
+	
+	public boolean isNumeric(){
+		return false;
+	}
 }
 

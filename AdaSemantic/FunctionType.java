@@ -87,6 +87,10 @@ public class FunctionType extends Type{
                                 return false;
                 return true;
         }
+	
+	public boolean isNumeric(){
+		return false;
+	}
 
 		
 }

@@ -27,5 +27,9 @@ public class FloatType extends PrimitiveType{
                 //if(((FloatType) o).getValue()==this.value)
                 return this.name.equalsIgnoreCase(((FloatType)o).name);
         }
+	
+	public boolean isNumeric(){
+		return true;
+	}
 }
 

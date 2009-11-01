@@ -103,5 +103,6 @@ public abstract class Type{
 	public abstract boolean equals(Object o);
 	public abstract String toString();
 	public abstract boolean isPrimitive();
+	public abstract boolean isNumeric();
 	
 }

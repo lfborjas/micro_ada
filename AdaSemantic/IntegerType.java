@@ -29,4 +29,8 @@ public class IntegerType extends PrimitiveType{
 		//if(((IntegerType) o).getValue()==this.value)
 		return this.name.equalsIgnoreCase(((IntegerType)o).name);
 	}
+	
+	public boolean isNumeric(){
+		return true;
+	}
 }

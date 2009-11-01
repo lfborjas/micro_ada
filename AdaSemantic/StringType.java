@@ -21,5 +21,9 @@ public class StringType extends PrimitiveType{
                 //if(((StringType) o).getValue()==this.value)
                 return true;
         }
+	
+	public boolean isNumeric(){
+		return false;
+	}
 
 }
