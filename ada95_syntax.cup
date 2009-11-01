@@ -1357,9 +1357,9 @@ sequence_of_statements		::=	statement:s {:RESULT=s;:}
 				|	sequence_of_statements:q statement:s
 					{:
 					if(q != null)
-						RESULT=s;
-					else
 						RESULT=q;
+					else
+						RESULT=s;
 					:}
 				;
 //usaremos pragma? De ser así, aquí también produciría pragma:
