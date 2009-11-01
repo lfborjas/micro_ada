@@ -110,6 +110,7 @@ public boolean validateBuiltIn(String method, Object val, int line, int col){
 	//invalid method:
 	return false;
 }
+
 :};
 
 /* Métodos que van en la clase del parser */
@@ -751,28 +752,312 @@ component_association_list	::=	component_association COMMA component_association
 component_association		::=	expression
 				|	choice_list ARROW expression
 				;
-expression			::=	relation
-				|	and_expression
-				|	or_expression
-				|	xor_expression
-				|	andthen_expression
-				|	orelse_expression
+expression			::=	relation:e 	{:RESULT=e;:}
+				|	and_expression:e {:RESULT=e;:}
+				|	or_expression:e {:RESULT=e;:}
+				|	xor_expression:e {:RESULT=e;:}
+				|	andthen_expression:e {:RESULT=e;:}
+				|	orelse_expression:e {:RESULT=e;:}
 				;
 //de p85-persch, pag 91
-and_expression			::=	relation AND relation
-				|	and_expression AND relation
+and_expression			::=	relation:p AND relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					:}
+				|	and_expression:p AND relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					:}
 				;
-or_expression			::=	relation OR relation
-				|	or_expression OR relation
+or_expression			::=	relation:p OR relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					:}
+				|	or_expression:p OR relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					:}
 				;
-xor_expression			::=	relation XOR relation
-				|	xor_expression XOR relation
+xor_expression			::=	relation:p XOR relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					:}
+				|	xor_expression:p XOR relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					:}
 				;
-andthen_expression		::=	relation AND_THEN relation
-				|	andthen_expression AND_THEN relation
+andthen_expression		::=	relation:p AND_THEN relation:q {:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+
+					:}
+				|	andthen_expression:p AND_THEN relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+
+					:}
 				;
-orelse_expression		::=	relation OR_ELSE relation
-				|	orelse_expression OR_ELSE relation
+orelse_expression		::=	relation:p OR_ELSE relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+						
+					:}
+				|	orelse_expression:p OR_ELSE relation:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+
+					:}
+					
 				;
 relation			::=	simple_expression:s {:RESULT=s;:}
 				|	simple_expression:p relational_operator simple_expression:q
