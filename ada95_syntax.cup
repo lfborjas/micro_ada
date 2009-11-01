@@ -782,24 +782,152 @@ relation			::=	simple_expression
 membership_operator		::=	IN
 				|	NOT IN
 				;
-simple_expression		::=	term_list	
+simple_expression		::=	term_list:t
+					{:
+					if(t != null){
+						/*Hier*/
+					}
+					:}
+		
 				|	unary_operator term_list
 				;
-term_list			::=	term
-				|	term_list adding_operator term
+term_list			::=	term:t
+					{:
+					if(t != null){
+					   ParserResult pr=(ParserResult)t;
+					   if(pr.type != null){
+					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
+						if(tipo.isNumeric()){
+							RESULT=pr;						
+						}else{
+						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
+						   RESULT=null;	
+						}
+					   }
+					}
+					:}
+				|	term_list:p adding_operator term:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if(ptipo.isNumeric() && qtipo.isNumeric()){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(!ptipo.isNumeric())
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					:}
 				;
-term				::=	factor
-				|	term multiplying_operator factor
+term				::=	factor:f
+					{:
+					if(f != null){
+					   ParserResult pr=(ParserResult)f;
+					   if(pr.type != null){
+					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
+						if(tipo.isNumeric()){
+							RESULT=pr;						
+						}else{
+						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), fleft, fright);
+						   RESULT=null;	
+						}
+					   }
+					}
+					:}
+				|	term:t multiplying_operator factor:f
+					{:
+					if ((t != null) && (f != null)){
+							
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if(ptipo.isNumeric() && qtipo.isNumeric()){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(!ptipo.isNumeric())
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
+							else 
+							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), fleft, fright);
+							RESULT=null;
+						}
+						
+					}	
+					}	
+					:}
 				;
-factor				::=	primary
-				|	primary EXPONENTIATE primary
+/*These must be numeric: if they're not, pass a null up... Else, pass the parser result up*/
+factor				::=	primary:p
+					{:
+					   ParserResult pr=(ParserResult)p;
+					   if(pr.type != null){
+					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
+						if(tipo.isNumeric()){
+							RESULT=pr;						
+						}else{
+						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
+						   RESULT=null;	
+						}
+					   }
+					
+					   
+					:}
+				|	primary:p EXPONENTIATE primary:q
+					{:
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if(ptipo.isNumeric() && qtipo.isNumeric()){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(!ptipo.isNumeric())
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+					:}
 				;
-primary				::=	literal
+primary				::=	literal:l {:RESULT=l;:}
 				|	aggregate
-				|	name
+				|	name:n {:RESULT=n;:}
 				|	allocator
 				|	qualified_expression
-				|	LEFTPAR expression RIGHTPAR
+				|	LEFTPAR expression:e RIGHTPAR {:RESULT=e;:}
 				;
 relational_operator		::=	EQUAL
 				|	INEQUALITY
@@ -1134,7 +1262,11 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 								agregarError("Error Semántico  : la función '"+((String)n)+
 								"' recibe "+(f.type.getProduct().size())+" parámetros. O suministrados", nleft, nright);
 								RESULT=new ParserResult(n);
-						//if it is a function with empty parameters, then return
+						//if it is a function with empty parameters, but no return type, is a procedure!
+							}else if(((FunctionType)f.type).getRange() == null){
+								agregarError("No se puede usar una llamada a procedimiento como operando", nleft, nright);
+								RESULT=new ParserResult(n);
+						//it IS a function (i.e it HAS return type:)
 							}else{
 								RESULT=new ParserResult(n, f.type);
 							}
