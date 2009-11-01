@@ -378,10 +378,10 @@ goal	::=	compilation
 //works as a marker, as described in the book, to let action code be executed at otherwise impossible places (like the end)
 placeholder ::= ;
 //RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
-numeric_type		::=	INTEGER	{:RESULT=new ParserResult(new IntegerType());:}
-			|	FLOAT   {:RESULT=new ParserResult(new FloatType());:}
+numeric_type		::=	INTEGER	{:RESULT=new ParserResult("integer", new IntegerType());:}
+			|	FLOAT   {:RESULT=new ParserResult("float", new FloatType());:}
 			;
-primitive_type 		::=	BOOLEAN {:RESULT=new ParserResult(new BooleanType());:}
+primitive_type 		::=	BOOLEAN {:RESULT=new ParserResult("boolean",new BooleanType());:}
 			|	numeric_type:t {:RESULT=(ParserResult)t;:}
 			;
 identifier	::=	IDENTIFIER:i {:RESULT=i;:}
@@ -417,7 +417,8 @@ declaration	::=	object_declaration
 object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
 				{:ParserResult ps=(ParserResult)s; 
 				//if the type is null, there was an error down the tree (and is already reported)
-				if (ps.type != null){
+				if (ps.type != null){				
+				if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 				if(o != null){			
 					ParserResult po=(ParserResult)o;
 					boolean compare=compare_types(ps.type, po.type, oleft, oright);
@@ -429,12 +430,17 @@ object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  
 					if(!currentScope.put(i, new AdaSymbol(ps.type)))
 						agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 				}
+				}else{//s no es un subtipo de nada:
+					agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);	
+				}
+					
 				}:}
 			|	identifier_list:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
 				{:
 				ParserResult ps=(ParserResult)s; 
 				if (ps.type != null){
 				ArrayList<String> il=(ArrayList<String>)i;
+				if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 				if(o != null){				
 					ParserResult po=(ParserResult)o;
 					boolean compare=compare_types(ps.type, po.type, oleft, oright);
@@ -448,6 +454,10 @@ object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  
 						if(!currentScope.put(id, new AdaSymbol(ps.type)))
 							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
+				}
+				}else{
+					agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
+	
 				}
 				}:}
 			;
@@ -497,12 +507,16 @@ subtype_declaration	::=	SUBTYPE identifier:i IS subtype_indication:s SEMICOLON
 				{:
 					ParserResult ps=(ParserResult)s;
 					if(ps.type!= null){
+					if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 						Type t=ps.type;
 						t.name=(String)i;
 						//se pone un nuevo tipo con otro nombre:
 						if(!currentScope.put(i, new AdaSymbol(t))){
 							agregarError("Error semántico  : el tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
 						}
+					}
+					}else{
+						agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
 					}
 				:}
 			;
@@ -592,38 +606,50 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 					  //si algo malo pasa, devolver null.
 					  ParserResult ps=(ParserResult)s;
 					  if(ps.type != null){//si el tipo sí fue encontrado:
-						if(o != null){//ver si el tipo de o coincide con el de s:
-							 ParserResult po=(ParserResult)o;
-		                                         boolean compare=compare_types(ps.type, po.type, oleft, oright);
-                 		                         Type tipo=compare ? ps.type : new ErrorType(ps.type);
-							 RESULT=new ParserResult(i, tipo);
-						}else{//no hay inicialización:
-							RESULT=new ParserResult(i, ps.type);
-						}
+						if(((String)ps.value).equalsIgnoreCase(ps.type.name)) //si el tipo ES un tipo:
+							if(o != null){//ver si el tipo de o coincide con el de s:
+								 ParserResult po=(ParserResult)o;
+								 boolean compare=compare_types(ps.type, po.type, oleft, oright);
+								 Type tipo=compare ? ps.type : new ErrorType(ps.type);
+								 RESULT=new ParserResult(i, tipo);
+							}else{//no hay inicialización:
+								RESULT=new ParserResult(i, ps.type);
+							}
+						  else{
+							RESULT=new ParserResult(i, null);
+							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
+						  }
 					  }else{//el tipo no fue encontrado
 						RESULT=null;
 					  }
-					:}
+					:}/*Hier*/
 				|	identifier_list:l COLON subtype_indication:s initialization_option:o
 					{:
 					  ParserResult ps=(ParserResult)s;
 					  ArrayList<String> il=(ArrayList<String>)l;
 					  if(ps.type != null){//si el tipo sí fue encontrado:
-						if(o != null){//ver si el tipo de o coincide con el de s:
-							 ParserResult po=(ParserResult)o;
-		                                         boolean compare=compare_types(ps.type, po.type, oleft, oright);
-                 		                         Type tipo=compare ? ps.type : new ErrorType(ps.type);
-							 ArrayList<ParserResult> r=new ArrayList<ParserResult>();
-							 for(String id: il){						
-							 	r.add(new ParserResult(id, tipo));					
-						         }
-							 RESULT=r;
-						}else{//no hay inicialización:
-							 ArrayList<ParserResult> r=new ArrayList<ParserResult>();
-							 for(String id: il){						
-							 	r.add(new ParserResult(id, tipo));					
-						         }
-							 RESULT=r;
+						ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+						if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
+							if(o != null){//ver si el tipo de o coincide con el de s:
+								 ParserResult po=(ParserResult)o;
+								 boolean compare=compare_types(ps.type, po.type, oleft, oright);
+								 Type tipo=compare ? ps.type : new ErrorType(ps.type);
+								 for(String id: il){						
+									r.add(new ParserResult(id, tipo));					
+								 }
+								 RESULT=r;
+							}else{//no hay inicialización:
+								 for(String id: il){						
+									r.add(new ParserResult(id, tipo));					
+								 }
+								 RESULT=r;
+							}
+						}else{
+							for(String id:il){
+								r.add(new ParserResult(id, null));
+							}
+							RESULT=r;
+							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
 						}
 					  }else{
 						RESULT=null;
@@ -929,17 +955,20 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
 						ArrayList<Type> ft=new ArrayList<Type>();
 						for (ParserResult p:fl)
-							ft.add(p.type);
-						if(!currentScope.put(d, new AdaSymbol(new FunctionType(ft))))
+							ft.add(p.type);												                                             if(!currentScope.put(d, new AdaSymbol(new FunctionType(ft)))){
 							agregarError("'"+((String)i)"' ya ha sido declarado.", ileft, iright);
-						else
+						}else{
 							currentScope=new LinkedSymbolTable(currentScope);
+							for(ParserResult p: fl)
+								currentScope.put(p.value, new AdaSymbol(p.type));
+						}
 					  }
 					
 					RESULT=i;:}
 				|	FUNCTION designator:i formal_part_option:f RETURN subtype_indication:s IS 
 					{:
 					ParserResult ps=(ParserResult)s;
+					if(ps.type != null){
 					if(f != null){
 						
 						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
@@ -951,10 +980,19 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
 							else{
 								currentScope=new LinkedSymbolTable(currentScope);
+								for(ParserResult p: fl)
+									currentScope.put(p.value, new AdaSymbol(p.type));
 							}
 						}
 						
-		
+					}else{
+						if(!currentScope.put(d, new AdaSymbol(new FunctionType(ps.type))))
+							agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
+						else{
+							currentScope=new LinkedSymbolTable(currentScope);
+						}
+						
+					}
 					}
 					 RESULT=i;
 					:}
@@ -1002,15 +1040,19 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 					ParserResult ps=(ParserResult)s;
                                 	//if the type is null, there was an error down the tree (and is already reported)
 	                                if (ps.type != null){
-        		                        if(o != null){
-                        		                ParserResult po=(ParserResult)o;
-                                        		boolean compare=compare_types(ps.type, po.type, oleft, oright);
-		                                        Type tipo=compare ? ps.type : new ErrorType(ps.type);
-							ParserResult r=new ParserResult(i, tipo);
-							RESULT=r;
-		                                }else{//there's no initialization expression:
-							RESULT=new ParserResult(i, ps.type);
-		                                }
+						if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
+							if(o != null){
+								ParserResult po=(ParserResult)o;
+								boolean compare=compare_types(ps.type, po.type, oleft, oright);
+								Type tipo=compare ? ps.type : new ErrorType(ps.type);
+								ParserResult r=new ParserResult(i, tipo);
+								RESULT=r;
+							}else{//there's no initialization expression:
+								RESULT=new ParserResult(i, ps.type);
+							}
+						}else{
+							RESULT=new ParserResult(i, null);
+							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);							     }
                 	                }else{
 						RESULT=null;
 					}
@@ -1023,18 +1065,25 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 	                                if (ps.type != null){
 					ArrayList<String> il=(ArrayList<String>)l;
 					ArrayList<ParserResult> r=new ArrayList<ParserResult>();
-        		                        if(o != null){
-                        		                ParserResult po=(ParserResult)o;
-                                        		boolean compare=compare_types(ps.type, po.type, oleft, oright);
-		                                        Type tipo=compare ? ps.type : new ErrorType(ps.type);
-							for(String id :il)
-								r.add(new ParserResult(id, tipo));
-							RESULT=r;
-		                                }else{//there's no initialization expression:
+						if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
+							if(o != null){
+								ParserResult po=(ParserResult)o;
+								boolean compare=compare_types(ps.type, po.type, oleft, oright);
+								Type tipo=compare ? ps.type : new ErrorType(ps.type);
+								for(String id :il)
+									r.add(new ParserResult(id, tipo));
+								RESULT=r;
+							}else{//there's no initialization expression:
+								for(String id: il)
+									r.add(new ParserResult(i, ps.type));
+								RESULT=r;
+							}
+						}else{
 							for(String id: il)
-								r.add(new ParserResult(i, ps.type));
+								r.add(new ParserResult(i, null));
 							RESULT=r;
-		                                }
+							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
+						}
                 	                }else{
 						RESULT=null;
 					}
