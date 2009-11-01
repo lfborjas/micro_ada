@@ -1563,6 +1563,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						}
 						
 					}
+ 					RESULT=new ParserResult(i,ps.type);
 					}
 					 RESULT=i;
 					:}
@@ -1668,7 +1669,18 @@ subprogram_body			::=	subprogram_specification_is:s
 						declarative_part 
 					BEGIN:b  
 					{:parser.setUnclosed((" end "+((String)s)+";"), "begin",bleft, bright);:}
-						sequence_of_statements 
+						sequence_of_statements:t
+					{:/*ver que el return coincida con el declarado*/
+					if((s != null) && (s instanceof ParserResult) )){
+						ParserResult ps=(ParserResult)s;
+						if(t != null){
+						    ParserResult pt=(ParserResult)pt;
+						    compare_types(ps.type, pt.type, tleft, tright);	
+						}else{
+        					    agregarError("Sentencia de retorno faltante para la función '"+((String)ps.value)"' ", sleft, sright);
+						}
+					}
+					:} 
 					END designator_option:e SEMICOLON
 					//salir del subprograma:
 					{:currentScope=currentScope.getAncestor():} placeholder 
