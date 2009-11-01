@@ -784,16 +784,10 @@ membership_operator		::=	IN
 				;
 simple_expression		::=	term_list:t
 					{:
-					if(t != null){
+					if(t != null){					  
 					   ParserResult pr=(ParserResult)t;
 					   if(pr.type != null){
-					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
-						if(tipo.isNumeric()){
-							RESULT=pr;						
-						}else{
-						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
-						   RESULT=null;	
-						}
+						RESULT=pr;						
 					   }
 					}
 					:}
@@ -801,31 +795,36 @@ simple_expression		::=	term_list:t
 				|	unary_operator:o term_list:t
 					{:
 					if(t != null){
-					   ParserResult pr=(ParserResult)t;
-					   if(pr.type != null){
-					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
-						if(tipo.isNumeric()){
-							RESULT=pr;						
-						}else{
-						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
-						   RESULT=null;	
-						}
-					   }
+						ParserResult pt=(ParserResult)pt;
+					if(pt.type != null){						
+					 Type ptipo=(pt.type instanceof FunctionType)? (((FunctionType)pt.type).getRange()) : pt.type;
+						Type so=(Type)o;
+						if(so.isNumeric()){
+							if(ptipo.isNumeric()){
+							    RESULT=pt;
+							}else{								
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
+							    RESULT=null;
+							}	
+						}else{//the operator is boolean!
+							if(ptipo instanceof BooleanType){
+								RESULT=pt;
+							}else{
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							    RESULT=null;
+							}
+						}						
 					}
+					}
+
 					:}	
 				;
 term_list			::=	term:t
 					{:
-					if(t != null){
+					if(t != null){					  
 					   ParserResult pr=(ParserResult)t;
 					   if(pr.type != null){
-					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
-						if(tipo.isNumeric()){
-							RESULT=pr;						
-						}else{
-						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
-						   RESULT=null;	
-						}
+						RESULT=pr;						
 					   }
 					}
 					:}
@@ -861,16 +860,10 @@ term_list			::=	term:t
 				;
 term				::=	factor:f
 					{:
-					if(f != null){
+					if(f != null){					  
 					   ParserResult pr=(ParserResult)f;
 					   if(pr.type != null){
-					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
-						if(tipo.isNumeric()){
-							RESULT=pr;						
-						}else{
-						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), fleft, fright);
-						   RESULT=null;	
-						}
+						RESULT=pr;						
 					   }
 					}
 					:}
@@ -908,16 +901,8 @@ factor				::=	primary:p
 					{:
 					   ParserResult pr=(ParserResult)p;
 					   if(pr.type != null){
-					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
-						if(tipo.isNumeric()){
-							RESULT=pr;						
-						}else{
-						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
-						   RESULT=null;	
-						}
+						RESULT=pr;						
 					   }
-					
-					   
 					:}
 				|	primary:p EXPONENTIATE primary:q
 					{:
@@ -963,10 +948,10 @@ adding_operator			::=	PLUS
 				|	MINUS
 				|	CONCATENATE
 				;
-unary_operator			::=	PLUS
-				|	MINUS
-				|	NOT
-				|	ABS
+unary_operator			::=	PLUS:p {:RESULT=new ParserResult(p, new IntegerType());:}
+				|	MINUS:m {:RESULT=new ParserResult(m, new IntegerType());:}
+				|	NOT:n	{:RESULT=new ParserResult(n, new BooleanType());:}
+				|	ABS:a	{:RESULT=new ParserResult(a, new IntegerType());:}
 				;
 multiplying_operator		::=	MULTIPLY
 				|	DIVIDE
