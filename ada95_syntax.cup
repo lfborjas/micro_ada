@@ -1352,8 +1352,15 @@ qualified_expression		::=	name TICK LEFTPAR expression RIGHTPAR
 				;
 allocator			::=	NEW name
 				;
-sequence_of_statements		::=	statement
-				|	sequence_of_statements statement
+/*Hier: la return statement debería subir hasta sequence of statements...*/
+sequence_of_statements		::=	statement:s {:RESULT=s;:}
+				|	sequence_of_statements:q statement:s
+					{:
+					if(q != null)
+						RESULT=s;
+					else
+						RESULT=q;
+					:}
 				;
 //usaremos pragma? De ser así, aquí también produciría pragma:
 statement			::=	label_list simple_statement
@@ -1366,7 +1373,7 @@ label_list			::=	| label_list label
 simple_statement		::=	null_statement
 				|	assignment_statement
 				|	exit_statement
-				|	return_statement
+				|	return_statement:r {:RESULT=e;:}
 				|	goto_statement
 				|	procedure_call
 				|	code_statement
@@ -1379,20 +1386,43 @@ label				::=	LEFTLABEL identifier RIGHTLABEL
 				;
 null_statement			::=	NULL SEMICOLON
 				;
-assignment_statement		::=	name ASSIGNMENT expression SEMICOLON
+/*Revisar que la expression y el name coinciden*/
+assignment_statement		::=	name:n ASSIGNMENT expression:e SEMICOLON
+					{:
+					if(e != null){
+						ParserResult pe=(ParserResult)e;
+						ParserResult pn=(ParserResult)n;
+						//AdaSymbol gn=currentScope.get(pn.value);
+						
+						if(pn.type != null){
+							compare_types(pn.type, pe.type);
+						}
+					}
+					:}
 				;
-if_statement			::=	IF:i  condition THEN 
+if_statement			::=	IF:i  condition:c
+					 {: if(c != null){
+						ParserResult pc=(ParserResult)c;
+						if(!(pc.type instanceof BooleanType))
+							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+					 }:} 
+					THEN 
 					{:parser.setUnclosed("end if;", "if", ileft, iright);:}
 						sequence_of_statements 
 						elsif_list 
 						else_option 
 					END IF SEMICOLON 
 				;
-elsif_list			::=	| elsif_list ELSIF condition THEN sequence_of_statements
+elsif_list			::=	| elsif_list ELSIF condition:c THEN sequence_of_statements
+					 {: if(c != null){
+						ParserResult pc=(ParserResult)c;
+						if(!(pc.type instanceof BooleanType))
+							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+					 }:} 
 				;
 else_option			::=	| ELSE sequence_of_statements
 				;
-condition			::=	expression
+condition			::=	expression:e {:RESULT=e;:}
 				;
 //acá iría el bloque case, seguido de la alternative_list
 loop_statement			::=	iteration_clause_option basic_loop SEMICOLON
@@ -1404,10 +1434,16 @@ basic_loop			::=	LOOP:l
 					END LOOP  
 				;
 //de p85-persch, pag 93
+/*Validar que no exista el id, crear un nuevo scope.*/
 iteration_clause_option		::=
 				|	FOR identifier IN discrete_range
 				|	FOR identifier IN REVERSE discrete_range
-				|	WHILE condition
+				|	WHILE condition:c 
+					 {: if(c != null){
+						ParserResult pc=(ParserResult)c;
+						if(!(pc.type instanceof BooleanType))
+							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+					 }:} 
 				;
 block				::=	declare_part_option BEGIN:b 
 					{:parser.setUnclosed("end;", "begin del bloque",bleft, bright);:}
@@ -1426,12 +1462,17 @@ exit_statement			::=	EXIT name_option when_option SEMICOLON
 				;
 name_option			::=	| name
 				;
-when_option			::=	| WHEN condition
+when_option			::=	| WHEN condition:c 
+					 {: if(c != null){
+						ParserResult pc=(ParserResult)c;
+						if(!(pc.type instanceof BooleanType))
+							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+					 }:} 
 				;
 return_statement		::=	RETURN SEMICOLON
-				|	RETURN expression SEMICOLON
+				|	RETURN expression:e SEMICOLON {:RESULT=e;:}
 				;
-goto_statement			::=	GOTO name SEMICOLON
+goto_statement			::=	GOTO name SEMICOLON 
 				;
 //no vamos a usar generics, o sí? En este caso, acá faltarían dos producciones
 subprogram_declaration		::=	subprogram_specification SEMICOLON
