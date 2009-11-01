@@ -371,7 +371,7 @@ precedence left AND_THEN, OR_ELSE;
 /*SECCIÓN DE LA GRAMÁTICA*/
 start with goal;
 //elementos opcionales comunes:
-constant_option	::=	| CONSTANT;
+constant_option	::=	| CONSTANT {:RESULT=true;:};
 //empezamos con goal, que será una unidad de compilación:
 
 goal	::=	compilation
@@ -419,21 +419,26 @@ declaration	::=	object_declaration
 		;
 //de p85-persch, pag 87
 /*si las variables están inicializadas, chequear los tipos, y si concuerdan, ponerla en la tabla de símbolos actual */
-object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
+object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s  initialization_option:o SEMICOLON
 				{:ParserResult ps=(ParserResult)s; 
 				//if the type is null, there was an error down the tree (and is already reported)
 				if (ps.type != null){				
+				Boolean isConstant=(c != null); 
 				if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 				if(o != null){			
 					ParserResult po=(ParserResult)o;
 					boolean compare=compare_types(ps.type, po.type, oleft, oright);
 					Type tipo=compare ? ps.type : new ErrorType(ps.type);					
-					if(!currentScope.put(i, new AdaSymbol(tipo)))
+					if(!currentScope.put(i, new AdaSymbol(tipo, isConstant)))
 						agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 						
 				}else{//there's no initialization expression:
+				    if(!isConstant){
 					if(!currentScope.put(i, new AdaSymbol(ps.type)))
 						agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
+				    }else{//si es constant, debe tener una inicialización
+					agregarError("La declaración de un objeto constante requiere una expresión de inicialización", ileft, iright);
+				    }
 				}
 				}else{//s no es un subtipo de nada:
 					agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);	
@@ -445,20 +450,25 @@ object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  
 				ParserResult ps=(ParserResult)s; 
 				if (ps.type != null){
 				ArrayList<String> il=(ArrayList<String>)i;
+				Boolean isConstant=(c != null); 
 				if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 				if(o != null){				
 					ParserResult po=(ParserResult)o;
 					boolean compare=compare_types(ps.type, po.type, oleft, oright);
 					Type tipo=compare ? ps.type : new ErrorType(ps.type);					
 					for(String id:il){
-						if(!currentScope.put(id, new AdaSymbol(tipo)))
+						if(!currentScope.put(id, new AdaSymbol(tipo, isConstant)))
 							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
 				}else{//there's no initialization expression:
+				    if(!isConstant){	
 					for(String id:il){
 						if(!currentScope.put(id, new AdaSymbol(ps.type)))
 							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
+				    }else{
+   					agregarError("La declaración de objetos constantes requiere una expresión de inicialización", ileft, iright);
+				    }
 				}
 				}else{
 					agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
@@ -471,7 +481,7 @@ initialization_option	::=	| ASSIGNMENT expression:e {:RESULT=e;:}
 number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
 				{:if(o != null){
 				  ParserResult po=(ParserResult)o;
-			          if(!currentScope.put(i, new AdaSymbol(po.type)))
+			          if(!currentScope.put(i, new AdaSymbol(po.type, true)))
 					agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 				  }
 				:}
@@ -479,7 +489,7 @@ number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMIC
 				{:if(o != null){
 				ParserResult po=(ParserResult)o;ArrayList<String> pi=(ArrayList<String>)i;
 				for(String id:pi){
-					if(!currentScope.put(id, new AdaSymbol(po.type)))
+					if(!currentScope.put(id, new AdaSymbol(po.type, true)))
 						agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 				}	
 				}  		
@@ -518,7 +528,7 @@ subtype_declaration	::=	SUBTYPE identifier:i IS subtype_indication:s SEMICOLON
 						Type t=ps.type;
 						t.name=(String)i;
 						//se pone un nuevo tipo con otro nombre:
-						if(!currentScope.put(i, new AdaSymbol(t))){
+						if(!currentScope.put(i, new AdaSymbol(t, true))){
 							agregarError("Error semántico  : el tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
 						}
 					}
@@ -606,7 +616,7 @@ component_declaration_list	::=	{:RESULT=new LinkedSymbolTable();:}
 					if(c != null){	
 					  if(!(c instanceof ArrayList<ParserResult>)){
 					 	 ParserResult p=(ParserResult)c;
-						  if(!t.put(p.value, new Symbol(p.type))){
+						  if(!t.put(p.value, new AdaSymbol(p.type))){
 							agregarError("El componente '"+((String)p.value)+
 							"' ya ha sido declarado en este registro.", cleft, cright);
 						  }
@@ -1395,7 +1405,17 @@ assignment_statement		::=	name:n ASSIGNMENT expression:e SEMICOLON
 						//AdaSymbol gn=currentScope.get(pn.value);
 						
 						if(pn.type != null){
-							compare_types(pn.type, pe.type);
+						//get it:
+						AdaSymbol gn=currentScope.get(pn.value);
+						//if it is a function, a record or a constant, then it's not eligible:
+						if(gn.type instanceof FunctionType)
+						agregarError("El lado izquierdo de la asignación debe ser una variable, no una función", nleft, nright);
+						else if(gn.type instanceof RecordType)						
+						agregarError("El lado izquierdo de la asignación debe ser una variable, no un registro", nleft, nright);
+						else if(gn.constant)
+					agregarError("El lado izquierdo de la asignación debe ser una variable, no un objeto constante", nleft, nright);
+						else//si todo sale bien, entonces sí comparar:					
+						    compare_types(pn.type, pe.type);
 						}
 					}
 					:}
@@ -1529,8 +1549,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 							agregarError("'"+((String)i)"' ya ha sido declarado.", ileft, iright);
 						}else{
 							currentScope=new LinkedSymbolTable(currentScope);
-							for(ParserResult p: fl)
-								currentScope.put(p.value, new AdaSymbol(p.type));
+							String nombre="";
+							boolean cons=false;
+							for(ParserResult p: fl){
+								nombre=((String)p.value).split("$")[0];
+								cons=((String)p.value).contains("$constant");
+								currentScope.put(nombre, new AdaSymbol(p.type, cons));
+							}
 						}
 					  }
 					
@@ -1550,8 +1575,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
 							else{
 								currentScope=new LinkedSymbolTable(currentScope);
-								for(ParserResult p: fl)
-									currentScope.put(p.value, new AdaSymbol(p.type));
+								String nombre="";
+								boolean cons=false;
+								for(ParserResult p: fl){
+									nombre=((String)p.value).split("$")[0];
+									cons=((String)p.value).contains("$constant");
+									currentScope.put(nombre, new AdaSymbol(p.type, cons));
+								}
 							}
 						}
 						
@@ -1609,9 +1639,11 @@ parameter_declaration_list	::=	parameter_declaration:d {:
 parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initialization_option:o
 					{:
 					ParserResult ps=(ParserResult)s;
+					String mode=(String)m;
                                 	//if the type is null, there was an error down the tree (and is already reported)
 	                                if (ps.type != null){
 						if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
+							String nombre=(mode.equalsIgnoreCase("in")) ? ((String)i)+"$constant" : (String)i;
 							if(o != null){
 								ParserResult po=(ParserResult)o;
 								boolean compare=compare_types(ps.type, po.type, oleft, oright);
@@ -1637,16 +1669,21 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 					ArrayList<String> il=(ArrayList<String>)l;
 					ArrayList<ParserResult> r=new ArrayList<ParserResult>();
 						if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
+							String nombre="";
 							if(o != null){
 								ParserResult po=(ParserResult)o;
 								boolean compare=compare_types(ps.type, po.type, oleft, oright);
 								Type tipo=compare ? ps.type : new ErrorType(ps.type);
-								for(String id :il)
-									r.add(new ParserResult(id, tipo));
+								for(String id :il){									
+									nombre=(mode.equalsIgnoreCase("in")) ? id+"$constant" : id;
+									r.add(new ParserResult(nombre, tipo));
+								}
 								RESULT=r;
 							}else{//there's no initialization expression:
-								for(String id: il)
+								for(String id: il){
+									nombre=(mode.equalsIgnoreCase("in")) ? id+"$constant" : id;
 									r.add(new ParserResult(i, ps.type));
+								}
 								RESULT=r;
 							}
 						}else{

@@ -9,6 +9,8 @@ public class AdaSymbol{
 	public Type type;
 	/**The relative memory address of this symbol. In hexadecimal format*/
 	public long address;
+	/**Whether this symbol is or not constant*/
+	public boolean constant;
 
 	public AdaSymbol(){
 		this.type=null;
@@ -18,6 +20,13 @@ public class AdaSymbol{
 	public AdaSymbol(Type t){
 		this.type=t;
 		this.address=0x0;
+		this.constant=false;
+	}
+	
+	public AdaSymbol(Type t, boolean c){
+		this.type=t;
+		this.address=0x0;
+		this.constant=c;
 	}
 
 	public AdaSymbol(Type t, long a){
