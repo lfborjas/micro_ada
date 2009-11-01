@@ -785,11 +785,34 @@ membership_operator		::=	IN
 simple_expression		::=	term_list:t
 					{:
 					if(t != null){
-						/*Hier*/
+					   ParserResult pr=(ParserResult)t;
+					   if(pr.type != null){
+					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
+						if(tipo.isNumeric()){
+							RESULT=pr;						
+						}else{
+						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
+						   RESULT=null;	
+						}
+					   }
 					}
 					:}
 		
-				|	unary_operator term_list
+				|	unary_operator:o term_list:t
+					{:
+					if(t != null){
+					   ParserResult pr=(ParserResult)t;
+					   if(pr.type != null){
+					   Type tipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()):pr.type;
+						if(tipo.isNumeric()){
+							RESULT=pr;						
+						}else{
+						   agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
+						   RESULT=null;	
+						}
+					   }
+					}
+					:}	
 				;
 term_list			::=	term:t
 					{:
