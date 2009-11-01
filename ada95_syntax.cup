@@ -535,6 +535,9 @@ subtype_indication_with_constraint ::=	name range_constraint
 range_constraint		   ::= RANGE range
 				   ;
 range	::=	simple_expression DOUBLEDOT simple_expression
+		{:/*The expressions must be of the same type, and then, integer or float*/
+		
+		:}
 	;
 //quité la enumeration type definition
 accuracy_constraint		::=	floating_point_constraint
@@ -622,7 +625,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 					  }else{//el tipo no fue encontrado
 						RESULT=null;
 					  }
-					:}/*Hier*/
+					:}
 				|	identifier_list:l COLON subtype_indication:s initialization_option:o
 					{:
 					  ParserResult ps=(ParserResult)s;
@@ -812,6 +815,7 @@ adding_operator			::=	PLUS
 unary_operator			::=	PLUS
 				|	MINUS
 				|	NOT
+				|	ABS
 				;
 multiplying_operator		::=	MULTIPLY
 				|	DIVIDE
