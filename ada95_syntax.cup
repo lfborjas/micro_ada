@@ -388,15 +388,19 @@ primitive_type 		::=	BOOLEAN {:RESULT=new ParserResult("boolean",new BooleanType
 identifier	::=	IDENTIFIER:i {:RESULT=i;:}
 		;
 argument_list	::=	argument:a
-			{:ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+			{:if(a != null){
+			 ArrayList<ParserResult> r=new ArrayList<ParserResult>();
 			  r.add((ParserResult)a);
 			  RESULT=r;
+			}
 			:}
 		|	argument_list:l COMMA argument:a
-			{:ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+			{:if(a != null){
+			  ArrayList<ParserResult> r=new ArrayList<ParserResult>();
 			  r.addAll((ArrayList<ParserResult>)l);
 			  r.add((ParserResult)a);
 			  RESULT=r;
+			 }else{RESULT=l;}			
 			:}
 		;
 argument	::=	expression:e 
@@ -465,18 +469,20 @@ object_declaration	::=	identifier:i COLON constant_option subtype_indication:s  
 initialization_option	::=	| ASSIGNMENT expression:e {:RESULT=e;:}
 			;
 number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
-				{:ParserResult po=(ParserResult)o;
+				{:if(o != null){
+				  ParserResult po=(ParserResult)o;
 			          if(!currentScope.put(i, new AdaSymbol(po.type)))
 					agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
-				  	
+				  }
 				:}
 			|	identifier_list:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
-				{:ParserResult po=(ParserResult)o;ArrayList<String> pi=(ArrayList<String>)i;
+				{:if(o != null){
+				ParserResult po=(ParserResult)o;ArrayList<String> pi=(ArrayList<String>)i;
 				for(String id:pi){
 					if(!currentScope.put(id, new AdaSymbol(po.type)))
 						agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 				}	
-				  		
+				}  		
 				:}
 			;
 identifier_list		::=	identifier:i COMMA identifier:j 
