@@ -541,8 +541,33 @@ subtype_indication_with_constraint ::=	name range_constraint
 		         	   ;
 range_constraint		   ::= RANGE range
 				   ;
-range	::=	simple_expression DOUBLEDOT simple_expression
-		{:/*The expressions must be of the same type, and then, integer or float*/
+range	::=	simple_expression:t DOUBLEDOT simple_expression:f
+		{:
+					if ((t != null) && (f != null)){
+							
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if(ptipo.isNumeric() && qtipo.isNumeric()){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(!ptipo.isNumeric())
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
+							else 
+							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), fleft, fright);
+							RESULT=null;
+						}
+						
+					}	
+					}	
 		
 		:}
 	;
