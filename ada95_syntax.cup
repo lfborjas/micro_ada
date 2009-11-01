@@ -774,10 +774,83 @@ andthen_expression		::=	relation AND_THEN relation
 orelse_expression		::=	relation OR_ELSE relation
 				|	orelse_expression OR_ELSE relation
 				;
-relation			::=	simple_expression
-				|	simple_expression relational_operator simple_expression
-				|	simple_expression membership_operator range
-				|	simple_expression membership_operator subtype_indication
+relation			::=	simple_expression:s {:RESULT=s;:}
+				|	simple_expression:p relational_operator simple_expression:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(ptipo instanceof BooleanType)
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+
+					:}
+				|	simple_expression:p membership_operator range:q
+					{:
+					if((p != null) && (q != null)){
+					
+					 ParserResult pr=(ParserResult)p;
+					 ParserResult qr=(ParserResult)q;
+					 if((pr.type != null) && (qr.type != null)){
+					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
+						if(ptipo.isNumeric() && qtipo.isNumeric()){
+							//comparar los tipos!
+							//TODO: make the actual operation! (Have a function that does math operations...)
+							if(compare_types(ptipo,qtipo, qleft, qright))
+								RESULT=pr; //CHANGE THIS!
+							else 
+								RESULT= null;
+						}else{
+							//determine who's to blame:
+							if(!ptipo.isNumeric())
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
+							else 
+							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), qleft, qright);
+							RESULT=null;
+						}
+						
+					 }
+				
+					}
+					
+					 :}
+				|	simple_expression:p membership_operator subtype_indication:s
+					{:
+					  if(p != null){
+						ParserResult pr=(ParserResult)p;
+						ParserResult ps=(ParserResult)s;
+						if ((ps.type != null) && (pr.type != null)){
+						 	Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
+							if(compare_types(ptipo, ps.type, sleft, sright)){
+								RESULT=pr;
+							}else{
+								RESULT=null;
+							}						
+						}
+					  }
+					:}
+
 				;
 membership_operator		::=	IN
 				|	NOT IN
