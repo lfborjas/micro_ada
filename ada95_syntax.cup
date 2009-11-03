@@ -433,12 +433,10 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 						agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 						
 				}else{//there's no initialization expression:
-				    if(!isConstant){
-					if(!currentScope.put(i, new AdaSymbol(ps.type)))
-						agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
-				    }else{//si es constant, debe tener una inicialización
-					agregarError("La declaración de un objeto constante requiere una expresión de inicialización", ileft, iright);
-				    }
+				   if(isConstant)
+					agregarError("La declaración de un objeto constante requiere una expresión de inicialización", ileft, iright);					        if(!currentScope.put(i, new AdaSymbol(ps.type)))
+					agregarError("Error semántico  : el identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
+				   	
 				}
 				}else{//s no es un subtipo de nada:
 					agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);	
@@ -461,14 +459,12 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
 					}	
 				}else{//there's no initialization expression:
-				    if(!isConstant){	
-					for(String id:il){
-						if(!currentScope.put(id, new AdaSymbol(ps.type)))
-							agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
-					}	
-				    }else{
-   					agregarError("La declaración de objetos constantes requiere una expresión de inicialización", ileft, iright);
-				    }
+				   if(isConstant)
+					agregarError("La declaración de un objeto constante requiere una expresión de inicialización", ileft, iright);	  
+				   for(String id:il){
+					if(!currentScope.put(id, new AdaSymbol(ps.type)))
+						agregarError("Error semántico  : el identificador "+id+" ya ha sido declarado", ileft, iright);
+				   }	
 				}
 				}else{
 					agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
