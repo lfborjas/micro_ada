@@ -92,7 +92,7 @@ public void agregarError(String mensaje, int linea, int columna){
 public boolean validateBuiltIn(String method, Object val, int line, int col){
 	if(method.equalsIgnoreCase("put") || method.equalsIgnoreCase("get")){
 	//the value must be an arraylist of Parser Results:
-		if(!(val instanceof ArrayList<ParserResult>))
+		if(!(val instanceof ArrayList))
 			return false;
 	//if it is, cast:
 		ArrayList<ParserResult> l=(ArrayList<ParserResult>)val;
@@ -423,7 +423,7 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 				{:ParserResult ps=(ParserResult)s; 
 				//if the type is null, there was an error down the tree (and is already reported)
 				if (ps.type != null){				
-				Boolean isConstant=(c != null); 
+				boolean isConstant=(c != null); 
 				if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 				if(o != null){			
 					ParserResult po=(ParserResult)o;
@@ -445,12 +445,12 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 				}
 					
 				}:}
-			|	identifier_list:i COLON constant_option subtype_indication:s  initialization_option:o SEMICOLON
+			|	identifier_list:i COLON constant_option:c subtype_indication:s  initialization_option:o SEMICOLON
 				{:
 				ParserResult ps=(ParserResult)s; 
 				if (ps.type != null){
 				ArrayList<String> il=(ArrayList<String>)i;
-				Boolean isConstant=(c != null); 
+				boolean isConstant=(c != null); 
 				if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 				if(o != null){				
 					ParserResult po=(ParserResult)o;
@@ -555,15 +555,15 @@ range	::=	simple_expression:t DOUBLEDOT simple_expression:f
 		{:
 					if ((t != null) && (f != null)){
 							
-					 ParserResult pr=(ParserResult)p;
-					 ParserResult qr=(ParserResult)q;
+					 ParserResult pr=(ParserResult)t;
+					 ParserResult qr=(ParserResult)f;
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if(ptipo.isNumeric() && qtipo.isNumeric()){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
+							if(compare_types(ptipo,qtipo, fleft, fright))
 								RESULT=pr; //CHANGE THIS!
 							else 
 								RESULT= null;
@@ -615,7 +615,7 @@ component_declaration_list	::=	{:RESULT=new LinkedSymbolTable();:}
 					  //the components are parserResults: en el valor viene el nombre.
 					//c puede ser una lista o un solo elemento:
 					if(c != null){	
-					  if(!(c instanceof ArrayList<ParserResult>)){
+					  if(!(c instanceof ArrayList)){
 					 	 ParserResult p=(ParserResult)c;
 						  if(!t.put(p.value, new AdaSymbol(p.type))){
 							agregarError("El componente '"+((String)p.value)+
@@ -686,7 +686,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 								 RESULT=r;
 							}else{//no hay inicialización:
 								 for(String id: il){						
-									r.add(new ParserResult(id, tipo));					
+									r.add(new ParserResult(id, ps.type));					
 								 }
 								 RESULT=r;
 							}
@@ -740,7 +740,7 @@ name				::=	identifier:i
 					:}
 				|	selected_component:s {:RESULT=s;:}
 				|	function_call:f {:RESULT=f;:}
-				|	operator_symbol:o 
+				|	operator_symbol:i 
 					{://buscar el nombre en la tabla de símbolos:
 					  AdaSymbol f=findSymbol(i, ileft, iright);
 					  if(f!= null)
@@ -1195,7 +1195,7 @@ simple_expression		::=	term_list:t
 				|	unary_operator:o term_list:t
 					{:
 					if(t != null){
-						ParserResult pt=(ParserResult)pt;
+						ParserResult pt=(ParserResult)t;
 					if(pt.type != null){						
 					 Type ptipo=(pt.type instanceof FunctionType)? (((FunctionType)pt.type).getRange()) : pt.type;
 						Type so=(Type)o;
@@ -1203,14 +1203,14 @@ simple_expression		::=	term_list:t
 							if(ptipo.isNumeric()){
 							    RESULT=pt;
 							}else{								
-							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), oleft, oright);
 							    RESULT=null;
 							}	
 						}else{//the operator is boolean!
 							if(ptipo instanceof BooleanType){
 								RESULT=pt;
 							}else{
-							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
+							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), oleft, oright);
 							    RESULT=null;
 							}
 						}						
@@ -1267,9 +1267,9 @@ term				::=	factor:f
 					   }
 					}
 					:}
-				|	term:t multiplying_operator factor:f
+				|	term:p multiplying_operator factor:q
 					{:
-					if ((t != null) && (f != null)){
+					if ((p != null) && (q != null)){
 							
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
@@ -1286,9 +1286,9 @@ term				::=	factor:f
 						}else{
 							//determine who's to blame:
 							if(!ptipo.isNumeric())
-							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
+							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), pleft, pright);
 							else 
-							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), fleft, fright);
+							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), qleft, qright);
 							RESULT=null;
 						}
 						
@@ -1384,7 +1384,7 @@ label_list			::=	| label_list label
 simple_statement		::=	null_statement
 				|	assignment_statement
 				|	exit_statement
-				|	return_statement:r {:RESULT=e;:}
+				|	return_statement:e {:RESULT=e;:}
 				|	goto_statement
 				|	procedure_call
 				|	code_statement
@@ -1416,7 +1416,7 @@ assignment_statement		::=	name:n ASSIGNMENT expression:e SEMICOLON
 						else if(gn.constant)
 					agregarError("El lado izquierdo de la asignación debe ser una variable, no un objeto constante", nleft, nright);
 						else//si todo sale bien, entonces sí comparar:					
-						    compare_types(pn.type, pe.type);
+						    compare_types(pn.type, pe.type, eleft, eright);
 						}
 					}
 					:}
@@ -1533,8 +1533,8 @@ subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
 							ArrayList<Type> ft=new ArrayList<Type>();
 							for (ParserResult p:fl)
 								ft.add(p.type);
-							if(!currentScope.put(d, new AdaSymbol(new FunctionType(ft))))
-								agregarError("'"+((String)i)"' ya ha sido declarado.", ileft, iright);
+							if(!currentScope.put(i, new AdaSymbol(new FunctionType(ft))))
+								agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 						}
 					:}
 				|	FUNCTION designator:d formal_part_option:f RETURN subtype_indication:s
@@ -1551,7 +1551,7 @@ subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
 								ft.add(p.type);							
 							if(ps.type != null){
 								if(!currentScope.put(d, new AdaSymbol(new FunctionType(ps.type, ft))))
-									agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
+									agregarError("'"+((String)d)+"' ya ha sido declarado.", dleft, dright);
 							}
 						}
 					:}
@@ -1559,7 +1559,7 @@ subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
 subprogram_specification_is	::=	PROCEDURE identifier:i IS 	
 					{:
 					if(!currentScope.put(i, new AdaSymbol(new FunctionType()))){
-						agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
+						agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 					}else{
 					  currentScope=new LinkedSymbolTable(currentScope);
 					}
@@ -1572,8 +1572,8 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
 						ArrayList<Type> ft=new ArrayList<Type>();
 						for (ParserResult p:fl)
-							ft.add(p.type);												                                             if(!currentScope.put(d, new AdaSymbol(new FunctionType(ft)))){
-							agregarError("'"+((String)i)"' ya ha sido declarado.", ileft, iright);
+							ft.add(p.type);												                                             if(!currentScope.put(i, new AdaSymbol(new FunctionType(ft)))){
+							agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 						}else{
 							currentScope=new LinkedSymbolTable(currentScope);
 							String nombre="";
@@ -1598,9 +1598,9 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						for (ParserResult p:fl)
 							ft.add(p.type);							
 						if(ps.type != null){
-							if(!currentScope.put(d, new AdaSymbol(new FunctionType(ps.type, ft))))
-								agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
-							else{
+							if(!currentScope.put(i, new AdaSymbol(new FunctionType(ps.type, ft)))){
+								agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
+							}else{
 								currentScope=new LinkedSymbolTable(currentScope);
 								String nombre="";
 								boolean cons=false;
@@ -1613,8 +1613,8 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						}
 						
 					}else{
-						if(!currentScope.put(d, new AdaSymbol(new FunctionType(ps.type))))
-							agregarError("'"+((String)designator)"' ya ha sido declarado.", dleft, dright);
+						if(!currentScope.put(i, new AdaSymbol(new FunctionType(ps.type))))
+							agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 						else{
 							currentScope=new LinkedSymbolTable(currentScope);
 						}
@@ -1629,7 +1629,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 designator			::=	identifier:i {:RESULT=i;:} 
 				|	operator_symbol:o {:RESULT=o;:}
 				;
-operator_symbol			::=	STRING_LITERAL:s {:RESULT=new ParserResult(s, new StringType(((String)s).length());:}
+operator_symbol			::=	STRING_LITERAL:s {:RESULT=new ParserResult(s, new StringType(((String)s).length()));:}
 				;
 formal_part			::=	LEFTPAR parameter_declaration_list:l {:RESULT=l;:} RIGHTPAR
 				;
@@ -1637,8 +1637,8 @@ formal_part_option		::=	| formal_part:f {:RESULT=f;:}
 				;
 parameter_declaration_list	::=	parameter_declaration:d {:
 					if(d != null){
-					if (!(d instanceof ArrayList<ParserResult>)){
-						ArrayList<ParserResult> r=new ArrayList<ParserResult>;
+						ArrayList<ParserResult> r=new ArrayList<ParserResult>();
+					if (!(d instanceof ArrayList)){
 						//asumimos que, si no es una lista, es un parser result
 						r.add((ParserResult)d);
 						RESULT=r;
@@ -1650,10 +1650,10 @@ parameter_declaration_list	::=	parameter_declaration:d {:
 				|	parameter_declaration_list:l SEMICOLON parameter_declaration:d
 					{:
 					if(l != null){
-						ArrayList<ParserResult> ll=(ArrayList<ParserResult>)ll;
+						ArrayList<ParserResult> ll=(ArrayList<ParserResult>)l;
 						//puede venir un solo elemento o una lista:
 						if(d != null){
-							if(!(d instanceof ArrayList<ParserResult>)){
+							if(!(d instanceof ArrayList)){
 								ll.add((ParserResult)d);
 							}else{
 								ll.addAll((ArrayList<ParserResult>)d);
@@ -1697,6 +1697,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 					ArrayList<ParserResult> r=new ArrayList<ParserResult>();
 						if(((String)ps.value).equalsIgnoreCase(ps.type.name)){
 							String nombre="";
+							String mode=(String)m;
 							if(o != null){
 								ParserResult po=(ParserResult)o;
 								boolean compare=compare_types(ps.type, po.type, oleft, oright);
@@ -1709,13 +1710,13 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 							}else{//there's no initialization expression:
 								for(String id: il){
 									nombre=(mode.equalsIgnoreCase("in")) ? id+"$constant" : id;
-									r.add(new ParserResult(i, ps.type));
+									r.add(new ParserResult(id, ps.type));
 								}
 								RESULT=r;
 							}
 						}else{
 							for(String id: il)
-								r.add(new ParserResult(i, null));
+								r.add(new ParserResult(id, null));
 							RESULT=r;
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
 						}
@@ -1727,7 +1728,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 mode				::=	
 				|	IN {:RESULT="IN";:}
 				|	OUT {:RESULT="OUT";:}
-				|	IN OUT {:RESULT="INOUT":}
+				|	IN OUT {:RESULT="INOUT";:}
 				;
 subprogram_body			::=	subprogram_specification_is:s 
 						declarative_part 
@@ -1735,19 +1736,19 @@ subprogram_body			::=	subprogram_specification_is:s
 					{:parser.setUnclosed((" end "+((String)s)+";"), "begin",bleft, bright);:}
 						sequence_of_statements:t
 					{:/*ver que el return coincida con el declarado*/
-					if((s != null) && (s instanceof ParserResult) )){
+					if((s != null) && (s instanceof ParserResult) ){
 						ParserResult ps=(ParserResult)s;
 						if(t != null){
-						    ParserResult pt=(ParserResult)pt;
+						    ParserResult pt=(ParserResult)t;
 						    compare_types(ps.type, pt.type, tleft, tright);	
 						}else{
-        					    agregarError("Sentencia de retorno faltante para la función '"+((String)ps.value)"' ", sleft, sright);
+        					    agregarError("Sentencia de retorno faltante para la función '"+((String)ps.value)+"' ", sleft, sright);
 						}
 					}
 					:} 
 					END designator_option:e SEMICOLON
 					//salir del subprograma:
-					{:currentScope=currentScope.getAncestor():} placeholder 
+					{:currentScope=currentScope.getAncestor();:} placeholder 
 					{:check_coherence(s,sleft, sright, e, eleft, eright);:}
 				;
 designator_option		::=	| designator:d {:RESULT=d;:}
@@ -1808,7 +1809,7 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 								ArrayList<ParserResult> pr=(ArrayList<ParserResult>)p;
 								Type found;Type expected;			
 								for(;i<f.type.getProduct().size();i++){
-									found=p.get(i).type;
+									found=pr.get(i).type;
 									expected=f.type.getProduct().get(i);		
 									if(!expected.equals(found)){
 										agregarError("Argumento incorrecto para la función '"+((String)n)+"'"+
