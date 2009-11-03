@@ -116,12 +116,9 @@ public class Main {
 	if(parserAdvertencias.size()>0){		
 		System.err.print((parserAdvertencias.size())+" "+pluralize_warnings+". ");
 	}
-	//terminar la medición:
-	long end=System.currentTimeMillis();
-	float elapsed=(end-start);
-	//sumario de errores
+	
+	//si no hay errores en el parser, hacer el semántico:
 	if(parserErrores.size()==0){		
-		//si no hay errores en el parser, hacer el semántico:
 		semantic s= new semantic(new Ada95Lexer(new FileReader(filename)));
 		if(debug){
 			Object result = s.debug_parse().value;
@@ -132,14 +129,21 @@ public class Main {
 		for(String error: parserErrores){
 			System.err.println(error);
 		}
-		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");	
-	}else{
+	}
+	//después del análisis semántico:
+	//terminar la medición:
+	long end=System.currentTimeMillis();
+	float elapsed=(end-start);
+	if(parserErrores.size() > 0){
 		String pluralize_finding="encontr";
 		String pluralize_errors="error";
 		pluralize_finding+= (parserErrores.size()==1)? "ó":"aron";
 		pluralize_errors+= (parserErrores.size()==1)? "":"es";		
 		System.err.println("Se "+pluralize_finding+" "+(parserErrores.size())+" "+pluralize_errors+".");
 		System.err.println("Compilación fallida (Tiempo total: "+elapsed+" milisegundos)");
+	}else{
+		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");	
+		
 	}
 	
 	
