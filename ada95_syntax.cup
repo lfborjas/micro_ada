@@ -1097,7 +1097,14 @@ orelse_expression		::=	relation:p OR_ELSE relation:q
 					:}
 					
 				;
-relation			::=	simple_expression:s {:RESULT=s;:}
+relation			::=	simple_expression:s 
+					{:
+					if(s != null){
+						ParserResult ps=(ParserResult)s;
+						if(ps.type !=null)
+							RESULT=new ParserResult(ps.value, new BooleanType());
+					}
+					:}
 				|	simple_expression:p relational_operator simple_expression:q
 					{:
 					if((p != null) && (q != null)){
@@ -1105,27 +1112,12 @@ relation			::=	simple_expression:s {:RESULT=s;:}
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
 					 if((pr.type != null) && (qr.type != null)){
-					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
-					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
-						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
-							//comparar los tipos!
-							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
-								RESULT= null;
-						}else{
-							//determine who's to blame:
-							if(ptipo instanceof BooleanType)
-							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
-							else 
-							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
-							RESULT=null;
+					 //si no son null, vienen buenos:
+						RESULT=new ParserResult(pr.value, new BooleanType());
 						}
 						
 					 }
 				
-					}
 
 					:}
 				|	simple_expression:p membership_operator range:q
