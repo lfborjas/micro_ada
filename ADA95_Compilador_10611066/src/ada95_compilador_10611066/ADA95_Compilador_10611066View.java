@@ -520,7 +520,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
                     Object result = p.parse();
                 }
                 //sacar los errores y advertencias del parser
-                this.progressBar.setValue(75);
+                this.progressBar.setValue(50);
                 ArrayList<String> parserErrores = p.getErrores();
                 ArrayList<String> parserAdvertencias = p.getAdvertencias();
                 //imprimir advertencias primero
@@ -543,6 +543,21 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 if (parserAdvertencias.size() > 0) {
                     errorArea.append(String.valueOf(parserAdvertencias.size()) + " " + pluralize_warnings + ". ");
                 }
+                //hacer el semántico sii el sintáctico pasó bien:
+                if(parserErrores.size()==0){
+                    semantic s= new semantic(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));
+                    if(debug){
+                            Object result = s.debug_parse().value;
+                    }else{
+                            Object result = s.parse().value;
+                    }
+                    parserErrores=s.getErrores();
+                    for(String error: parserErrores){
+                            errorArea.setForeground(Color.red);
+                            errorArea.append(error+"\n");
+                    }
+                }
+                this.progressBar.setValue(75);
                 //terminar la medición:
                 long end = System.currentTimeMillis();
                 float elapsed = (end - start);
