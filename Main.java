@@ -121,6 +121,17 @@ public class Main {
 	float elapsed=(end-start);
 	//sumario de errores
 	if(parserErrores.size()==0){		
+		//si no hay errores en el parser, hacer el semántico:
+		semantic s= new semantic(new Ada95Lexer(new FileReader(filename)));
+		if(debug){
+			Object result = s.debug_parse().value;
+		}else{
+			Object result = s.parse().value;
+		}
+		parserErrores=s.getErrores();
+		for(String error: parserErrores){
+			System.err.println(error);
+		}
 		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");	
 	}else{
 		String pluralize_finding="encontr";
