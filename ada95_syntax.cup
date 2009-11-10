@@ -1713,7 +1713,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 					}
 					:}
 				;
-mode				::=	
+mode				::=	{:RESULT="IN";:} //el modo por defecto es in
 				|	IN {:RESULT="IN";:}
 				|	OUT {:RESULT="OUT";:}
 				|	IN OUT {:RESULT="INOUT";:}
