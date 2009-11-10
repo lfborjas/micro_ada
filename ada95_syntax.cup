@@ -1565,9 +1565,11 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 							String nombre="";
 							boolean cons=false;
 							for(ParserResult p: fl){
-								nombre=((String)p.value).split("$")[0];
+								nombre=((String)p.value).split("\\$")[0];
 								cons=((String)p.value).contains("$constant");
-								currentScope.put(nombre, new AdaSymbol(p.type, cons));
+								if(!currentScope.put(nombre, new AdaSymbol(p.type, cons))){
+									agregarError("'"+nombre+"' ya ha sido declarado", fleft, fright);
+								}
 							}
 						}
 					  }
@@ -1591,9 +1593,11 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								String nombre="";
 								boolean cons=false;
 								for(ParserResult p: fl){
-									nombre=((String)p.value).split("$")[0];
+									nombre=((String)p.value).split("\\$")[0];
 									cons=((String)p.value).contains("$constant");
-									currentScope.put(nombre, new AdaSymbol(p.type, cons));
+									if(!currentScope.put(nombre, new AdaSymbol(p.type, cons))){
+										agregarError("'"+nombre+"' ya ha sido declarado", fleft, fright);
+									}
 								}
 							}
 						}
@@ -1662,10 +1666,10 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 								boolean compare=compare_types(ps.type, po.type, oleft, oright);
 								//Type tipo=compare ? ps.type : new ErrorType(ps.type);
 								Type tipo=ps.type;
-								ParserResult r=new ParserResult(i, tipo);
+								ParserResult r=new ParserResult(nombre, tipo);
 								RESULT=r;
 							}else{//there's no initialization expression:
-								RESULT=new ParserResult(i, ps.type);
+								RESULT=new ParserResult(nombre, ps.type);
 							}
 						}else{
 							RESULT=new ParserResult(i, null);
@@ -1698,7 +1702,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 							}else{//there's no initialization expression:
 								for(String id: il){
 									nombre=(mode.equalsIgnoreCase("in")) ? id+"$constant" : id;
-									r.add(new ParserResult(id, ps.type));
+									r.add(new ParserResult(nombre, ps.type));
 								}
 								RESULT=r;
 							}
