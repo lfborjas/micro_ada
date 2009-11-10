@@ -1098,13 +1098,7 @@ orelse_expression		::=	relation:p OR_ELSE relation:q
 					
 				;
 relation			::=	simple_expression:s 
-					{:
-					if(s != null){
-						ParserResult ps=(ParserResult)s;
-						if(ps.type !=null)
-							RESULT=new ParserResult(ps.value, new BooleanType());
-					}
-					:}
+					{:RESULT=s;:}
 				|	simple_expression:p relational_operator simple_expression:q
 					{:
 					if((p != null) && (q != null)){
