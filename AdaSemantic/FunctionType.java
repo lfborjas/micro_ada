@@ -14,14 +14,17 @@ public class FunctionType extends Type{
 	public FunctionType(Type range){
 		super();
 		this.range=range;
-		this.width=range.width;
+		//this.width=range.width;
+		//la función como tal NO tiene anchura:
+		this.width=0;
 		this.name="function";
 	}
 
 	public FunctionType(Type range, ArrayList<Type> domain){
 		this.product=domain;
 		this.range=range;
-		this.width=range.width;
+		//this.width=range.width;
+		this.width=0;
 		this.name="function";
 	}
 

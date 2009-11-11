@@ -9,7 +9,9 @@ public class FloatType extends PrimitiveType{
 	
 	public FloatType(String name){
 		super();
-		this.width=Type.FLOAT_WIDTH;
+		//this.width=Type.FLOAT_WIDTH
+		//se está creando un subtipo:
+		this.width=0;
 		this.name=name;
 	}
 

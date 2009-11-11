@@ -9,9 +9,12 @@ public class BooleanType extends PrimitiveType{
         
 	public BooleanType(String name){
                 super();
-                this.width=Type.BOOLEAN_WIDTH;
+    	        //this.width=Type.BOOLEAN_WIDTH;
+		/*si este constructor se llamó, es porque se está creando un subtipo:*/
+		this.width=0;
 		this.name=name;
         }
+
 
         public String toString(){
 		String n=(name.equalsIgnoreCase("boolean"))? "" : name+": ";
