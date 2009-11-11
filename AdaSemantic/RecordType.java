@@ -31,7 +31,9 @@ public class RecordType extends Type{
 	}
 
 	public String toString(){
-		String n=(this.name.equals(""))? "": name+": ";
+		return this.name;
+		//Esto era sólo para debug...
+		/*String n=(this.name.equals(""))? "": name+": ";
 		StringBuilder retVal=new StringBuilder(n+"Record ");
 		if (!this.product.isEmpty())
 			retVal.append(" of (");
@@ -41,7 +43,7 @@ public class RecordType extends Type{
 		for(int i=0;i<this.product.size()-1; i++)
 			retVal.append(this.product.get(i)+ ", ");
 		retVal.append(this.product.get(this.product.size()-1)+" )");
-		return retVal.toString();
+		return retVal.toString();*/
 	
 	}
 

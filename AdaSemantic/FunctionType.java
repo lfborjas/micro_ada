@@ -46,6 +46,9 @@ public class FunctionType extends Type{
 	}
 
 	public String toString(){
+		return this.range.toString();	
+		//Esto era sólo para debug también...
+		/*
 		StringBuilder retVal=new StringBuilder();		
 		if (this.range==null)
 			retVal.append("Void ");
@@ -60,7 +63,7 @@ public class FunctionType extends Type{
 		for(int i=0;i<this.product.size()-1;i++)
 			retVal.append(this.product.get(i)+ ", ");
 		retVal.append(this.product.get(product.size()-1)+ " )");
-		return retVal.toString();			
+		return retVal.toString();			*/
 	}
 
         public boolean equals(Object o){
