@@ -1595,6 +1595,12 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								for(ParserResult p: fl){
 									nombre=((String)p.value).split("\\$")[0];
 									cons=((String)p.value).contains("$constant");
+									//las funciones sólo pueden tener parámetros de tipo in:
+									if(!cons){
+										agregarError("Las funciones sólo pueden tener parámetros de modo in",
+										fleft, fright );
+										cons=true;
+									}
 									if(!currentScope.put(nombre, new AdaSymbol(p.type, cons))){
 										agregarError("'"+nombre+"' ya ha sido declarado", fleft, fright);
 									}
