@@ -29,6 +29,9 @@ LinkedSymbolTable currentScope = new LinkedSymbolTable();
 //pongo cualquier cosa, sólo para que ya estén en la st (y no deje declarar otras fn con estos nombres):
 boolean neverused=currentScope.put("put", new AdaSymbol(new IntegerType()));
 boolean neveruser2=currentScope.put("get", new AdaSymbol(new IntegerType()));
+/**Variables globales para el control de los subprogramas*/
+ArrayList<Type> returns=new ArrayList<Type>();
+int branches=1;
 
 
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
@@ -820,7 +823,7 @@ and_expression			::=	relation:p AND relation:q
 								RESULT= null;
 						}else{
 							//determine who's to blame:
-							if(ptipo instanceof BooleanType)
+							if(qtipo instanceof BooleanType)
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
 							else 
 							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
@@ -849,7 +852,7 @@ and_expression			::=	relation:p AND relation:q
 								RESULT= null;
 						}else{
 							//determine who's to blame:
-							if(ptipo instanceof BooleanType)
+							if(qtipo instanceof BooleanType)
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
 							else 
 							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
@@ -879,7 +882,7 @@ or_expression			::=	relation:p OR relation:q
 								RESULT= null;
 						}else{
 							//determine who's to blame:
-							if(ptipo instanceof BooleanType)
+							if(qtipo instanceof BooleanType)
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
 							else 
 							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
@@ -908,7 +911,7 @@ or_expression			::=	relation:p OR relation:q
 								RESULT= null;
 						}else{
 							//determine who's to blame:
-							if(ptipo instanceof BooleanType)
+							if(qtipo instanceof BooleanType)
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
 							else 
 							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
@@ -996,7 +999,7 @@ andthen_expression		::=	relation:p AND_THEN relation:q {:
 								RESULT= null;
 						}else{
 							//determine who's to blame:
-							if(ptipo instanceof BooleanType)
+							if(qtipo instanceof BooleanType)
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
 							else 
 							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
@@ -1057,7 +1060,7 @@ orelse_expression		::=	relation:p OR_ELSE relation:q
 								RESULT= null;
 						}else{
 							//determine who's to blame:
-							if(ptipo instanceof BooleanType)
+							if(qtipo instanceof BooleanType)
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), pleft, pright);
 							else 
 							    agregarError("Se esperaba un tipo booleano y se encontró "+qtipo.toString(), qleft, qright);
@@ -1370,7 +1373,17 @@ label_list			::=	| label_list label
 simple_statement		::=	null_statement
 				|	assignment_statement
 				|	exit_statement
-				|	return_statement:e {:RESULT=e;:}
+				/*Al encontrar una sentencia de retorno, agregar la expresión. Si viene null es porque 
+				ya fue reportado un error antes. Idea: poner errorTypes en este caso. */
+				|	return_statement:e 
+					{:
+					if(e != null){
+						ParserResult pe=(ParserResult)e;
+						returns.add(pe.type);
+					}else{
+						returns.add(new ErrorType());
+					}
+					:}
 				|	goto_statement
 				|	procedure_call
 				|	code_statement
@@ -1407,8 +1420,10 @@ assignment_statement		::=	name:n ASSIGNMENT expression:e SEMICOLON
 					}
 					:}
 				;
+/*Encontrar un if o un elsif significa encontrar una nueva branch*/
 if_statement			::=	IF:i  condition:c
-					 {: if(c != null){
+					{: branches++;
+					 if(c != null){
 						ParserResult pc=(ParserResult)c;
 						if(!(pc.type instanceof BooleanType))
 							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
@@ -1421,7 +1436,8 @@ if_statement			::=	IF:i  condition:c
 					END IF SEMICOLON 
 				;
 elsif_list			::=	| elsif_list ELSIF condition:c THEN sequence_of_statements
-					 {: if(c != null){
+					 {: branches++;
+					  if(c != null){
 						ParserResult pc=(ParserResult)c;
 						if(!(pc.type instanceof BooleanType))
 							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
@@ -1577,6 +1593,8 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 					RESULT=i;:}
 				|	FUNCTION designator:i formal_part_option:f RETURN subtype_indication:s IS 
 					{:
+					//es una función, así que al menos espera una branch:
+					branches=1;
 					ParserResult ps=(ParserResult)s;
 					if(ps.type != null){
 					if(f != null){
@@ -1733,20 +1751,29 @@ subprogram_body			::=	subprogram_specification_is:s
 					BEGIN:b  
 					{:parser.setUnclosed((" end "+((String)s)+";"), "begin",bleft, bright);:}
 						sequence_of_statements:t
-					{:/*ver que el return coincida con el declarado*/
-					if((s != null) && (s instanceof ParserResult) ){
-						ParserResult ps=(ParserResult)s;
-						if(t != null){
-						    ParserResult pt=(ParserResult)t;
-						    compare_types(ps.type, pt.type, tleft, tright);	
-						}else{
-        					    agregarError("Sentencia de retorno faltante para la función '"+((String)ps.value)+"' ", sleft, sright);
-						}
-					}
-					:} 
 					END designator_option:e SEMICOLON
 					//salir del subprograma:
-					{:currentScope=currentScope.getAncestor();:} placeholder 
+					{:
+					  if(s != null){
+						if(s instanceof ParserResult){
+							ParserResult ps=(ParserResult)s;
+							for(Type r : returns){
+								//si es errortype, ya fue reportado un error
+								if(!(r instanceof ErrorType))
+									compare_types(r,ps.type,sleft, sright);
+							}
+
+							//se asume que sólo las funciones tienen branches
+							if (returns.size() < branches)
+								agregarError("Sentencia de retorno faltante para el subprograma '"+((String)ps.value)+"'"
+								, sleft, sright);
+						}
+					  }
+					  //resetear las cosas:
+					  currentScope=currentScope.getAncestor();
+					  returns=new ArrayList<Type>();
+					  branches=0;
+					:} placeholder 
 					{:check_coherence(s,sleft, sright, e, eleft, eright);:}
 				;
 designator_option		::=	| designator:d {:RESULT=d;:}
@@ -1762,46 +1789,48 @@ procedure_call			::=	name SEMICOLON
 Si sí, habrá también que ver que cumplan con el dominio.*/
 function_call			::=	name:n LEFTPAR RIGHTPAR
 				 	{:	
-						AdaSymbol f=findSymbol(n, nleft, nright);	
+						ParserResult pn=(ParserResult)n;
+						AdaSymbol f=findSymbol(pn.value, nleft, nright);	
 					        if (f==null)
-							RESULT=new ParserResult(n);
+							RESULT=new ParserResult(pn.value);
 					  	else{//found, check if the function complies...
 						//check if it IS a function:
 							if(!(f.type instanceof FunctionType)){
-								agregarError("Error Semántico  : '"+((String)n)+"' no es una función", nleft, nright);
-								RESULT=new ParserResult(n);
+								agregarError("Error Semántico  : '"+((String)pn.value)+"' no es una función", nleft, nright);
+								RESULT=new ParserResult(pn.value);
 						//check if it is an empty parameter function:
 							}else if(!f.type.getProduct().isEmpty()){
-								agregarError("Error Semántico  : la función '"+((String)n)+
+								agregarError("Error Semántico  : la función '"+((String)pn.value)+
 								"' recibe "+(f.type.getProduct().size())+" parámetros. O suministrados", nleft, nright);
-								RESULT=new ParserResult(n);
+								RESULT=new ParserResult(pn.value);
 						//if it is a function with empty parameters, but no return type, is a procedure!
 							}else if(((FunctionType)f.type).getRange() == null){
 								agregarError("No se puede usar una llamada a procedimiento como operando", nleft, nright);
-								RESULT=new ParserResult(n);
+								RESULT=new ParserResult(pn.value);
 						//it IS a function (i.e it HAS return type:)
 							}else{
-								RESULT=new ParserResult(n, f.type);
+								RESULT=new ParserResult(pn.value, f.type);
 							}
 						}
 					:}
 				|	name:n actual_parameter_part:p 
 					{:
-					AdaSymbol f=findSymbol(n, nleft, nright);
+					ParserResult pn=(ParserResult)n;
+					AdaSymbol f=findSymbol(pn.value, nleft, nright);
 					if(f==null)
-						RESULT=new ParserResult(n);
+						RESULT=new ParserResult(pn.value);
 					else{
 						if(!(f.type instanceof FunctionType)){
-							agregarError("Error Semántico  : '"+((String)n)+"' no es una función", nleft, nright);
-							RESULT=new ParserResult(n);
+							agregarError("Error Semántico  : '"+((String)pn.value)+"' no es una función", nleft, nright);
+							RESULT=new ParserResult(pn.value);
 						}else{//la función existe: 
 						//ver si está llamado con el número correcto de parámetros:
 							if(!(f.type.getProduct().size()==((ArrayList<ParserResult>)p).size())){
-								agregarError("Error Semántico  : la función '"+((String)n)+
-								"' recibe "+(f.type.getProduct().size())+" parámetros."+
+								agregarError("Error Semántico  : la función '"+((String)pn.value)+
+								"' recibe "+(f.type.getProduct().size())+" parámetros. "+
 								String.valueOf(((ArrayList<ParserResult>)p).size())
-								+"  suministrados", nleft, nright);
-								
+								+" suministrados", nleft, nright);
+								RESULT=new ParserResult(pn.value);	
 							}else{//el número de parámetros es correcto, vamos a ver si son iguales:
 								int i=0;
 								ArrayList<ParserResult> pr=(ArrayList<ParserResult>)p;
@@ -1810,16 +1839,16 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 									found=pr.get(i).type;
 									expected=f.type.getProduct().get(i);		
 									if(!expected.equals(found)){
-										agregarError("Argumento incorrecto para la función '"+((String)n)+"'"+
+										agregarError("Argumento incorrecto para la función '"+((String)pn.value)+"'"+
 										" encontrado '"+found.toString()+"', se esperaba '"+expected.toString()+"'",
 										nleft, nright);
 										break;			
 									}
 								}//si termina, el tipo de los parámetros es correcto
 								if(i==f.type.getProduct().size())
-									RESULT=new ParserResult(n, f.type);
+									RESULT=new ParserResult(pn.value, f.type);
 								else
-									RESULT=new ParserResult(n);
+									RESULT=new ParserResult(pn.value);
 								
 							}//el número de parámetros es correcto 
 								
