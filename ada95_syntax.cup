@@ -31,7 +31,7 @@ boolean neverused=currentScope.put("put", new AdaSymbol(new IntegerType()));
 boolean neveruser2=currentScope.put("get", new AdaSymbol(new IntegerType()));
 /**Variables globales para el control de los subprogramas*/
 ArrayList<Type> returns=new ArrayList<Type>();
-int branches=1;
+int branches=0;
 
 
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
@@ -1634,9 +1634,11 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						}
 						
 					}
+					
  					RESULT=new ParserResult(i,ps.type);
-					}
+					}else{
 					 RESULT=i;
+					}
 					:}
 				;
 //de p85-persch, pag 94
@@ -1749,7 +1751,8 @@ mode				::=	{:RESULT="IN";:} //el modo por defecto es in
 subprogram_body			::=	subprogram_specification_is:s 
 						declarative_part 
 					BEGIN:b  
-					{:parser.setUnclosed((" end "+((String)s)+";"), "begin",bleft, bright);:}
+					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
+					parser.setUnclosed((" end "+((String)designator)+";"), "begin",bleft, bright);:}
 						sequence_of_statements:t
 					END designator_option:e SEMICOLON
 					//salir del subprograma:
@@ -1760,7 +1763,7 @@ subprogram_body			::=	subprogram_specification_is:s
 							for(Type r : returns){
 								//si es errortype, ya fue reportado un error
 								if(!(r instanceof ErrorType))
-									compare_types(r,ps.type,sleft, sright);
+									compare_types(ps.type,r,sleft, sright);
 							}
 
 							//se asume que sólo las funciones tienen branches
@@ -1774,7 +1777,8 @@ subprogram_body			::=	subprogram_specification_is:s
 					  returns=new ArrayList<Type>();
 					  branches=0;
 					:} placeholder 
-					{:check_coherence(s,sleft, sright, e, eleft, eright);:}
+					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
+					check_coherence(designator,sleft, sright, e, eleft, eright);:}
 				;
 designator_option		::=	| designator:d {:RESULT=d;:}
 				;
