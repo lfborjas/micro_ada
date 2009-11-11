@@ -8,6 +8,11 @@ public class ErrorType extends PrimitiveType{
 	
 	}
 	
+	public ErrorType(){
+		this.product=null;
+		this.width=0;
+	}
+	
 	public String toString(){
 		StringBuilder retVal=new StringBuilder("Error ");
 		if (this.product.isEmpty())
@@ -26,6 +31,8 @@ public class ErrorType extends PrimitiveType{
 			return false;
 		//if the other Type is of the expected type, then they are equal (this is an attempt
 		//to recover from semantic type errors
+		if(this.product.isEmpty())
+			return false;
 		if(!(this.product.get(0).toString().equals(o.toString())))
 			return false;
 		else 
