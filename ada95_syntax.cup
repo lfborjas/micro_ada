@@ -101,7 +101,7 @@ public boolean validateBuiltIn(String method, Object val, int line, int col){
 		ArrayList<ParserResult> l=(ArrayList<ParserResult>)val;
 	//now, check that it has only one parameter:
 		if(l.size()!=1){
-			agregarError("La función '"+method+"' solamente admite 1 parámetro, "+String.valueOf(l.size())+" suministrados.", line, col);
+			agregarError("La función '"+method+"' solamente admite 1 parámetro, "+String.valueOf(l.size())+" suministrados", line, col);
 			return false;
 		}
 	//it has, so, check that the type is valid: it must be one of the primitive types:
@@ -744,12 +744,16 @@ name				::=	identifier:i
 				|	selected_component:s {:RESULT=s;:}
 				|	function_call:f {:RESULT=f;:}
 				|	operator_symbol:i 
-					{://buscar el nombre en la tabla de símbolos:
-					  AdaSymbol f=findSymbol(i, ileft, iright);
+					{://buscar el nombre en la tabla de símbolos:					  
+					  ParserResult pi=(ParserResult)i;
+					  //AdaSymbol f=findSymbol(pi.value, ileft, iright);
+					  /*Si no lo encuentra, asumamos que es un string normal...*/
+					  AdaSymbol f=currentScope.get(pi.value);					  
 					  if(f!= null)
 						RESULT=new ParserResult(i, f.type);						 
 					  else
-						RESULT=new ParserResult(i);
+						//RESULT=new ParserResult(i);
+						RESULT=pi;
 					:}
 				;
 /*The only case of this is in records, isn't it?*/
