@@ -1770,6 +1770,10 @@ subprogram_body			::=	subprogram_specification_is:s
 							if (returns.size() < branches)
 								agregarError("Sentencia de retorno faltante para el subprograma '"+((String)ps.value)+"'"
 								, sleft, sright);
+						}else{//si no es un ParserResult es un procedure:
+							if(returns.size()>0)	
+								agregarError("Un procedimiento no puede retornar un valor"+
+								" (En el procedimiento '"+((String)s)+"') ", sleft, sright);
 						}
 					  }
 					  //resetear las cosas:
