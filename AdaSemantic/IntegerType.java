@@ -9,9 +9,7 @@ public class IntegerType extends PrimitiveType{
 	
 	public IntegerType(String name){
                 super();
-                //this.width=Type.INTEGER_WIDTH;
-		/*si este constructor se llamó, es porque se está creando un subtipo:*/
-                this.width=0;
+                this.width=Type.INTEGER_WIDTH;
                 this.name=name;
         }
 
