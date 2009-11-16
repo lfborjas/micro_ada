@@ -564,10 +564,11 @@ range	::=	simple_expression:t DOUBLEDOT simple_expression:f
 						if(ptipo.isNumeric() && qtipo.isNumeric()){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, fleft, fright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, fleft, fright)){
+								RESULT=pr; //CHANGE THIS!								
+							}else{ 
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(!ptipo.isNumeric())
@@ -594,9 +595,10 @@ fixed_point_constraint		::=	DELTA simple_expression range_constraint_option
 				;
 //no pongo lo de array ni index
 /*Hier*/
+/*Sólo vamos a permitir rangos sencillos...*/
 discrete_range			::=	name range_constraint_option
 				|	numeric_type range_constraint_option
-				|	range
+				|	range:r {:RESULT=r;:}
 				;
 record_type_definition		::=	RECORD:r  
 					{:parser.setUnclosed("end record;", "record", rleft,rright );:} 
@@ -1388,6 +1390,7 @@ simple_statement		::=	null_statement
 						returns.add(new ErrorType());
 					}
 					:}
+/*Para labels: */
 				|	goto_statement
 				|	procedure_call
 				|	code_statement
@@ -1430,7 +1433,8 @@ if_statement			::=	IF:i  condition:c
 					 if(c != null){
 						ParserResult pc=(ParserResult)c;
 						if(!(pc.type instanceof BooleanType))
-							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+							agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
+							 cleft, cright);
 					 }:} 
 					THEN 
 					{:parser.setUnclosed("end if;", "if", ileft, iright);:}
@@ -1444,7 +1448,8 @@ elsif_list			::=	| elsif_list ELSIF condition:c THEN sequence_of_statements
 					  if(c != null){
 						ParserResult pc=(ParserResult)c;
 						if(!(pc.type instanceof BooleanType))
-							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+							agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
+						        cleft, cright);
 					 }:} 
 				;
 else_option			::=	| ELSE sequence_of_statements
@@ -1453,23 +1458,13 @@ condition			::=	expression:e {:RESULT=e;:}
 				;
 //acá iría el bloque case, seguido de la alternative_list
 loop_statement			::=	iteration_clause_option:o
-					{:
-					if(o != null){						
-						currentScope=new LinkedSymbolTable(currentScope); 
-					  }
-					:}	
 					 basic_loop SEMICOLON
-					{:
+					{://se asume que si la iteration_clause existe, se creó una st para ésta
 					 if(o != null)
 						currentScope=currentScope.getAncestor();
 					:}
 					placeholder
 				|	identifier:i COLON iteration_clause_option:o
-					{:
-					if(o != null){						
-						currentScope=new LinkedSymbolTable(currentScope); 
-					  }
-					:} 
 					basic_loop identifier:j SEMICOLON
 					{:
 					String si=(String)i; 
@@ -1490,7 +1485,27 @@ basic_loop			::=	LOOP:l
 /*Validar que no exista el id, crear un nuevo scope.*/
 iteration_clause_option		::=
 				|	FOR identifier:i IN discrete_range:r
+					{:
+					currentScope=new LinkedSymbolTable(currentScope); 
+					//ver si viene algo en el rango:
+					Type tipo=(r != null) ? ((ParserResult)r).type : new IntegerType();
+					if(!currentScope.put(i, new AdaSymbol(tipo, true))){
+						agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);					
+					}
+					/*
+					//avisar si el rango es nulo:
+					if(r ==  null)
+						agregarError("Advertencia: El rango del ciclo es nulo y no se ejecutará", rleft, rright);
+					*/
+					:}
 				|	FOR identifier:i IN REVERSE discrete_range:r
+					{:
+					currentScope=new LinkedSymbolTable(currentScope); 
+					Type tipo=(r != null) ? ((ParserResult)r).type : new IntegerType();
+					if(!currentScope.put(i, new AdaSymbol(tipo, true))){
+						agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
+					}
+					:}
 				|	WHILE condition:c 
 					 {: if(c != null){
 						ParserResult pc=(ParserResult)c;
@@ -1511,6 +1526,7 @@ block				::=	declare_part_option BEGIN:b
 declare_part_option		::=	
 				|	 DECLARE declarative_part
 				;
+/*Para labels: revisar que la label exista*/
 exit_statement			::=	EXIT name_option when_option SEMICOLON
 				;
 name_option			::=	| name
