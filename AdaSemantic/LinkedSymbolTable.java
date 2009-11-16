@@ -9,17 +9,21 @@ import java.util.HashMap;
 public class LinkedSymbolTable{
 	/**The Symbol table for this scope*/
 	private HashMap<String, AdaSymbol> table;
-	/**The inmedeate outer scope*/
+	/**The immediate outer scope*/
 	private LinkedSymbolTable ancestor;
+	/**La primera dirección relativa libre*/
+	public int desplazamiento;
 	
 	public LinkedSymbolTable(LinkedSymbolTable ancestor){
 		table=new HashMap<String, AdaSymbol>();
 		this.ancestor= ancestor;
+		this.desplazamiento=0;
 	}
 	
 	public LinkedSymbolTable(){
 		table=new HashMap<String, AdaSymbol>();
-		this.ancestor=null;	
+		this.ancestor=null;
+		this.desplazamiento=0;	
 	}
 	
 	public LinkedSymbolTable getAncestor(){
@@ -35,6 +39,10 @@ public class LinkedSymbolTable{
 		//because of the case insensitiveness of ada:
 		id=id.toLowerCase();
 		if(!(this.table.containsKey(id))){
+			//dar la dirección de memoria:
+			tipo.address=this.desplazamiento;
+			//actualizar el desplazamiento:
+			desplazamiento += tipo.type.width;
 			table.put(id, tipo);
 			return true;
 		}else{//shouldn't let it overwrite the existing key!
@@ -56,7 +64,7 @@ public class LinkedSymbolTable{
 		for(LinkedSymbolTable t=this; t != null; t= t.getAncestor()){
 			found=t.getTable().get(splitId[0]);
 			if(found != null){
-				if(splitId.length == 1)//is not a selected component query
+				if(splitId.length == 1)//is not a selected component query					
 					return found;
 				else//it IS a selected component query
 					break;
