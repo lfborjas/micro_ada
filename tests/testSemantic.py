@@ -14,7 +14,8 @@ pruebas=[
 ('Probar asignaciones inválidas: tipos inexistentes, llamadas a funciones, variables, asignaciones incompatibles', 'assignmentTest.adb'),
 ('Probar ámbitos y asignación de constantes.', 'scopeTest.adb'),
 ('Probar llamadas a funciones y sentencias de retorno faltantes', 'functionTest.adb'),
-('Probar if y loop statements', 'statementsTest.adb')
+('Probar if y loop statements', 'statementsTest.adb'),
+('Probar creación de records y acceso a sus componentes', 'recordsTest.adb'),
 ]
 
 #imprimir el menú de pruebas
