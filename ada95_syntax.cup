@@ -21,6 +21,7 @@ import java_cup.runtime.*;
 import java.util.Stack;
 import java.util.ArrayList;
 import AdaSemantic.*;
+import java.util.HashMap;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
 
@@ -32,6 +33,23 @@ boolean neveruser2=currentScope.put("get", new AdaSymbol(new IntegerType()));
 /**Variables globales para el control de los subprogramas*/
 ArrayList<Type> returns=new ArrayList<Type>();
 int branches=0;
+/*Variables para la generación de código intermedio*/
+//las instrucciones
+ArrayList<Cuadruplo> cuadruplos=new ArrayList<Cuadruplo>();
+public static final int MIPS_TEMPS=8;
+//los temporales cf: http://en.wikipedia.org/wiki/MIPS_architecture
+boolean[] temps=new boolean[MIPS_TEMPS];
+int temp_provisorio=0;
+/**Para obtener el siguiente temporal libre*/
+public String temp_nuevo(){
+	return "t"+String.valueOf(++temp_provisorio);
+}
+/*Para agregar cuádruplos a la lista*/
+public void gen(String op, String arg1, String arg2, String res){
+	cuadruplos.add(new Cuadruplo(op, arg1, arg2, res));	
+	
+}
+
 
 
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
