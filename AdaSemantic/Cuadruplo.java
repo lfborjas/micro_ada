@@ -7,7 +7,13 @@ public class Cuadruplo{
 	public String arg1;
 	public String arg2;
 	public String res;
-
+	
+	public Cuadruplo(){
+		operador=null;
+		arg1=null;
+		arg2=null;
+		res=null;
+	}
 	public Cuadruplo( String operador,  String arg1,  String arg2,  String res){
 		this.operador=operador;
 		this.arg1=arg1;
