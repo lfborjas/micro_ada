@@ -35,7 +35,10 @@ public class Cuadruplo{
 		this.res=res;
 	}	
 	public String  toString(){
-		return res+" = "+arg1+" "+operador+" "+arg2;
+		String r=(!res.isEmpty()) ? res+"=" : "";
+		String a1=(!arg1.isEmpty()) ? arg1+" " : "";
+		String o= (!operador.isEmpty()) ? operador+ " " : "";
+		return r+a1+o+arg2;
 	}
 		
 }

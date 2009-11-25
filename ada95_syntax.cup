@@ -36,7 +36,7 @@ int branches=0;
 /*Variables para la generación de código intermedio*/
 //las instrucciones
 ArrayList<Cuadruplo> cuadruplos=new ArrayList<Cuadruplo>();
-public static final int MIPS_TEMPS=8;
+public static final int MIPS_TEMPS=9;
 //los temporales cf: http://en.wikipedia.org/wiki/MIPS_architecture
 boolean[] temps=new boolean[MIPS_TEMPS];
 int temp_provisorio=0;
@@ -44,10 +44,18 @@ int temp_provisorio=0;
 public String temp_nuevo(){
 	return "t"+String.valueOf(++temp_provisorio);
 }
-/*Para agregar cuádruplos a la lista*/
+
+/**Ir imprimiendo el código intermedio al generarlo*/
+public boolean DEBUG=true;
+/*Para agregar cuádruplos a la lista. Sólo generar el cuádruplo si no hay errores.*/
 public void gen(String op, String arg1, String arg2, String res){
-	cuadruplos.add(new Cuadruplo(op, arg1, arg2, res));	
-	
+	if(parser.errores.size()>0)
+		return;
+	Cuadruplo quad=new Cuadruplo(op, arg1, arg2, res);
+	cuadruplos.add(quad);	
+	if(DEBUG){
+		System.out.println(quad.toString());
+	}	
 }
 
 
