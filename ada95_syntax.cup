@@ -47,13 +47,19 @@ public String temp_nuevo(){
 /**Ir imprimiendo el código intermedio al generarlo*/
 public boolean DEBUG=true;
 /*Para agregar cuádruplos a la lista. Sólo generar el cuádruplo si no hay errores.*/
-public void gen(String op, String arg1, String arg2, String res){
-	//pasar los argumentos a lowercase, para no tener problemas luego con la st.
-	arg1=arg1.toLowerCase();
-	arg2=arg2.toLowerCase();
+public void gen(Object op, Object arg1, Object arg2, Object res){
+	//si hay errores, ni siquiera molestarse en seguir:
 	if(parser.errores.size()>0)
 		return;
-	Cuadruplo quad=new Cuadruplo(op, arg1, arg2, res);
+	/*castear a string*/
+	String o=op.toString();
+	String a1=arg1.toString();
+	String a2=arg2.toString();
+	String r=res.toString();
+	//pasar los argumentos a lowercase, para no tener problemas luego con la st.
+	a1=a1.toLowerCase();
+	a2=a2.toLowerCase();
+	Cuadruplo quad=new Cuadruplo(o, a1, a2, r);
 	cuadruplos.add(quad);	
 	if(DEBUG){
 		System.out.println(quad.toString());
