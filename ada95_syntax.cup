@@ -1365,26 +1365,26 @@ primary				::=	literal:l {:RESULT=l;:}
 				|	qualified_expression
 				|	LEFTPAR expression:e RIGHTPAR {:RESULT=e;:}
 				;
-relational_operator		::=	EQUAL
-				|	INEQUALITY
-				|	LT	
-				|	GT	
-				|	GTEQ
-				|	LTEQ
+relational_operator		::=	EQUAL {:RESULT= new ParserResult("==");:}
+				|	INEQUALITY {:RESULT= new ParserResult("/=");:}
+				|	LT	{:RESULT= new ParserResult("<");:}
+				|	GT	{:RESULT= new ParserResult(">");:}
+				|	GTEQ{:RESULT= new ParserResult(">=");:}
+				|	LTEQ {:RESULT= new ParserResult("<=");:}
 				;
-adding_operator			::=	PLUS
-				|	MINUS
-				|	CONCATENATE
+adding_operator			::=	PLUS {:RESULT=new ParserResult("+");:}	
+				|	MINUS {:RESULT= new ParserResult("-");:}
+				|	CONCATENATE {:RESULT= new ParserResult("&");:}
 				;
-unary_operator			::=	PLUS:p {:RESULT=new ParserResult(p, new IntegerType());:}
-				|	MINUS:m {:RESULT=new ParserResult(m, new IntegerType());:}
-				|	NOT:n	{:RESULT=new ParserResult(n, new BooleanType());:}
-				|	ABS:a	{:RESULT=new ParserResult(a, new IntegerType());:}
+unary_operator			::=	PLUS:p {:RESULT=new ParserResult("+", new IntegerType());:}
+				|	MINUS:m {:RESULT=new ParserResult("-", new IntegerType());:}
+				|	NOT:n	{:RESULT=new ParserResult("!", new BooleanType());:}
+				|	ABS:a	{:RESULT=new ParserResult("abs", new IntegerType());:}
 				;
-multiplying_operator		::=	MULTIPLY
-				|	DIVIDE
-				|	MOD
-				|	REM
+multiplying_operator		::=	MULTIPLY {:RESULT= new ParserResult("*");:}
+				|	DIVIDE {:RESULT= new ParserResult("/");:}
+				|	MOD {:RESULT= new ParserResult("%");:}
+				|	REM {:RESULT= new ParserResult("rem");:}
 				;
 qualified_expression		::=	name TICK LEFTPAR expression RIGHTPAR
 				|	name TICK aggregate
