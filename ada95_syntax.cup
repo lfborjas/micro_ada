@@ -21,7 +21,6 @@ import java_cup.runtime.*;
 import java.util.Stack;
 import java.util.ArrayList;
 import AdaSemantic.*;
-import java.util.HashMap;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
 
@@ -49,6 +48,9 @@ public String temp_nuevo(){
 public boolean DEBUG=true;
 /*Para agregar cuádruplos a la lista. Sólo generar el cuádruplo si no hay errores.*/
 public void gen(String op, String arg1, String arg2, String res){
+	//pasar los argumentos a lowercase, para no tener problemas luego con la st.
+	arg1=arg1.toLowerCase();
+	arg2=arg2.toLowerCase();
 	if(parser.errores.size()>0)
 		return;
 	Cuadruplo quad=new Cuadruplo(op, arg1, arg2, res);
