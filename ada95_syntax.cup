@@ -441,7 +441,7 @@ N devuelve una lista de siguientes y genera un goto vacío
 m	::=/*lambda*/ {:RESULT=new ParserResult(new Integer(cuadruplos.size()));:}
 	; 
 n	::=/*lambda*/ {:BackPatchResult br= new BackPatchResult(new ListaSalto(cuadruplos.size()));
-			gen("goto", "_", "", "");
+			gen("goto", " ", "", "");
 			RESULT=new ParserResult(br);
 		      :}
 	;
@@ -878,22 +878,30 @@ expression			::=	relation:e 	{:RESULT=e;:}
 				|	orelse_expression:e {:RESULT=e;:}
 				;
 //de p85-persch, pag 91
-and_expression			::=	relation:p AND relation:q
+and_expression			::=	relation:p AND m:m relation:q
 					{:
 					if((p != null) && (q != null)){
 					
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
+					 ParserResult mr=(ParserResult)m;
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, qleft, qright)){
+								pr.backpatch.verdadera.completa(mr.value);
+								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
+								RESULT=new ParserResult(ptipo, 
+								new BackPatchResult(
+									qr.backpatch.verdadera,	
+									pr.backpatch.falsa
+								));
+							}else{ 
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(qtipo instanceof BooleanType)
@@ -907,22 +915,30 @@ and_expression			::=	relation:p AND relation:q
 				
 					}
 					:}
-				|	and_expression:p AND relation:q
+				|	and_expression:p AND m:m relation:q
 					{:
 					if((p != null) && (q != null)){
 					
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
+					 ParserResult mr=(ParserResult)m;
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, qleft, qright)){
+								pr.backpatch.verdadera.completa(mr.value);
+								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
+								RESULT=new ParserResult(ptipo, 
+								new BackPatchResult(
+									qr.backpatch.verdadera,	
+									pr.backpatch.falsa
+								));
+							}else{ 
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(qtipo instanceof BooleanType)
@@ -954,7 +970,7 @@ or_expression			::=	relation:p OR m:m relation:q
 								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
-									qr.backpatch.verdadera,
+									pr.backpatch.verdadera,
 									qr.backpatch.falsa
 								));
 							}else{ 
@@ -991,7 +1007,7 @@ or_expression			::=	relation:p OR m:m relation:q
 								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
-									qr.backpatch.verdadera,
+									pr.backpatch.verdadera,
 									qr.backpatch.falsa
 								));
 							}else{ 
@@ -1070,21 +1086,29 @@ xor_expression			::=	relation:p XOR relation:q
 					}
 					:}
 				;
-andthen_expression		::=	relation:p AND_THEN relation:q {:
+andthen_expression		::=	relation:p AND_THEN m:m relation:q {:
 					if((p != null) && (q != null)){
 					
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
+				 	 ParserResult mr=(ParserResult)m;
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, qleft, qright)){
+								pr.backpatch.verdadera.completa(mr.value);
+								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
+								RESULT=new ParserResult(ptipo, 
+								new BackPatchResult(
+									qr.backpatch.verdadera,	
+									pr.backpatch.falsa
+								));
+							}else{ 
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(qtipo instanceof BooleanType)
@@ -1099,22 +1123,30 @@ andthen_expression		::=	relation:p AND_THEN relation:q {:
 					}
 
 					:}
-				|	andthen_expression:p AND_THEN relation:q
+				|	andthen_expression:p AND_THEN m:m relation:q
 					{:
 					if((p != null) && (q != null)){
 					
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
+					 ParserResult mr=(ParserResult)m;
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, qleft, qright)){
+								pr.backpatch.verdadera.completa(mr.value);
+								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
+								RESULT=new ParserResult(ptipo, 
+								new BackPatchResult(
+									qr.backpatch.verdadera,	
+									pr.backpatch.falsa
+								));
+							}else{ 
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(ptipo instanceof BooleanType)
@@ -1185,7 +1217,7 @@ orelse_expression		::=	relation:p OR_ELSE m:m relation:q
 								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
-									qr.backpatch.verdadera,	
+									pr.backpatch.verdadera,	
 									qr.backpatch.falsa
 								));
 							}else{ 
