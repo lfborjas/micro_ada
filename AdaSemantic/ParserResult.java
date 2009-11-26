@@ -10,7 +10,12 @@ public class ParserResult{
 	/**The lists for backpatching*/
 	public BackPatchResult backpatch;
 
-	public ParserResult(){}
+	public ParserResult(){
+		this.type=null;
+		this.value=null;
+		this.clean=true;
+		this.backpatch=null;
+	}
 
 	public ParserResult(Type t){
 		this.type=t;
