@@ -93,7 +93,7 @@ public BackPatchResult getBackPatch(Boolean b){
 public void completa(ListaSalto completar, Object con){
 	int value=0;
 	String salto=con.toString();
-	for(Integer index : completa.lista){
+	for(Integer index : completar.lista){
 		//por cualquier cosa
 		value=index.intValue();
 		if(value < cuadruplos.size() && value >=0){
@@ -908,7 +908,7 @@ and_expression			::=	relation:p AND m:m relation:q
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.verdadera.completa(mr.value);
+								completa(pr.backpatch.verdadera, mr.value);
 								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -945,7 +945,7 @@ and_expression			::=	relation:p AND m:m relation:q
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.verdadera.completa(mr.value);
+								completa(pr.backpatch.verdadera, mr.value);
 								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -982,7 +982,7 @@ or_expression			::=	relation:p OR m:m relation:q
 						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
 							//comparar los tipos!
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.falsa.completa(mr.value);
+								completa(pr.backpatch.falsa, mr.value);
 								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -1019,7 +1019,7 @@ or_expression			::=	relation:p OR m:m relation:q
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.falsa.completa(mr.value);
+								completa(pr.backpatch.falsa, mr.value);
 								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -1115,7 +1115,7 @@ andthen_expression		::=	relation:p AND_THEN m:m relation:q {:
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.verdadera.completa(mr.value);
+								completa(pr.backpatch.verdadera, mr.value);
 								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -1153,7 +1153,7 @@ andthen_expression		::=	relation:p AND_THEN m:m relation:q {:
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.verdadera.completa(mr.value);
+								completa(pr.backpatch.verdadera, mr.value);
 								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -1192,7 +1192,7 @@ orelse_expression		::=	relation:p OR_ELSE m:m relation:q
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.falsa.completa(mr.value);
+								completa(pr.backpatch.falsa, mr.value);
 								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -1229,7 +1229,7 @@ orelse_expression		::=	relation:p OR_ELSE m:m relation:q
 						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
 							//comparar los tipos!
 							if(compare_types(ptipo,qtipo, qleft, qright)){
-								pr.backpatch.falsa.completa(pm.value);
+								completa(pr.backpatch.falsa, pm.value);
 								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
