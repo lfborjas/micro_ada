@@ -327,7 +327,7 @@ terminal Boolean BOOLEAN_LITERAL;
 
 /*Sección de las no-terminales; iremos en el orden del RM*/
 //INICIALES:
-non terminal goal, placeholder;
+non terminal goal, placeholder, m, n;
 //lexicos y varios
 //de p85-persch, pag 87
 non terminal constant_option;
@@ -414,6 +414,18 @@ goal	::=	compilation
 	;
 //works as a marker, as described in the book, to let action code be executed at otherwise impossible places (like the end)
 placeholder ::= ;
+/*M y N son dos producciones de ayuda: no producen nada pero hacen un par de cosas para ayudar a backpatching
+M agarra el siguiente cuádruplo en el flujo de instrucciones
+N devuelve una lista de siguientes y genera un goto vacío
+*/
+m	::=/*lambda*/ {:RESULT=new ParserResult(new Integer(cuadruplos.size()));:}
+	; 
+n	::=/*lambda*/ {:BackPatchResult br= new BackPatchResult(new ListaSalto(cuadruplos.size()));
+			gen("goto", "_", "", "");
+			RESULT=new ParserResult(br);
+		      :}
+	;
+
 //RM-2  LEXICAL ELEMENTS AND COMPILER-SPECIFIC RULES:
 numeric_type		::=	INTEGER	{:RESULT=new ParserResult("integer", new IntegerType());:}
 			|	FLOAT   {:RESULT=new ParserResult("float", new FloatType());:}

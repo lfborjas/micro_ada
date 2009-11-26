@@ -1,5 +1,5 @@
 package AdaSemantic;
-class BackPatchResult{
+public class BackPatchResult{
 	public ListaSalto siguiente;
 	public ListaSalto verdadera;
 	public ListaSalto falsa;
