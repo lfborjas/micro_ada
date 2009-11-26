@@ -66,8 +66,28 @@ public void gen(Object op, Object arg1, Object arg2, Object res){
 	}	
 }
 
+/**Función que devuelve el String que representa a un branch de código intermedio*/
+public String getIf(Object operador){
+	String o=operador.toString();
+	return "if_"+o;
+}
 
-
+/**Convierte una literal booleana en un número*/
+public Integer getNumeric(Boolean val){
+	int rv= (val.booleanValue()) ? 1 : 0;
+        return new Integer(rv);
+}
+/**Devuelve la lista de saltos de un valor booleano*/
+public BackPatchResult getBackPatch(Boolean b){
+	BackPatchResult rval=new BackPatchResult();
+	if(b.booleanValue()){
+		rval.verdadera=new ListaSalto(cuadruplos.size());
+		return rval;
+	}else{
+		rval.falsa=new ListaSalto(cuadruplos.size());
+		return rval;
+	}
+}
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
    * @param start la palabra del inicio
      @param sline, scolumn el left y right del símbolo start
@@ -835,7 +855,9 @@ selected_component		::=	name:n POINT identifier:i
 literal				::=	INTEGER_LITERAL:i	{:RESULT=new ParserResult(i, new IntegerType());:}
 				|	FLOATING_POINT_LITERAL:f	{:RESULT= new ParserResult(f, new FloatType());:}
 				|	CHARACTER_LITERAL:c	{:RESULT= new ParserResult(c, new StringType(1));:}
-				|	BOOLEAN_LITERAL:b	{:RESULT= new ParserResult(b, new BooleanType());:}
+				|	BOOLEAN_LITERAL:b	
+					{:RESULT= new ParserResult(getNumeric(b), new BooleanType(), getBackPatch(b));
+					  gen("goto", " ", "", "");:}
 				|	NULL:n		  	{:RESULT= new ParserResult(n);:}
 					
 				;
@@ -1155,17 +1177,24 @@ orelse_expression		::=	relation:p OR_ELSE relation:q
 					:}
 					
 				;
+/**Acá cualquier cosa podría subir, pero sólo las boolean literals llevan su lista de backpatch y son BooleanType, así que otras
+no pasarían el filtro del chequeo de tipos*/
 relation			::=	simple_expression:s 
 					{:RESULT=s;:}
-				|	simple_expression:p relational_operator simple_expression:q
+				|	simple_expression:p relational_operator:o simple_expression:q
 					{:
 					if((p != null) && (q != null)){
 					
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
+					 ParserResult po=(ParserResult)o;
 					 if((pr.type != null) && (qr.type != null)){
 					 //si no son null, vienen buenos:
-						RESULT=new ParserResult(pr.value, new BooleanType());
+						BackPatchResult res=new BackPatchResult(new ListaSalto(cuadruplos.size()),
+											new ListaSalto(cuadruplos.size()+1));
+						gen(getIf(po.value), pr.value, qr.value, " ");
+						gen("goto", " ", "", "");
+						RESULT=new ParserResult(res, new BooleanType());
 						}
 						
 					 }
@@ -1249,11 +1278,17 @@ simple_expression		::=	term_list:t
 							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), oleft, oright);
 							    RESULT=null;
 							}	
-						}else{//the operator is boolean!
+						}else{//the operator is boolean! (The 'NOT' operator)
+						/**Si la term_list es boolean, TIENE que traer su lista de backpatch*/
 							if(ptipo instanceof BooleanType){
 							    String lugar=temp_nuevo();
-							    gen(po.value, pt.value, "", lugar);
-							    RESULT=new ParserResult(lugar, ptipo);
+							    gen(po.value, pt.value, "", lugar);	
+							    if(pt.backpatch != null){
+								RESULT=new ParserResult(lugar, ptipo, 
+									   new BackPatchResult(pt.backpatch.falsa, pt.backpatch.verdadera));
+							    }else{
+								RESULT=new ParserResult(lugar, ptipo);
+							    }
 							}else{
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), oleft, oright);
 							    RESULT=null;
