@@ -15,9 +15,10 @@ public class ListaSalto{
 	}
 	
 	/**Le pone el salto a todas las entradas de la lista*/
-	public void completa(String salto){
+	public void completa(Object salto){
+		String s=salto.toString();
 		for(Integer index: lista.keySet()){
-			lista.put(index, salto);
+			lista.put(index, s);
 		}
 
 	}
