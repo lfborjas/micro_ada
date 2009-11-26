@@ -14,7 +14,7 @@ public class ParserResult{
 		this.type=null;
 		this.value=null;
 		this.clean=true;
-		this.backpatch=null;
+		this.backpatch=new BackPatchResult();
 	}
 
 	public ParserResult(Type t){
