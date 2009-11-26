@@ -909,11 +909,10 @@ and_expression			::=	relation:p AND m:m relation:q
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.verdadera, mr.value);
-								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
 									qr.backpatch.verdadera,	
-									pr.backpatch.falsa
+									ListaSalto.fusiona(pr.backpatch.falsa, qr.backpatch.falsa)
 								));
 							}else{ 
 								RESULT= null;
@@ -946,11 +945,10 @@ and_expression			::=	relation:p AND m:m relation:q
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.verdadera, mr.value);
-								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
 									qr.backpatch.verdadera,	
-									pr.backpatch.falsa
+									ListaSalto.fusiona(pr.backpatch.falsa, qr.backpatch.falsa)
 								));
 							}else{ 
 								RESULT= null;
@@ -983,10 +981,9 @@ or_expression			::=	relation:p OR m:m relation:q
 							//comparar los tipos!
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.falsa, mr.value);
-								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
-									pr.backpatch.verdadera,
+									ListaSalto.fusiona(pr.backpatch.verdadera, qr.backpatch.verdadera),
 									qr.backpatch.falsa
 								));
 							}else{ 
@@ -1020,10 +1017,9 @@ or_expression			::=	relation:p OR m:m relation:q
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.falsa, mr.value);
-								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
-									pr.backpatch.verdadera,
+									ListaSalto.fusiona(pr.backpatch.verdadera, qr.backpatch.verdadera),
 									qr.backpatch.falsa
 								));
 							}else{ 
@@ -1116,11 +1112,10 @@ andthen_expression		::=	relation:p AND_THEN m:m relation:q {:
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.verdadera, mr.value);
-								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
 									qr.backpatch.verdadera,	
-									pr.backpatch.falsa
+									ListaSalto.fusiona(pr.backpatch.falsa, qr.backpatch.falsa)
 								));
 							}else{ 
 								RESULT= null;
@@ -1154,11 +1149,10 @@ andthen_expression		::=	relation:p AND_THEN m:m relation:q {:
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.verdadera, mr.value);
-								pr.backpatch.falsa.fusiona(qr.backpatch.falsa);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
 									qr.backpatch.verdadera,	
-									pr.backpatch.falsa
+									ListaSalto.fusiona(pr.backpatch.falsa, qr.backpatch.falsa)
 								));
 							}else{ 
 								RESULT= null;
@@ -1193,10 +1187,9 @@ orelse_expression		::=	relation:p OR_ELSE m:m relation:q
 							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.falsa, mr.value);
-								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
-									pr.backpatch.verdadera,	
+									ListaSalto.fusiona(pr.backpatch.verdadera, qr.backpatch.verdadera),
 									qr.backpatch.falsa
 								));
 							}else{ 
@@ -1230,10 +1223,9 @@ orelse_expression		::=	relation:p OR_ELSE m:m relation:q
 							//comparar los tipos!
 							if(compare_types(ptipo,qtipo, qleft, qright)){
 								completa(pr.backpatch.falsa, pm.value);
-								pr.backpatch.verdadera.fusiona(qr.backpatch.verdadera);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
-									pr.backpatch.verdadera,	
+									ListaSalto.fusiona(pr.backpatch.verdadera, qr.backpatch.verdadera),
 									qr.backpatch.falsa
 								));
 							}else{ 
@@ -1533,7 +1525,6 @@ qualified_expression		::=	name TICK LEFTPAR expression RIGHTPAR
 				;
 allocator			::=	NEW name
 				;
-/*Hier: la return statement debería subir hasta sequence of statements...*/
 sequence_of_statements		::=	statement:s {:RESULT=s;:}
 				|	sequence_of_statements:q statement:s
 					{:
@@ -1613,21 +1604,73 @@ if_statement			::=	IF:i  condition:c
 					 }:} 
 					THEN 
 					{:parser.setUnclosed("end if;", "if", ileft, iright);:}
-						sequence_of_statements 
-						elsif_list 
-						else_option 
+					  	m:m  sequence_of_statements:s 
+						n:nuno m:mdos elsif_list:elsif 
+						n:ndos else_option:els 
 					END IF SEMICOLON 
+					{:
+						/*Están estos casos: que no venga ni elsif ni else.
+						Que venga sólo else
+						Que venga sólo elsif*/
+						ParserResult m1=(ParserResult)m;
+						ParserResult ps=(ParserResult)s;
+						ParserResult pc=(ParserResult)c;
+						ParserResult pn1=(ParserResult)nuno;
+						ParserResult pn2=(ParserResult)ndos;
+						ParserResult m2=(ParserResult)mdos;
+						ParserResult RetVal=new ParserResult();
+						completa(pc.backpatch.verdadera, m1.value);
+						RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente, pc.backpatch.falsa);
+						if(els != null){
+							ParserResult pelse=(ParserResult)els;
+							completa(pc.backpatch.falsa, pelse.value);
+							RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente,
+									           ListaSalto.fusiona(pelse.backpatch.siguiente,
+												      pn2.backpatch.siguiente));
+							if(elsif != null){
+								ParserResult pei=(ParserResult)elsif;
+								completa(pc.backpatch.falsa, m2.value);
+								completa(pei.backpatch.siguiente, pelse.value);			
+							}
+						}else if(elsif != null){
+							ParserResult pei=(ParserResult)elsif;
+							completa(pc.backpatch.falsa, m2.value);
+							RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente,
+										   ListaSalto.fusiona(pei.backpatch.siguiente,
+												      pn2.backpatch.siguiente));
+						}
+						
+					:}
 				;
-elsif_list			::=	| elsif_list ELSIF condition:c THEN sequence_of_statements
+elsif_list			::=	| elsif_list:elsif n:n m:muno ELSIF condition:c THEN m:mdos sequence_of_statements:s
 					 {: branches++;
 					  if(c != null){
 						ParserResult pc=(ParserResult)c;
+						ParserResult mDosr=(ParserResult)mdos;
+						ParserResult sr=(ParserResult)s;						
+						ParserResult nr=(ParserResult)n;
 						if(!(pc.type instanceof BooleanType))
 							agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
 						        cleft, cright);
-					 }:} 
+						/*elsif no pudo completar su lista de siguientes, hagámosle el favor*/
+						if(elsif != null){
+							ParserResult er=(ParserResult)elsif;
+							ParserResult mr=(ParserResult)muno;
+							completa(er.backpatch.siguiente, mr.value);
+						}
+					 	completa(pc.backpatch.verdadera, mDosr.value);	
+						/*Subimos las que ocupan ser completadas:*/
+						RESULT=new ParserResult(ListaSalto.fusiona(sr.backpatch.siguiente,
+									ListaSalto.fusiona(pc.backpatch.siguiente, nr.backpatch.siguiente)));
+					 }
+					
+					:} 
 				;
-else_option			::=	| ELSE sequence_of_statements
+/*Se asume que toda sentencia (y toda lista de sentencias) retorna su listaSiguiente*/
+else_option			::=	| ELSE m:m sequence_of_statements:s
+				{:ParserResult ps=(ParserResult)s;
+				  ParserResult mr=(ParserResult)m;
+				  RESULT=new ParserResult(mr.value, ps.backpatch);:}
 				;
 condition			::=	expression:e {:RESULT=e;:}
 				;
