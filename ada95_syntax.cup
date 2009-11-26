@@ -48,8 +48,8 @@ public String temp_nuevo(){
 public boolean DEBUG=true;
 /*Para agregar cuádruplos a la lista. Sólo generar el cuádruplo si no hay errores.*/
 public void gen(Object op, Object arg1, Object arg2, Object res){
-	//si hay errores, ni siquiera molestarse en seguir:
-	if(parser.errores.size()>0)
+	//si hay errores y no estamos debugueando, ni siquiera molestarse en seguir:
+	if(!DEBUG && parser.errores.size()>0)
 		return;
 	/*castear a string*/
 	String o=op.toString();
@@ -1226,17 +1226,22 @@ simple_expression		::=	term_list:t
 						ParserResult pt=(ParserResult)t;
 					if(pt.type != null){						
 					 Type ptipo=(pt.type instanceof FunctionType)? (((FunctionType)pt.type).getRange()) : pt.type;
-						Type so=(Type)o;
+						ParserResult po=(ParserResult)o;
+						Type so=(Type)po.type;						
 						if(so.isNumeric()){
 							if(ptipo.isNumeric()){
-							    RESULT=pt;
+							    String lugar=temp_nuevo();
+							    gen(po.value, pt.value, "", lugar);
+							    RESULT=new ParserResult(lugar, ptipo);
 							}else{								
 							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), oleft, oright);
 							    RESULT=null;
 							}	
 						}else{//the operator is boolean!
 							if(ptipo instanceof BooleanType){
-								RESULT=pt;
+							    String lugar=temp_nuevo();
+							    gen(po.value, pt.value, "", lugar);
+							    RESULT=new ParserResult(lugar, ptipo);
 							}else{
 							    agregarError("Se esperaba un tipo booleano y se encontró "+ptipo.toString(), oleft, oright);
 							    RESULT=null;
@@ -1256,22 +1261,26 @@ term_list			::=	term:t
 					   }
 					}
 					:}
-				|	term_list:p adding_operator term:q
+				|	term_list:p adding_operator:o term:q
 					{:
 					if((p != null) && (q != null)){
 					
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
+					 ParserResult or=(ParserResult)o;
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if(ptipo.isNumeric() && qtipo.isNumeric()){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, qleft, qright)){
+								String lugar=temp_nuevo();
+								gen(or.value, pr.value, qr.value, lugar);
+								RESULT=new ParserResult(lugar, ptipo);
+							}else {
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(!ptipo.isNumeric())
@@ -1295,22 +1304,26 @@ term				::=	factor:f
 					   }
 					}
 					:}
-				|	term:p multiplying_operator factor:q
+				|	term:p multiplying_operator:o factor:q
 					{:
 					if ((p != null) && (q != null)){
 							
 					 ParserResult pr=(ParserResult)p;
 					 ParserResult qr=(ParserResult)q;
+					 ParserResult or=(ParserResult)o;
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if(ptipo.isNumeric() && qtipo.isNumeric()){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, qleft, qright)){
+								String lugar=temp_nuevo();
+								gen(or.value, pr.value, qr.value, lugar);
+								RESULT=new ParserResult(lugar, ptipo);
+							}else{ 
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(!ptipo.isNumeric())
@@ -1342,10 +1355,14 @@ factor				::=	primary:p
 						if(ptipo.isNumeric() && qtipo.isNumeric()){
 							//comparar los tipos!
 							//TODO: make the actual operation! (Have a function that does math operations...)
-							if(compare_types(ptipo,qtipo, qleft, qright))
-								RESULT=pr; //CHANGE THIS!
-							else 
+							if(compare_types(ptipo,qtipo, qleft, qright)){
+								String lugar=temp_nuevo();
+								gen("**", pr.value, qr.value, lugar);
+								RESULT=new ParserResult(lugar, ptipo);
+							}
+							else {
 								RESULT= null;
+							}
 						}else{
 							//determine who's to blame:
 							if(!ptipo.isNumeric())

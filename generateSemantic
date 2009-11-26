@@ -1,0 +1,6 @@
+#!/bin/bash
+
+#generar el semantic.java
+cup -parser semantic ada95_syntax.cup
+#compilarlo
+javac semantic.java
