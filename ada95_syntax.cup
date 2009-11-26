@@ -731,7 +731,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 								RESULT=new ParserResult(i, ps.type);
 							}
 						  else{
-							RESULT=new ParserResult(i, null);
+							RESULT=new ParserResult(i, null, null);
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
 						  }
 					  }else{//el tipo no fue encontrado
@@ -762,7 +762,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 							}
 						}else{
 							for(String id:il){
-								r.add(new ParserResult(id, null));
+								r.add(new ParserResult(id, null, null));
 							}
 							RESULT=r;
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
@@ -1815,7 +1815,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 								RESULT=new ParserResult(nombre, ps.type);
 							}
 						}else{
-							RESULT=new ParserResult(i, null);
+							RESULT=new ParserResult(i, null, null);
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);							     }
                 	                }else{
 						RESULT=null;
@@ -1851,7 +1851,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 							}
 						}else{
 							for(String id: il)
-								r.add(new ParserResult(id, null));
+								r.add(new ParserResult(id, null, null));
 							RESULT=r;
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
 						}
