@@ -62,9 +62,9 @@ public class ParserResult{
 		this.clean=true;
 	}
 
-	public ParserResult(Type v, BackPatchResult b){
-		this.value=v;
-		this.type=null;
+	public ParserResult(Type t, BackPatchResult b){
+		this.type=t;
+		this.value=null;
 		this.clean=true;
 		this.backpatch=b;
 	}
