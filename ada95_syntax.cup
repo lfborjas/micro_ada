@@ -62,7 +62,7 @@ public void gen(Object op, Object arg1, Object arg2, Object res){
 	Cuadruplo quad=new Cuadruplo(o, a1, a2, r);
 	cuadruplos.add(quad);	
 	if(DEBUG){
-		System.out.println(quad.toString());
+		System.out.println((cuadruplos.size()-1)+"    "+quad.toString());
 	}	
 }
 
@@ -86,6 +86,22 @@ public BackPatchResult getBackPatch(Boolean b){
 	}else{
 		rval.falsa=new ListaSalto(cuadruplos.size());
 		return rval;
+	}
+}
+
+/**Dada una lista de saltos completa los correspondientes cuádruplos con el salto proveido*/
+public void completa(ListaSalto completar, Object con){
+	int value=0;
+	String salto=con.toString();
+	for(Integer index : completa.lista){
+		//por cualquier cosa
+		value=index.intValue();
+		if(value < cuadruplos.size() && value >=0){
+			cuadruplos.get(value).arg1=salto;
+		}else if(DEBUG){
+			System.err.println("Se trató de asignar un salto a un cuádruplo inválido; "+
+			index+ ". Hay "+cuadruplos.size()+"  cuádruplos");
+		}
 	}
 }
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
