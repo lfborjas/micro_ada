@@ -7,6 +7,8 @@ public class ParserResult{
 	public Object value;
 	/**A flag to indicate if a result was somehow corrupt, and hence not candidate to code generation*/
 	public boolean clean;
+	/**The lists for backpatching*/
+	public BackPatchResult backpatch;
 
 	public ParserResult(){}
 
@@ -44,6 +46,27 @@ public class ParserResult{
 		this.type=t;
 		this.value=null;
 		this.clean=c;
+	}
+
+	public ParserResult(Object v, Type t, BackPatchResult b){
+		this.value=v;
+		this.type=t;
+		this.backpatch=b;
+		this.clean=true;
+	}
+
+	public ParserResult(Object v, BackPatchResult b){
+		this.value=v;
+		this.backpatch=b;
+		this.type=null;
+		this.clean=true;
+	}
+
+	public ParserResult(Type v, BackPatchResult b){
+		this.value=v;
+		this.type=null;
+		this.clean=true;
+		this.backpatch=b;
 	}
 	
 }
