@@ -10,8 +10,8 @@ public class ListaSalto{
 		lista.put(new Integer(index), "");
 	}
 	/**Copia los valores de la otra lista a la presente. Idealmente, nada debería sobreescrirse!*/
-	public void fusiona(Hashtable<Integer, String> other){
-		this.lista.putAll(other);
+	public void fusiona(ListaSalto other){
+		this.lista.putAll(other.lista);
 	}
 	
 	/**Le pone el salto a todas las entradas de la lista*/
