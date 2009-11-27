@@ -5,19 +5,19 @@ public class BackPatchResult{
 	public ListaSalto falsa;
 
 	public BackPatchResult(){
-		siguiente=null;
-		verdadera=null;
-		falsa=null;
+		siguiente=new ListaSalto();
+		verdadera=new ListaSalto();
+		falsa=new ListaSalto();
 	}
 
 	public BackPatchResult(ListaSalto siguiente){
 		this.siguiente=siguiente;
-		this.verdadera=null;
-		this.falsa=null;
+		this.verdadera=new ListaSalto();
+		this.falsa=new ListaSalto();
 	}
 
 	public BackPatchResult(ListaSalto verdadera, ListaSalto falsa){
-		this.siguiente=null;
+		this.siguiente=new ListaSalto();
 		this.verdadera=verdadera;
 		this.falsa=falsa;
 	}

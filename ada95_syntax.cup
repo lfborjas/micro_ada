@@ -979,7 +979,7 @@ or_expression			::=	relation:p OR m:m relation:q
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if((ptipo instanceof BooleanType) && (qtipo instanceof BooleanType)){
 							//comparar los tipos!
-							if(compare_types(ptipo,qtipo, qleft, qright)){
+							if(compare_types(ptipo,qtipo, qleft, qright)){							
 								completa(pr.backpatch.falsa, mr.value);
 								RESULT=new ParserResult(ptipo, 
 								new BackPatchResult(
@@ -1264,7 +1264,7 @@ relation			::=	simple_expression:s
 											new ListaSalto(cuadruplos.size()+1));
 						gen(getIf(po.value), pr.value, qr.value, " ");
 						gen("goto", " ", "", "");
-						RESULT=new ParserResult(res, new BooleanType());
+						RESULT=new ParserResult(new BooleanType(), res);
 						}
 						
 					 }
@@ -1639,6 +1639,7 @@ if_statement			::=	IF:i  condition:c
 										   ListaSalto.fusiona(pei.backpatch.siguiente,
 												      pn2.backpatch.siguiente));
 						}
+						RESULT=RetVal;
 						
 					:}
 				;
@@ -1660,8 +1661,9 @@ elsif_list			::=	| elsif_list:elsif n:n m:muno ELSIF condition:c THEN m:mdos seq
 						}
 					 	completa(pc.backpatch.verdadera, mDosr.value);	
 						/*Subimos las que ocupan ser completadas:*/
-						RESULT=new ParserResult(ListaSalto.fusiona(sr.backpatch.siguiente,
-									ListaSalto.fusiona(pc.backpatch.siguiente, nr.backpatch.siguiente)));
+						RESULT=new ParserResult(new BackPatchResult(
+									ListaSalto.fusiona(sr.backpatch.siguiente,
+									ListaSalto.fusiona(pc.backpatch.siguiente, nr.backpatch.siguiente))));
 					 }
 					
 					:} 
