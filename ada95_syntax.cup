@@ -675,7 +675,6 @@ range_constraint_option		::=	| range_constraint
 fixed_point_constraint		::=	DELTA simple_expression range_constraint_option
 				;
 //no pongo lo de array ni index
-/*Hier*/
 /*Sólo vamos a permitir rangos sencillos...*/
 discrete_range			::=	name range_constraint_option
 				|	numeric_type range_constraint_option
