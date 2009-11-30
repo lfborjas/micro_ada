@@ -1690,15 +1690,24 @@ loop_statement			::=	iteration_clause_option:o
 						ParserResult mr=(ParserResult)m;
 						ParserResult sr=(ParserResult)s;
 						completa(iteration.backpatch.verdadera, mr.value);
-						completa(sr.backpatch.siguiente, iteration.value);	
-						gen("goto", iteration.value, "", "");
+						if(iteration.value instanceof ArrayList){
+							ArrayList<Object> post=(ArrayList)iteration.value;
+							completa(sr.backpatch.siguiente, cuadruplos.size());
+							Cuadruplo step=(Cuadruplo)post.get(1);
+							gen(step.operador, step.arg1, step.arg2, step.res);
+							//genera un goto adonde está la condición:
+							gen("goto", post.get(0), "", "");
+						}else{//no es una lista, si no un simple m
+							completa(sr.backpatch.siguiente, iteration.value);	
+							gen("goto", iteration.value, "", "");
+						}
 						ListaSalto siguiente=iteration.backpatch.falsa;
-						RESULT=new ParseResult(
+						RESULT=new ParserResult(
 							new BackPatchResult(siguiente)
 						);
 					:}
 				|	identifier:i COLON iteration_clause_option:o
-					basic_loop identifier:j SEMICOLON
+					m:m basic_loop:s identifier:j SEMICOLON
 					{:
 					String si=(String)i; 
 					String sj=(String)j;
@@ -1707,6 +1716,28 @@ loop_statement			::=	iteration_clause_option:o
 					if(o != null){						
 						currentScope=new LinkedSymbolTable(currentScope); 
 					  }
+					/*la iteration clause ya trae las cosas de la condición Y el marcador antes de ésta*/
+						ParserResult iteration=(ParserResult)o;
+						ParserResult mr=(ParserResult)m;
+						ParserResult sr=(ParserResult)s;						
+						completa(iteration.backpatch.verdadera, mr.value);
+						/*Aquí hay una disyuntiva, o viene una lista o no, si viene
+						una, es porque es un for y hay que generarlo*/
+						if(iteration.value instanceof ArrayList){
+							ArrayList<Object> post=(ArrayList)iteration.value;
+							completa(sr.backpatch.siguiente, cuadruplos.size());
+							Cuadruplo step=(Cuadruplo)post.get(1);
+							gen(step.operador, step.arg1, step.arg2, step.res);
+							//genera un goto adonde está la condición:
+							gen("goto", post.get(0), "", "");
+						}else{//no es una lista, si no un simple m
+							completa(sr.backpatch.siguiente, iteration.value);	
+							gen("goto", iteration.value, "", "");
+						}
+						ListaSalto siguiente=iteration.backpatch.falsa;
+						RESULT=new ParserResult(
+							new BackPatchResult(siguiente)
+						);				
 					:}	
 				;
 basic_loop			::=	LOOP:l
@@ -1718,7 +1749,7 @@ basic_loop			::=	LOOP:l
 //de p85-persch, pag 93
 /*Validar que no exista el id, crear un nuevo scope.*/
 iteration_clause_option		::=
-				|	FOR identifier:i IN discrete_range:r
+				|	FOR identifier:i IN discrete_range:r m:m
 					{:
 					currentScope=new LinkedSymbolTable(currentScope); 
 					//ver si viene algo en el rango:
@@ -1732,17 +1763,55 @@ iteration_clause_option		::=
 						agregarError("Advertencia: El rango del ciclo es nulo y no se ejecutará", rleft, rright);
 					*/
 					if(r != null){
-						gen();
+						ParserResult range=(ParserResult)r;
+						Object initial = ((ArrayList<Object>)range.value).get(0);
+						Object fin     = ((ArrayList<Object>)range.value).get(1);
+						//acá podríamos avisar que el rango es nulo
+						// identifier := range_initial
+						gen(":=", initial, "", i);	
+						//las listas verdadera y falsa:
+						BackPatchResult b_res=new BackPatchResult(new ListaSalto(cuadruplos.size()),
+                                                                                          new ListaSalto(cuadruplos.size()+1));
+						//generar las instrucciones:
+						gen("if_>=", i, fin, "");
+						gen("goto", " ", "", "");
 						/*Hier: Generar la etiqueta de inicio, la asignación y la condición.*/
+						ParserResult mr=(ParserResult)m;
+						ArrayList<Object> post=new ArrayList<Object>(2);
+						post.add(mr.value);
+						post.add(new Cuadruplo("+", i.toString(), "1", i.toString()));
+						RESULT=new ParserResult(post, b_res);
+						
 					}
 					:}
-				|	FOR identifier:i IN REVERSE discrete_range:r
+				|	FOR identifier:i IN REVERSE discrete_range:r m:m
 					{:
 					currentScope=new LinkedSymbolTable(currentScope); 
 					Type tipo=(r != null) ? ((ParserResult)r).type : new IntegerType();
 					if(!currentScope.put(i, new AdaSymbol(tipo, true))){
 						agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 					}
+					//generar la condición:
+					if(r != null){
+						ParserResult range=(ParserResult)r;
+						Object initial = ((ArrayList<Object>)range.value).get(0);
+						Object fin     = ((ArrayList<Object>)range.value).get(1);
+						//acá podríamos avisar que el rango es nulo
+						// identifier := range_initial
+						gen(":=", fin, "", i);	
+						//las listas verdadera y falsa:
+						BackPatchResult b_res=new BackPatchResult(new ListaSalto(cuadruplos.size()),
+                                                                                          new ListaSalto(cuadruplos.size()+1));
+						//generar las instrucciones:
+						gen("if_<=", i, initial, "");
+						gen("goto", " ", "", "");
+						/*Hier: Generar la etiqueta de inicio, la asignación y la condición.*/
+						ParserResult mr=(ParserResult)m;
+						ArrayList<Object> post=new ArrayList<Object>(2);
+						post.add(mr.value);
+						post.add(new Cuadruplo("+", i.toString(), "1", i.toString()));
+						RESULT=new ParserResult(post, b_res);
+					}	
 					:}
 				|	WHILE m:m condition:c 
 					 {: if(c != null){
@@ -1757,6 +1826,7 @@ iteration_clause_option		::=
 							res.value=mr.value;
 							res.backpatch.falsa=pc.backpatch.falsa;
 							res.backpatch.verdadera=pc.backpatch.verdadera;
+							RESULT=res;
 						}
 					 }:} 
 				;
