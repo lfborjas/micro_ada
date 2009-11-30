@@ -644,9 +644,11 @@ range	::=	simple_expression:t DOUBLEDOT simple_expression:f
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
 						if(ptipo.isNumeric() && qtipo.isNumeric()){
 							//comparar los tipos!
-							//TODO: make the actual operation! (Have a function that does math operations...)
 							if(compare_types(ptipo,qtipo, fleft, fright)){
-								RESULT=pr; //CHANGE THIS!								
+								ArrayList<Object> rVal=new ArrayList<Object>();
+								rVal.add(pr.value);
+								rVal.add(qr.value);
+								RESULT=new ParserResult(rVal, ptipo);
 							}else{ 
 								RESULT= null;
 							}
@@ -1677,12 +1679,24 @@ condition			::=	expression:e {:RESULT=e;:}
 				;
 //acá iría el bloque case, seguido de la alternative_list
 loop_statement			::=	iteration_clause_option:o
-					 basic_loop SEMICOLON
+					 m:m basic_loop:s SEMICOLON
 					{://se asume que si la iteration_clause existe, se creó una st para ésta
 					 if(o != null)
 						currentScope=currentScope.getAncestor();
 					:}
 					placeholder
+					{:/*la iteration clause ya trae las cosas de la condición Y el marcador antes de ésta*/
+						ParserResult iteration=(ParserResult)o;
+						ParserResult mr=(ParserResult)m;
+						ParserResult sr=(ParserResult)s;
+						completa(iteration.backpatch.verdadera, mr.value);
+						completa(sr.backpatch.siguiente, iteration.value);	
+						gen("goto", iteration.value, "", "");
+						ListaSalto siguiente=iteration.backpatch.falsa;
+						RESULT=new ParseResult(
+							new BackPatchResult(siguiente)
+						);
+					:}
 				|	identifier:i COLON iteration_clause_option:o
 					basic_loop identifier:j SEMICOLON
 					{:
@@ -1697,8 +1711,9 @@ loop_statement			::=	iteration_clause_option:o
 				;
 basic_loop			::=	LOOP:l
 					{:parser.setUnclosed("end loop;", "loop",lleft,lright);:}
-						sequence_of_statements 
-					END LOOP  
+						sequence_of_statements:s 
+					END LOOP
+					{:RESULT=s;:}  
 				;
 //de p85-persch, pag 93
 /*Validar que no exista el id, crear un nuevo scope.*/
@@ -1716,6 +1731,10 @@ iteration_clause_option		::=
 					if(r ==  null)
 						agregarError("Advertencia: El rango del ciclo es nulo y no se ejecutará", rleft, rright);
 					*/
+					if(r != null){
+						gen();
+						/*Hier: Generar la etiqueta de inicio, la asignación y la condición.*/
+					}
 					:}
 				|	FOR identifier:i IN REVERSE discrete_range:r
 					{:
@@ -1725,11 +1744,20 @@ iteration_clause_option		::=
 						agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 					}
 					:}
-				|	WHILE condition:c 
+				|	WHILE m:m condition:c 
 					 {: if(c != null){
 						ParserResult pc=(ParserResult)c;
-						if(!(pc.type instanceof BooleanType))
+						if(!(pc.type instanceof BooleanType)){
 							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+						}else{
+							//subir la lista verdadera de la condición para que la llene el loop y el valor
+							// de m para completar lo de las sentencias y generar el goto
+							ParserResult res=new ParserResult();
+							ParserResult mr=(ParserResult)m;
+							res.value=mr.value;
+							res.backpatch.falsa=pc.backpatch.falsa;
+							res.backpatch.verdadera=pc.backpatch.verdadera;
+						}
 					 }:} 
 				;
 block				::=	declare_part_option BEGIN:b 
