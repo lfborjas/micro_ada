@@ -1809,7 +1809,7 @@ iteration_clause_option		::=
 						ParserResult mr=(ParserResult)m;
 						ArrayList<Object> post=new ArrayList<Object>(2);
 						post.add(mr.value);
-						post.add(new Cuadruplo("+", i.toString(), "1", i.toString()));
+						post.add(new Cuadruplo("-", i.toString(), "1", i.toString()));
 						RESULT=new ParserResult(post, b_res);
 					}	
 					:}
