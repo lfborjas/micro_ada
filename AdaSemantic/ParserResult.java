@@ -101,4 +101,11 @@ public class ParserResult{
 		this.clean=false;
 		this.backpatch=null;
 	}	
+	public ParserResult(Object v, Type t, BackPatchResult b, String p){
+		this.value=v;
+		this.type=t;
+		this.backpatch=b;
+		this.place=p;
+		this.clean=true;
+	}
 }

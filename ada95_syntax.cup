@@ -759,7 +759,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 								RESULT=new ParserResult(i, ps.type);
 							}
 						  else{
-							RESULT=new ParserResult(i, null, null);
+							RESULT=new ParserResult(i);
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
 						  }
 					  }else{//el tipo no fue encontrado
@@ -793,7 +793,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 							}
 						}else{
 							for(String id:il){
-								r.add(new ParserResult(id, null, null));
+								r.add(new ParserResult(id));
 							}
 							RESULT=r;
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
@@ -1509,7 +1509,15 @@ factor				::=	primary:p
 				;
 primary				::=	literal:l {:RESULT=l;:}
 				|	aggregate
-				|	name:n {:RESULT=n;:}
+				|	name:n
+					{:ParserResult nr=(ParserResult)n;
+					  /***/
+					  if(!nr.clean){						
+						RESULT=new ParserResult(nr.place, nr.type);
+					  }else{
+					 	RESULT=n;
+					 }
+					:}
 				|	allocator
 				|	qualified_expression
 				|	LEFTPAR expression:e RIGHTPAR {:RESULT=e;:}
@@ -1586,8 +1594,8 @@ simple_statement		::=	null_statement
 				|	code_statement
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				;
-compound_statement		::=	if_statement{:parser.emptyLastUnclosed();:}
-				|	loop_statement{:parser.emptyLastUnclosed();:}
+compound_statement		::=	if_statement:s {:parser.emptyLastUnclosed(); RESULT=s;:}
+				|	loop_statement:s {:parser.emptyLastUnclosed();RESULT=s;:}
 				|	block{:parser.emptyLastUnclosed();:}
 				;
 label				::=	LEFTLABEL identifier RIGHTLABEL
@@ -2069,7 +2077,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 								RESULT=new ParserResult(nombre, ps.type);
 							}
 						}else{
-							RESULT=new ParserResult(i, null, null);
+							RESULT=new ParserResult(i);
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);							     }
                 	                }else{
 						RESULT=null;
@@ -2115,7 +2123,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 							}
 						}else{
 							for(String id: il)
-								r.add(new ParserResult(id, null, null));
+								r.add(new ParserResult(id));
 							RESULT=r;
 							agregarError("'"+((String)ps.value)+"' no ha sido declarado como subtipo", sleft, sright);
 						}
@@ -2164,6 +2172,8 @@ subprogram_body			::=	subprogram_specification_is:s
 					  //completar la sequence of statements: así todas tienen un salto
 					  ParserResult tr=(ParserResult)t;
 					  completa(tr.backpatch.siguiente, cuadruplos.size());
+					  //TODO: ver si esto está bien...
+					  gen("lbl","","","L"+e.toString());
 					:} placeholder 
 					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					check_coherence(designator,sleft, sright, e, eleft, eright);:}
@@ -2175,7 +2185,37 @@ designator_option		::=	| designator:d {:RESULT=d;:}
 * y así pasó con actual_parameter_part, parameter_association_list, parameter_association, formal_parameter_option
 * y explicit_actual_parameter
 */
-procedure_call			::=	name SEMICOLON
+procedure_call			::=	name:n SEMICOLON 
+					{:
+					/*si no está clean, alguien ya se hizo cargo de ella:
+					entonces, sólo hacer la llamada si aún no ha pasado por function_call
+					*/
+					ParserResult pn=(ParserResult)n;
+					AdaSymbol f=findSymbol(pn.value, nleft, nright);
+					if(f != null){
+						if(pn.clean){
+						//Se tiene que haber declarado como función
+							if(!(f.type instanceof FunctionType)){
+								agregarError("'"+((String)pn.value)+"' no es un procedimiento", nleft, nright);
+						//no tiene que tener parámetros
+							}else if(!f.type.getProduct().isEmpty()){
+								agregarError("El procedimiento'"+((String)pn.value)+
+								"' recibe "+(f.type.getProduct().size())+" parámetros. O suministrados", nleft, nright);
+						//ni tipo de retorno
+							}else if(((FunctionType)f.type).getRange() != null){
+								agregarError("'"+((String)pn.value)+"' no es un procedimiento", nleft, nright);
+						//SI es un procedimiento como debería:
+							}else{
+								gen("call", pn.value, "0", "");	
+							}
+						
+						}else{//si no está limpio, es un nombre normal, pero debe ser función, eh!
+							if(!(f.type instanceof FunctionType)){
+								agregarError("'"+((String)pn.value)+"' no es un procedimiento", nleft, nright);
+							}
+						}
+					}
+					:}
 				;
 /*Llamadas a funciones: si no tiene parámetros, sólo buscar la función (y que sea una que no tenga parámetros, eh)
 Si sí, habrá también que ver que cumplan con el dominio.*/
@@ -2201,7 +2241,10 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 								RESULT=new ParserResult(pn.value);
 						//it IS a function (i.e it HAS return type:)
 							}else{
-								RESULT=new ParserResult(pn.value, f.type);
+								//it's safe to generate the code, then:
+								String lugar=temp_nuevo();
+								gen("call", pn.value, "0", lugar);							
+								RESULT=new ParserResult(pn.value, f.type, lugar);
 							}
 						}
 					:}
@@ -2237,10 +2280,17 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 										break;			
 									}
 								}//si termina, el tipo de los parámetros es correcto
-								if(i==f.type.getProduct().size())
-									RESULT=new ParserResult(pn.value, f.type);
-								else
+								if(i==f.type.getProduct().size()){
+									//generar, entonces, el código:
+									for(ParserResult res: pr){
+										gen("param", res.value, "", "");
+									}	
+									String lugar=temp_nuevo();
+									gen("call", pn.value, pr.size(), lugar);					
+									RESULT=new ParserResult(pn.value, f.type, lugar);
+								}else{
 									RESULT=new ParserResult(pn.value);
+								}
 								
 							}//el número de parámetros es correcto 
 								
@@ -2258,20 +2308,46 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 						}else{
 							//assume it has only one element:
 							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
-							RESULT=new ParserResult("put", uP.type);
+							gen("param", uP.value, "", "");
+							String lugar=temp_nuevo();
+							gen("call", "put", "1",lugar);
+							RESULT=new ParserResult("put", uP.type, lugar);
 						}
 						
 					:}
-				|	GET actual_parameter_part:p
-					{://mismos criterios que el put...
-						boolean v=validateBuiltIn("GET", p, pleft, pright);
-						if(!v){
-							RESULT=new ParserResult("get");							
+				|	GET LEFTPAR identifier:i RIGHTPAR
+					{:
+					  AdaSymbol f=findSymbol(i, ileft, iright);
+					  if(f!=null){
+						if(!f.type.isPrimitive()){
+							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
+							"float o integer)", ileft, iright);
+							RESULT=new ParserResult("get");
 						}else{
-							//assume it has only one element:
-							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
-							RESULT=new ParserResult("get", uP.type);
+							String lugar=i.toString();
+							gen("param", f.type.getClass().getSimpleName(), "", "");
+							gen("call", "get", "1", lugar);
+							RESULT=new ParserResult("get", f.type, lugar);
 						}
+					
+					  }
+					:}
+ 				|	GET LEFTPAR selected_component:i RIGHTPAR
+					{:
+					  AdaSymbol f=findSymbol(i, ileft, iright);
+					  if(f!=null){
+						if(!f.type.isPrimitive()){
+							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
+							"float o integer)", ileft, iright);
+							RESULT=new ParserResult("get");
+						}else{
+							String lugar=i.toString();
+							gen("param", f.type.getClass().getSimpleName(), "", "");
+							gen("call", "get", "1", lugar);
+							RESULT=new ParserResult("get", f.type, lugar);
+						}
+					
+					  }
 					:}
 				;
 /*Esta no me parece tan poderosa:
