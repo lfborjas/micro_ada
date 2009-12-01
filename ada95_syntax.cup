@@ -106,6 +106,29 @@ public void completa(ListaSalto completar, Object con){
 		}
 	}
 }
+
+/**Genera código para la asignación, recibe un ParserResult que corresponde a la expresión
+   si la expresión tiene backpatch, y éste tiene una listaVerdadera o listaFalsa vacías, 
+   genera además el código para completarlas y darles valor
+*/
+public void generar_asignacion(ParserResult expression, Object result){	
+	//esto nunca debería pasar, pero bueno...
+		if(expression.backpatch == null){
+			gen(":=", expression.value, "", result);
+			return
+		}
+	//todo depende, en realidad, del tipo de la expression: (ya que todas tienen sus listaV y listaF)
+		if(expression.type instanceof BooleanType){
+			completa(expression.backpatch.verdadera, cuadruplos.size());
+			gen(":=", "1", "", result);
+			gen("goto", cuadruplos.size()+1);
+			completa(expression.backpatch.falsa, cuadruplos.size());
+			gen(":=", "0", "", result);
+		}else{
+			gen(":=", expression.value, "", result);
+		}
+}
+
  /**Esta función chequea que un subprograma que tiene nombre al principio y final tenga exactamente el mismo nombre
    * @param start la palabra del inicio
      @param sline, scolumn el left y right del símbolo start
@@ -519,7 +542,7 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 					if(!currentScope.put(i, new AdaSymbol(tipo, isConstant)))
 						agregarError("El identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 					else //hay inicialización y todo está bien:
-						gen(":=", po.value,"", i);
+						generar_asignacion(po, i);
 				}else{//there's no initialization expression:
 				   if(isConstant)
 					agregarError("La declaración de un objeto constante requiere una expresión de inicialización", ileft, iright);					        if(!currentScope.put(i, new AdaSymbol(ps.type)))
@@ -547,7 +570,7 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 						if(!currentScope.put(id, new AdaSymbol(tipo, isConstant)))
 							agregarError("El identificador "+id+" ya ha sido declarado", ileft, iright);
 						else
-							gen(":=", po.value,"", id);
+							generar_asignacion(po, id);
 					}	
 				}else{//there's no initialization expression:
 				   if(isConstant)
@@ -571,7 +594,7 @@ number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMIC
 			          if(!currentScope.put(i, new AdaSymbol(po.type, true)))
 					agregarError("El identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
 				  else
-					gen(":=", po.value,"", i);
+					generar_asignacion(po, i);
 				  }
 				:}
 			|	identifier_list:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
@@ -581,7 +604,7 @@ number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMIC
 					if(!currentScope.put(id, new AdaSymbol(po.type, true)))
 						agregarError("El identificador "+id+" ya ha sido declarado", ileft, iright);
 					else
-						gen(":=", po.value,"", id);
+						generar_asignacion(po, id);
 				}	
 				}  		
 				:}
@@ -750,7 +773,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 							if(o != null){//ver si el tipo de o coincide con el de s:
 								 ParserResult po=(ParserResult)o;
 								 if(compare_types(ps.type, po.type, oleft, oright)){
-									gen(":=", po.value, "", i);
+									generar_asignacion(po, i);
 								 }
 								 //Type tipo=compare ? ps.type : new ErrorType(ps.type);
 								 Type tipo=ps.type;
@@ -780,7 +803,7 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 								 Type tipo=ps.type;
 								 for(String id: il){		
 									if(compare){
-										gen(":=", po.value, "", id);
+										generar_asignacion(po, id);
 									}				
 									r.add(new ParserResult(id, tipo));					
 								 }
@@ -1623,7 +1646,7 @@ assignment_statement		::=	name:n ASSIGNMENT expression:e SEMICOLON
 						else//si todo sale bien, entonces sí comparar:					
 						    if(compare_types(pn.type, pe.type, eleft, eright)){
 							//generar el código para la asignación:
-							gen(":=", pe.value,"", pn.value);
+							generar_asignacion(pe, pn.value);
 						    }
 						}
 					}
@@ -2063,7 +2086,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 								if(mode.equalsIgnoreCase("in")){
 									if(compare_types(ps.type, po.type, oleft, oright)){
 										//todo está bien, generar el código
-										gen(":=", po.value, "", i);
+										generar_asignacion(po, i);
 									}
 								}else{//solo los in pueden estar inicializados:
 									agregarError("El parámetro '"+i.toString()+"' no es de tipo 'in'"+
@@ -2109,7 +2132,7 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 								for(String id :il){									
 									nombre=(mode.equalsIgnoreCase("in")) ? id+"$constant" : id;
 									if(compare){
-										gen(":=", po.value, "", id);
+										generar_asignacion(po, id);
 									}
 									r.add(new ParserResult(nombre, tipo));
 								}
