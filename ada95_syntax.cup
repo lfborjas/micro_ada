@@ -91,6 +91,8 @@ public BackPatchResult getBackPatch(Boolean b){
 
 /**Dada una lista de saltos completa los correspondientes cuádruplos con el salto proveido*/
 public void completa(ListaSalto completar, Object con){
+	if(completar.lista.isEmpty())
+		return;
 	int value=0;
 	String salto=con.toString();
 	for(Integer index : completar.lista){
@@ -516,7 +518,8 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 					Type tipo=ps.type;
 					if(!currentScope.put(i, new AdaSymbol(tipo, isConstant)))
 						agregarError("El identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
-						
+					else //hay inicialización y todo está bien:
+						gen(":=", po.value,"", i);
 				}else{//there's no initialization expression:
 				   if(isConstant)
 					agregarError("La declaración de un objeto constante requiere una expresión de inicialización", ileft, iright);					        if(!currentScope.put(i, new AdaSymbol(ps.type)))
@@ -543,6 +546,8 @@ object_declaration	::=	identifier:i COLON constant_option:c subtype_indication:s
 					for(String id:il){
 						if(!currentScope.put(id, new AdaSymbol(tipo, isConstant)))
 							agregarError("El identificador "+id+" ya ha sido declarado", ileft, iright);
+						else
+							gen(":=", po.value,"", id);
 					}	
 				}else{//there's no initialization expression:
 				   if(isConstant)
@@ -565,6 +570,8 @@ number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMIC
 				  ParserResult po=(ParserResult)o;
 			          if(!currentScope.put(i, new AdaSymbol(po.type, true)))
 					agregarError("El identificador "+((String)i)+" ya ha sido declarado", ileft, iright);
+				  else
+					gen(":=", po.value,"", i);
 				  }
 				:}
 			|	identifier_list:i COLON CONSTANT ASSIGNMENT expression:o SEMICOLON
@@ -573,6 +580,8 @@ number_declaration	::=	identifier:i COLON CONSTANT ASSIGNMENT expression:o SEMIC
 				for(String id:pi){
 					if(!currentScope.put(id, new AdaSymbol(po.type, true)))
 						agregarError("El identificador "+id+" ya ha sido declarado", ileft, iright);
+					else
+						gen(":=", po.value,"", id);
 				}	
 				}  		
 				:}
@@ -740,7 +749,9 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 						if(((String)ps.value).equalsIgnoreCase(ps.type.name)) //si el tipo ES un tipo:
 							if(o != null){//ver si el tipo de o coincide con el de s:
 								 ParserResult po=(ParserResult)o;
-								 boolean compare=compare_types(ps.type, po.type, oleft, oright);
+								 if(compare_types(ps.type, po.type, oleft, oright)){
+									gen(":=", po.value, "", i);
+								 }
 								 //Type tipo=compare ? ps.type : new ErrorType(ps.type);
 								 Type tipo=ps.type;
 								 RESULT=new ParserResult(i, tipo);
@@ -767,7 +778,10 @@ discriminant_declaration	::=	identifier:i COLON subtype_indication:s initializat
 								 boolean compare=compare_types(ps.type, po.type, oleft, oright);
 								 //Type tipo=compare ? ps.type : new ErrorType(ps.type);
 								 Type tipo=ps.type;
-								 for(String id: il){						
+								 for(String id: il){		
+									if(compare){
+										gen(":=", po.value, "", id);
+									}				
 									r.add(new ParserResult(id, tipo));					
 								 }
 								 RESULT=r;
@@ -1527,25 +1541,32 @@ qualified_expression		::=	name TICK LEFTPAR expression RIGHTPAR
 allocator			::=	NEW name
 				;
 sequence_of_statements		::=	statement:s {:RESULT=s;:}
-				|	sequence_of_statements:q statement:s
+				|	sequence_of_statements:q m:m statement:s
 					{:
-					if(q != null)
-						RESULT=q;
-					else
-						RESULT=s;
+						ParserResult qr=(ParserResult)q;
+						ParserResult mr=(ParserResult)m;
+						ParserResult sr=(ParserResult)s;
+						completa(qr.backpatch.siguiente, mr.value);
+						RESULT=new ParserResult(
+							new BackPatchResult(sr.backpatch.siguiente)
+						);
 					:}
 				;
 //usaremos pragma? De ser así, aquí también produciría pragma:
-statement			::=	label_list simple_statement
-				|	label_list compound_statement
+statement			::=	label_list simple_statement:s {:RESULT=s;:}
+				|	label_list compound_statement:c {:RESULT=c;:}
 				|	error 
 				;
 //de p85-persch, pag 92:
 label_list			::=	| label_list label
 				;
 simple_statement		::=	null_statement
+					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				|	assignment_statement
+					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				|	exit_statement
+					/*TODO: esto debe devolver algo mejor!*/
+					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				/*Al encontrar una sentencia de retorno, agregar la expresión. Si viene null es porque 
 				ya fue reportado un error antes. Idea: poner errorTypes en este caso. */
 				|	return_statement:e 
@@ -1556,11 +1577,14 @@ simple_statement		::=	null_statement
 					}else{
 						returns.add(new ErrorType());
 					}
+					RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));
 					:}
-/*Para labels: */
 				|	goto_statement
+					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				|	procedure_call
+					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				|	code_statement
+					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				;
 compound_statement		::=	if_statement{:parser.emptyLastUnclosed();:}
 				|	loop_statement{:parser.emptyLastUnclosed();:}
@@ -1589,9 +1613,13 @@ assignment_statement		::=	name:n ASSIGNMENT expression:e SEMICOLON
 						else if(gn.constant)
 					agregarError("El lado izquierdo de la asignación debe ser una variable, no un objeto constante", nleft, nright);
 						else//si todo sale bien, entonces sí comparar:					
-						    compare_types(pn.type, pe.type, eleft, eright);
+						    if(compare_types(pn.type, pe.type, eleft, eright)){
+							//generar el código para la asignación:
+							gen(":=", pe.value,"", pn.value);
+						    }
 						}
 					}
+					
 					:}
 				;
 /*Encontrar un if o un elsif significa encontrar una nueva branch*/
@@ -1775,7 +1803,6 @@ iteration_clause_option		::=
 						//generar las instrucciones:
 						gen("if_>=", i, fin, "");
 						gen("goto", " ", "", "");
-						/*Hier: Generar la etiqueta de inicio, la asignación y la condición.*/
 						ParserResult mr=(ParserResult)m;
 						ArrayList<Object> post=new ArrayList<Object>(2);
 						post.add(mr.value);
@@ -1805,7 +1832,6 @@ iteration_clause_option		::=
 						//generar las instrucciones:
 						gen("if_<=", i, initial, "");
 						gen("goto", " ", "", "");
-						/*Hier: Generar la etiqueta de inicio, la asignación y la condición.*/
 						ParserResult mr=(ParserResult)m;
 						ArrayList<Object> post=new ArrayList<Object>(2);
 						post.add(mr.value);
@@ -2026,7 +2052,15 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 							String nombre=(mode.equalsIgnoreCase("in")) ? ((String)i)+"$constant" : (String)i;
 							if(o != null){
 								ParserResult po=(ParserResult)o;
-								boolean compare=compare_types(ps.type, po.type, oleft, oright);
+								if(mode.equalsIgnoreCase("in")){
+									if(compare_types(ps.type, po.type, oleft, oright)){
+										//todo está bien, generar el código
+										gen(":=", po.value, "", i);
+									}
+								}else{//solo los in pueden estar inicializados:
+									agregarError("El parámetro '"+i.toString()+"' no es de tipo 'in'"+
+									", no puede ser inicializado", oleft, oright);
+								}
 								//Type tipo=compare ? ps.type : new ErrorType(ps.type);
 								Type tipo=ps.type;
 								ParserResult r=new ParserResult(nombre, tipo);
@@ -2054,11 +2088,21 @@ parameter_declaration		::=	identifier:i COLON mode:m subtype_indication:s initia
 							String mode=(String)m;
 							if(o != null){
 								ParserResult po=(ParserResult)o;
-								boolean compare=compare_types(ps.type, po.type, oleft, oright);
+								boolean compare;
+								if(!mode.equalsIgnoreCase("in")){
+									agregarError("Los parámetros '"+il.toString()+"' no son de tipo 'in'"+
+									", no pueden ser inicializados", oleft, oright);
+									compare=false;	
+								}else{
+									compare=compare_types(ps.type, po.type, oleft, oright);
+								}
 								//Type tipo=compare ? ps.type : new ErrorType(ps.type);
 								Type tipo=ps.type;
 								for(String id :il){									
 									nombre=(mode.equalsIgnoreCase("in")) ? id+"$constant" : id;
+									if(compare){
+										gen(":=", po.value, "", id);
+									}
 									r.add(new ParserResult(nombre, tipo));
 								}
 								RESULT=r;
@@ -2117,6 +2161,9 @@ subprogram_body			::=	subprogram_specification_is:s
 					  currentScope=currentScope.getAncestor();
 					  returns=new ArrayList<Type>();
 					  branches=0;
+					  //completar la sequence of statements: así todas tienen un salto
+					  ParserResult tr=(ParserResult)t;
+					  completa(tr.backpatch.siguiente, cuadruplos.size());
 					:} placeholder 
 					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					check_coherence(designator,sleft, sright, e, eleft, eright);:}
