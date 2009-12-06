@@ -21,4 +21,10 @@ public class BackPatchResult{
 		this.verdadera=verdadera;
 		this.falsa=falsa;
 	}
+	
+	public BackPatchResult(ListaSalto siguiente, ListaSalto verdadera, ListaSalto falsa){
+		this.siguiente=siguiente;
+		this.verdadera=verdadera;
+		this.falsa=falsa;
+	}
 }

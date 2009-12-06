@@ -1578,8 +1578,12 @@ sequence_of_statements		::=	statement:s {:RESULT=s;:}
 						ParserResult mr=(ParserResult)m;
 						ParserResult sr=(ParserResult)s;
 						completa(qr.backpatch.siguiente, mr.value);
+						completa(qr.backpatch.falsa, mr.value);
 						RESULT=new ParserResult(
-							new BackPatchResult(sr.backpatch.siguiente)
+							new BackPatchResult(sr.siguiente, 
+							ListaSalto.fusiona(qr.verdadera, sr.verdadera),
+							sr.falsa
+							)
 						);
 					:}
 				;
@@ -1595,9 +1599,9 @@ simple_statement		::=	null_statement
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				|	assignment_statement
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
-				|	exit_statement
+				|	exit_statement:e
 					/*TODO: esto debe devolver algo mejor!*/
-					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
+					{:RESULT=e;:}
 				/*Al encontrar una sentencia de retorno, agregar la expresión. Si viene null es porque 
 				ya fue reportado un error antes. Idea: poner errorTypes en este caso. */
 				|	return_statement:e 
@@ -1760,7 +1764,11 @@ loop_statement			::=	iteration_clause_option:o
 							completa(sr.backpatch.siguiente, iteration.value);	
 							gen("goto", iteration.value, "", "");
 						}
-						ListaSalto siguiente=iteration.backpatch.falsa;
+						/*Completar la sequence_of_staments que podría traer las listas de los exit_staments
+						  Verdadera: si se cumple será la siguiente (porque sale)
+						  Falsa: completarla con la condición */
+						completa(sr.backpatch.falsa, iteration.value);
+						ListaSalto siguiente=ListaSalto.fusiona(iteration.backpatch.falsa, sr.backpatch.verdadera);
 						RESULT=new ParserResult(
 							new BackPatchResult(siguiente)
 						);
@@ -1793,7 +1801,9 @@ loop_statement			::=	iteration_clause_option:o
 							completa(sr.backpatch.siguiente, iteration.value);	
 							gen("goto", iteration.value, "", "");
 						}
-						ListaSalto siguiente=iteration.backpatch.falsa;
+						//TODO: cambiar esto para revisar que el value de la e_stmnt sea una etiqueta de este loop.
+						completa(sr.backpatch.falsa, iteration.value);
+						ListaSalto siguiente=ListaSalto.fusiona(iteration.backpatch.falsa, sr.backpatch.verdadera);
 						RESULT=new ParserResult(
 							new BackPatchResult(siguiente)
 						);				
@@ -1901,15 +1911,44 @@ declare_part_option		::=
 				|	 DECLARE declarative_part
 				;
 /*Para labels: revisar que la label exista*/
-exit_statement			::=	EXIT name_option when_option SEMICOLON
+exit_statement			::=	EXIT name_option:n when_option:w SEMICOLON
+					{:if(w != null){
+						  ParserResult wr=(ParserResult)w;
+						  if(n != null){
+							  ParserResult nr=(ParserResult)n;		
+							  RESULT=new ParserResult(nr.value, wr.type, wr.backpatch);
+						  }else{
+							  RESULT=new ParserResult(wr.type, wr.backpatch);
+						  }
+					  }else{//there is no condition, but a goto must be generated:
+					  ListaSalto verdadero=new ListaSalto(cuadruplos.size());
+					  BackPatchResult bpr=new BackPatchResult(verdadero, new ListaSalto()); 
+					  gen("goto", " ", "", "");
+      						if(n != null){
+							ParserResult nr=(ParserResult)n;		
+							RESULT=new ParserResult(nr.value, bpr); 
+						}else{
+							RESULT=new ParserResult(bpr);
+						}
+					  }
+					:}
 				;
-name_option			::=	| name
+name_option			::=	| name:n {:RESULT=n;:}
 				;
-when_option			::=	| WHEN condition:c 
+when_option			::=	| WHEN m:m condition:c 
 					 {: if(c != null){
 						ParserResult pc=(ParserResult)c;
-						if(!(pc.type instanceof BooleanType))
+						if(!(pc.type instanceof BooleanType)){
 							agregarError("Se esperaba un tipo booleano y se encontró"+pc.type.toString(), cleft, cright);
+						}else{
+							ParserResult res=new ParserResult();
+							ParserResult mr=(ParserResult)m;
+							res.value=mr.value;
+							res.backpatch.falsa=pc.backpatch.falsa;
+							res.backpatch.verdadera=pc.backpatch.verdadera;
+							RESULT=res;
+
+						}
 					 }:} 
 				;
 return_statement		::=	RETURN SEMICOLON
