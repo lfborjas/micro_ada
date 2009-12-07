@@ -25,10 +25,7 @@ import AdaSemantic.*;
 action code{:
 
 /**The current symbol table*/
-LinkedSymbolTable currentScope = new LinkedSymbolTable();
-//pongo cualquier cosa, sólo para que ya estén en la st (y no deje declarar otras fn con estos nombres):
-boolean neverused=currentScope.put("put", new AdaSymbol(new IntegerType()));
-boolean neveruser2=currentScope.put("get", new AdaSymbol(new IntegerType()));
+LinkedSymbolTable currentScope = null; 
 /**Variables globales para el control de los subprogramas*/
 ArrayList<Type> returns=new ArrayList<Type>();
 int branches=0;
@@ -2000,15 +1997,23 @@ subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
 						}
 					:}
 				;
-subprogram_specification_is	::=	PROCEDURE identifier:i IS 	
+subprogram_specification_is	::=	PROCEDURE identifier:i IS 
 					{:
-					if(!currentScope.put(i, new AdaSymbol(new FunctionType()))){
-						agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
-					}else{
-					  currentScope=new LinkedSymbolTable(currentScope);
-					}
-					  RESULT=i;
-					:}
+                                         if(currentScope != null){
+                                                if(!currentScope.put(i, new AdaSymbol(new FunctionType())))
+                                                        agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
+                                                else
+                                                        currentScope=new LinkedSymbolTable(currentScope);
+
+                                         }else{
+                                          currentScope=new LinkedSymbolTable();
+                                          boolean neverused=currentScope.put("put", new AdaSymbol(new IntegerType()));
+                                          boolean neveruser2=currentScope.put("get", new AdaSymbol(new IntegerType()));
+                                         }
+
+                                          RESULT=i;
+                                        :}
+	
 				|	PROCEDURE identifier:i formal_part:f IS 
 					{:
 					  //formal part es una lista de parser results:
@@ -2016,10 +2021,15 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
 						ArrayList<Type> ft=new ArrayList<Type>();
 						for (ParserResult p:fl)
-							ft.add(p.type);												                                             if(!currentScope.put(i, new AdaSymbol(new FunctionType(ft)))){
+							ft.add(p.type);
+						
+						if((currentScope != null) && !currentScope.put(i, new AdaSymbol(new FunctionType(ft)))){
 							agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 						}else{
-							currentScope=new LinkedSymbolTable(currentScope);
+							if(currentScope != null)
+								currentScope=new LinkedSymbolTable(currentScope);
+							else
+								currentScope=new LinkedSymbolTable();
 							String nombre="";
 							boolean cons=false;
 							for(ParserResult p: fl){
@@ -2030,6 +2040,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								}
 							}
 						}
+					    
 					  }
 					
 					RESULT=i;:}
@@ -2046,10 +2057,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						for (ParserResult p:fl)
 							ft.add(p.type);							
 						if(ps.type != null){
-							if(!currentScope.put(i, new AdaSymbol(new FunctionType(ps.type, ft)))){
+							if((currentScope != null) && !currentScope.put(i, new AdaSymbol(new FunctionType(ps.type, ft)))){
 								agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 							}else{
-								currentScope=new LinkedSymbolTable(currentScope);
+								if(currentScope != null)
+									currentScope=new LinkedSymbolTable(currentScope);
+								else
+									currentScope=new LinkedSymbolTable();
 								String nombre="";
 								boolean cons=false;
 								for(ParserResult p: fl){
@@ -2069,10 +2083,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						}
 						
 					}else{
-						if(!currentScope.put(i, new AdaSymbol(new FunctionType(ps.type))))
+						if((currentScope != null) && !currentScope.put(i, new AdaSymbol(new FunctionType(ps.type))))
 							agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
-						else{
-							currentScope=new LinkedSymbolTable(currentScope);
+						else{	
+							if(currentScope != null)
+								currentScope=new LinkedSymbolTable(currentScope);
+							else
+								currentScope=new LinkedSymbolTable();
 						}
 						
 					}
