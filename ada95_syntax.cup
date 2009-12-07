@@ -115,13 +115,13 @@ public void generar_asignacion(ParserResult expression, Object result){
 	//esto nunca debería pasar, pero bueno...
 		if(expression.backpatch == null){
 			gen(":=", expression.value, "", result);
-			return
+			return;
 		}
 	//todo depende, en realidad, del tipo de la expression: (ya que todas tienen sus listaV y listaF)
 		if(expression.type instanceof BooleanType){
 			completa(expression.backpatch.verdadera, cuadruplos.size());
 			gen(":=", "1", "", result);
-			gen("goto", cuadruplos.size()+1);
+			gen("goto", cuadruplos.size()+1, "", "");
 			completa(expression.backpatch.falsa, cuadruplos.size());
 			gen(":=", "0", "", result);
 		}else{
@@ -1580,9 +1580,9 @@ sequence_of_statements		::=	statement:s {:RESULT=s;:}
 						completa(qr.backpatch.siguiente, mr.value);
 						completa(qr.backpatch.falsa, mr.value);
 						RESULT=new ParserResult(
-							new BackPatchResult(sr.siguiente, 
-							ListaSalto.fusiona(qr.verdadera, sr.verdadera),
-							sr.falsa
+							new BackPatchResult(sr.backpatch.siguiente, 
+							ListaSalto.fusiona(qr.backpatch.verdadera, sr.backpatch.verdadera),
+							sr.backpatch.falsa
 							)
 						);
 					:}
@@ -1704,15 +1704,17 @@ if_statement			::=	IF:i  condition:c
 												      pn2.backpatch.siguiente));
 						}
 						RESULT=RetVal;
-						
+						//Revisar que no venga un exit_statement
+						if(ps.backpatch.verdadera.lista.size() > 0 || ps.backpatch.falsa.lista.size() > 0 )	
+							agregarError("No puede salir de un subprograma con una sentencia de salida", sleft, sright);
 					:}
 				;
 elsif_list			::=	| elsif_list:elsif n:n m:muno ELSIF condition:c THEN m:mdos sequence_of_statements:s
 					 {: branches++;
+						ParserResult sr=(ParserResult)s;						
 					  if(c != null){
 						ParserResult pc=(ParserResult)c;
 						ParserResult mDosr=(ParserResult)mdos;
-						ParserResult sr=(ParserResult)s;						
 						ParserResult nr=(ParserResult)n;
 						if(!(pc.type instanceof BooleanType))
 							agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
@@ -1729,6 +1731,9 @@ elsif_list			::=	| elsif_list:elsif n:n m:muno ELSIF condition:c THEN m:mdos seq
 									ListaSalto.fusiona(sr.backpatch.siguiente,
 									ListaSalto.fusiona(pc.backpatch.siguiente, nr.backpatch.siguiente))));
 					 }
+						//Revisar que no venga un exit_statement
+						if(sr.backpatch.verdadera.lista.size() > 0 || sr.backpatch.falsa.lista.size() > 0 )	
+							agregarError("No puede salir de un subprograma con una sentencia de salida", sleft, sright);
 					
 					:} 
 				;
@@ -1736,7 +1741,11 @@ elsif_list			::=	| elsif_list:elsif n:n m:muno ELSIF condition:c THEN m:mdos seq
 else_option			::=	| ELSE m:m sequence_of_statements:s
 				{:ParserResult ps=(ParserResult)s;
 				  ParserResult mr=(ParserResult)m;
-				  RESULT=new ParserResult(mr.value, ps.backpatch);:}
+				  RESULT=new ParserResult(mr.value, ps.backpatch);
+				  //Revisar que no venga un exit_statement
+				  if(ps.backpatch.verdadera.lista.size() > 0 || ps.backpatch.falsa.lista.size() > 0 )	
+					  agregarError("No puede salir de un subprograma con una sentencia de salida", sleft, sright);
+				:}
 				;
 condition			::=	expression:e {:RESULT=e;:}
 				;
@@ -2234,8 +2243,11 @@ subprogram_body			::=	subprogram_specification_is:s
 					  //completar la sequence of statements: así todas tienen un salto
 					  ParserResult tr=(ParserResult)t;
 					  completa(tr.backpatch.siguiente, cuadruplos.size());
+					  //Revisar que no venga un exit_statement
+					  if(tr.backpatch.verdadera.lista.size() > 0 || tr.backpatch.falsa.lista.size() > 0 )	
+						  agregarError("No puede salir de un subprograma con una sentencia de salida", tleft, tright);
 					  //TODO: ver si esto está bien...
-					  gen("lbl","","","L"+e.toString());
+					  //gen("lbl","","","L"+e.toString());
 					:} placeholder 
 					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					check_coherence(designator,sleft, sright, e, eleft, eright);:}
