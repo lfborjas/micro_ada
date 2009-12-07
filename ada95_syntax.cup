@@ -2382,9 +2382,8 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 						}else{
 							//assume it has only one element:
 							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
-							gen("param", uP.value, "", "");
 							String lugar=temp_nuevo();
-							gen("call", "put", "1",lugar);
+							gen("put", uP.value, "",lugar);
 							RESULT=new ParserResult("put", uP.type, lugar);
 						}
 						
@@ -2399,8 +2398,7 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 							RESULT=new ParserResult("get");
 						}else{
 							String lugar=i.toString();
-							gen("param", f.type.getClass().getSimpleName(), "", "");
-							gen("call", "get", "1", lugar);
+							gen("get", f.type.getClass().getSimpleName(), "", lugar);
 							RESULT=new ParserResult("get", f.type, lugar);
 						}
 					
@@ -2416,8 +2414,7 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 							RESULT=new ParserResult("get");
 						}else{
 							String lugar=i.toString();
-							gen("param", f.type.getClass().getSimpleName(), "", "");
-							gen("call", "get", "1", lugar);
+							gen("get", f.type.getClass().getSimpleName(), "", lugar);
 							RESULT=new ParserResult("get", f.type, lugar);
 						}
 					
