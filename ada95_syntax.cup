@@ -2290,6 +2290,48 @@ procedure_call			::=	name:n SEMICOLON
 						}
 					}
 					:}
+				//TODO: poner en la tabla de símbolos, inicialmente, todas las sobrecargas de put y get. Y definir una función para sacarlos
+				//ya que no se permiten en la ST nombres repetidos...
+				|	PUT actual_parameter_part:p
+					{://ver si cumple con: sólo un parámetro, el tipo es o String, int, float o boolean
+						boolean v=validateBuiltIn("PUT", p, pleft, pright);						
+						if(v){
+							//assume it has only one element:
+							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
+							String lugar=temp_nuevo();
+							gen("put", uP.value, "",lugar);
+							RESULT=new ParserResult("put", uP.type, lugar);
+						}
+						
+					:}
+				|	GET LEFTPAR identifier:i RIGHTPAR
+					{:
+					  AdaSymbol f=findSymbol(i, ileft, iright);
+					  if(f!=null){
+						if(!f.type.isPrimitive()){
+							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
+							"float o integer)", ileft, iright);
+						}else{
+							String lugar=i.toString();
+							gen("get", f.type.getClass().getSimpleName(), "", lugar);
+						}
+					
+					  }
+					:}
+ 				|	GET LEFTPAR selected_component:i RIGHTPAR
+					{:
+					  AdaSymbol f=findSymbol(i, ileft, iright);
+					  if(f!=null){
+						if(!f.type.isPrimitive()){
+							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
+							"float o integer)", ileft, iright);
+						}else{
+							String lugar=i.toString();
+							gen("get", f.type.getClass().getSimpleName(), "", lugar);
+						}
+					
+					  }
+					:}
 				;
 /*Llamadas a funciones: si no tiene parámetros, sólo buscar la función (y que sea una que no tenga parámetros, eh)
 Si sí, habrá también que ver que cumplan con el dominio.*/
@@ -2371,54 +2413,6 @@ function_call			::=	name:n LEFTPAR RIGHTPAR
 						}//es una función
 					}//se encontró el id
 					//create a new dummy function to compare it with this.
-					:}
-				//TODO: poner en la tabla de símbolos, inicialmente, todas las sobrecargas de put y get. Y definir una función para sacarlos
-				//ya que no se permiten en la ST nombres repetidos...
-				|	PUT actual_parameter_part:p
-					{://ver si cumple con: sólo un parámetro, el tipo es o String, int, float o boolean
-						boolean v=validateBuiltIn("PUT", p, pleft, pright);						
-						if(!v){
-							RESULT=new ParserResult("put");							
-						}else{
-							//assume it has only one element:
-							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
-							String lugar=temp_nuevo();
-							gen("put", uP.value, "",lugar);
-							RESULT=new ParserResult("put", uP.type, lugar);
-						}
-						
-					:}
-				|	GET LEFTPAR identifier:i RIGHTPAR
-					{:
-					  AdaSymbol f=findSymbol(i, ileft, iright);
-					  if(f!=null){
-						if(!f.type.isPrimitive()){
-							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
-							"float o integer)", ileft, iright);
-							RESULT=new ParserResult("get");
-						}else{
-							String lugar=i.toString();
-							gen("get", f.type.getClass().getSimpleName(), "", lugar);
-							RESULT=new ParserResult("get", f.type, lugar);
-						}
-					
-					  }
-					:}
- 				|	GET LEFTPAR selected_component:i RIGHTPAR
-					{:
-					  AdaSymbol f=findSymbol(i, ileft, iright);
-					  if(f!=null){
-						if(!f.type.isPrimitive()){
-							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
-							"float o integer)", ileft, iright);
-							RESULT=new ParserResult("get");
-						}else{
-							String lugar=i.toString();
-							gen("get", f.type.getClass().getSimpleName(), "", lugar);
-							RESULT=new ParserResult("get", f.type, lugar);
-						}
-					
-					  }
 					:}
 				;
 /*Esta no me parece tan poderosa:
