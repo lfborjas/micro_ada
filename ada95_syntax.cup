@@ -1592,9 +1592,9 @@ statement			::=	label_list simple_statement:s {:RESULT=s;:}
 //de p85-persch, pag 92:
 label_list			::=	| label_list label
 				;
-simple_statement		::=	null_statement
+simple_statement		::=	null_statement:n
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
-				|	assignment_statement
+				|	assignment_statement:a
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				|	exit_statement:e
 					/*TODO: esto debe devolver algo mejor!*/
@@ -1611,11 +1611,12 @@ simple_statement		::=	null_statement
 					}
 					RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));
 					:}
-				|	goto_statement
+				|	goto_statement:g
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
-				|	procedure_call
-					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
-				|	code_statement
+				|	procedure_call:p
+					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));
+					  :}
+				|	code_statement:c
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				;
 compound_statement		::=	if_statement:s {:parser.emptyLastUnclosed(); RESULT=s;:}
@@ -2338,7 +2339,7 @@ procedure_call			::=	name:n SEMICOLON
 					:}
 				//TODO: poner en la tabla de símbolos, inicialmente, todas las sobrecargas de put y get. Y definir una función para sacarlos
 				//ya que no se permiten en la ST nombres repetidos...
-				|	PUT actual_parameter_part:p
+				|	PUT actual_parameter_part:p SEMICOLON
 					{://ver si cumple con: sólo un parámetro, el tipo es o String, int, float o boolean
 						boolean v=validateBuiltIn("PUT", p, pleft, pright);						
 						if(v){
@@ -2350,7 +2351,7 @@ procedure_call			::=	name:n SEMICOLON
 						}
 						
 					:}
-				|	GET LEFTPAR identifier:i RIGHTPAR
+				|	GET LEFTPAR identifier:i RIGHTPAR SEMICOLON
 					{:
 					  AdaSymbol f=findSymbol(i, ileft, iright);
 					  if(f!=null){
@@ -2364,7 +2365,7 @@ procedure_call			::=	name:n SEMICOLON
 					
 					  }
 					:}
- 				|	GET LEFTPAR selected_component:i RIGHTPAR
+ 				|	GET LEFTPAR selected_component:i RIGHTPAR SEMICOLON
 					{:
 					  AdaSymbol f=findSymbol(i, ileft, iright);
 					  if(f!=null){
