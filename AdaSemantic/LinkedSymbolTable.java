@@ -1,5 +1,5 @@
 package AdaSemantic;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 /**
 	A class to represent a symbol table for a scope
 	@author Luis Felipe Borjas
@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 public class LinkedSymbolTable{
 	/**The Symbol table for this scope*/
-	private HashMap<String, AdaSymbol> table;
+	private LinkedHashMap<String, AdaSymbol> table;
 	/**The immediate outer scope*/
 	private LinkedSymbolTable ancestor;
 	/**La primera dirección relativa libre*/
@@ -17,7 +17,7 @@ public class LinkedSymbolTable{
 	public String id;
 
 	public LinkedSymbolTable(LinkedSymbolTable ancestor){
-		table=new HashMap<String, AdaSymbol>();
+		table=new LinkedHashMap<String, AdaSymbol>();
 		this.ancestor= ancestor;
 		this.desplazamiento=0;
 		this.id="";
@@ -25,13 +25,13 @@ public class LinkedSymbolTable{
 	
 	public LinkedSymbolTable(LinkedSymbolTable ancestor, String id){
 		this.id=id;
-		table=new HashMap<String, AdaSymbol>();
+		table=new LinkedHashMap<String, AdaSymbol>();
 		this.ancestor= ancestor;
 		this.desplazamiento=0;
 	}
 
 	public LinkedSymbolTable(){
-		table=new HashMap<String, AdaSymbol>();
+		table=new LinkedHashMap<String, AdaSymbol>();
 		this.ancestor=null;
 		this.desplazamiento=0;	
 		this.id="";
@@ -39,7 +39,7 @@ public class LinkedSymbolTable{
 	
 	public LinkedSymbolTable(String id){
 		this.id=id;
-		table=new HashMap<String, AdaSymbol>();
+		table=new LinkedHashMap<String, AdaSymbol>();
 		this.ancestor=null;
 		this.desplazamiento=0;	
 	}
@@ -48,7 +48,7 @@ public class LinkedSymbolTable{
 		return this.ancestor;
 	}
 	
-	public HashMap<String, AdaSymbol> getTable(){
+	public LinkedHashMap<String, AdaSymbol> getTable(){
 		return this.table;
 	}	
 
