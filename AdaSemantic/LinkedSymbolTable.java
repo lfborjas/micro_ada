@@ -13,14 +13,32 @@ public class LinkedSymbolTable{
 	private LinkedSymbolTable ancestor;
 	/**La primera dirección relativa libre*/
 	public int desplazamiento;
-	
+	/**El nombre de esta tabla*/	
+	public String id;
+
 	public LinkedSymbolTable(LinkedSymbolTable ancestor){
 		table=new HashMap<String, AdaSymbol>();
 		this.ancestor= ancestor;
 		this.desplazamiento=0;
+		this.id="";
 	}
 	
+	public LinkedSymbolTable(LinkedSymbolTable ancestor, String id){
+		this.id=id;
+		table=new HashMap<String, AdaSymbol>();
+		this.ancestor= ancestor;
+		this.desplazamiento=0;
+	}
+
 	public LinkedSymbolTable(){
+		table=new HashMap<String, AdaSymbol>();
+		this.ancestor=null;
+		this.desplazamiento=0;	
+		this.id="";
+	}
+	
+	public LinkedSymbolTable(String id){
+		this.id=id;
 		table=new HashMap<String, AdaSymbol>();
 		this.ancestor=null;
 		this.desplazamiento=0;	

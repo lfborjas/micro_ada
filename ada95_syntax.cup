@@ -1958,7 +1958,16 @@ when_option			::=	| WHEN m:m condition:c
 					 }:} 
 				;
 return_statement		::=	RETURN SEMICOLON
-				|	RETURN expression:e SEMICOLON {:RESULT=e;:}
+					{:
+						gen("goto", "exit_"+currentScope.id, "", "");
+					:}
+				|	RETURN expression:e SEMICOLON 
+					{:
+						ParserResult pe=(ParserResult)e;
+						gen("return", pe.value, "", "");
+						gen("goto", "exit_"+currentScope.id, "", "");
+						RESULT=e;
+					:}
 				;
 goto_statement			::=	GOTO name SEMICOLON 
 				;
@@ -1999,16 +2008,20 @@ subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
 				;
 subprogram_specification_is	::=	PROCEDURE identifier:i IS 
 					{:
+					String id=i.toString();
                                          if(currentScope != null){
-                                                if(!currentScope.put(i, new AdaSymbol(new FunctionType())))
+                                                if(!currentScope.put(i, new AdaSymbol(new FunctionType()))){
                                                         agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
-                                                else
-                                                        currentScope=new LinkedSymbolTable(currentScope);
+                                                }else{
+							currentScope=new LinkedSymbolTable(currentScope, id);
+							gen("function", "_"+id, "", "");
+						}
 
                                          }else{
-                                          currentScope=new LinkedSymbolTable();
+                                          currentScope=new LinkedSymbolTable(id);
                                           boolean neverused=currentScope.put("put", new AdaSymbol(new IntegerType()));
                                           boolean neveruser2=currentScope.put("get", new AdaSymbol(new IntegerType()));
+					  gen("glbl", id, "", ""); //glbl genera las cosas iniciales. Pero todas las vars van en regs...
                                          }
 
                                           RESULT=i;
@@ -2016,6 +2029,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 	
 				|	PROCEDURE identifier:i formal_part:f IS 
 					{:
+					  String id=i.toString();
 					  //formal part es una lista de parser results:
 					  if( f!= null){											  	
 						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
@@ -2026,10 +2040,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						if((currentScope != null) && !currentScope.put(i, new AdaSymbol(new FunctionType(ft)))){
 							agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 						}else{
-							if(currentScope != null)
-								currentScope=new LinkedSymbolTable(currentScope);
-							else
-								currentScope=new LinkedSymbolTable();
+							if(currentScope != null){
+								currentScope=new LinkedSymbolTable(currentScope, id);
+								gen("function", "_"+id, "", "");
+							}else{
+								currentScope=new LinkedSymbolTable(id);
+								gen("glbl", "_"+id, "", "");
+							}
 							String nombre="";
 							boolean cons=false;
 							for(ParserResult p: fl){
@@ -2046,6 +2063,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 					RESULT=i;:}
 				|	FUNCTION designator:i formal_part_option:f RETURN subtype_indication:s IS 
 					{:
+					String id=i.toString();
 					//es una función, así que al menos espera una branch:
 					branches=1;
 					ParserResult ps=(ParserResult)s;
@@ -2060,10 +2078,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 							if((currentScope != null) && !currentScope.put(i, new AdaSymbol(new FunctionType(ps.type, ft)))){
 								agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 							}else{
-								if(currentScope != null)
-									currentScope=new LinkedSymbolTable(currentScope);
-								else
-									currentScope=new LinkedSymbolTable();
+								if(currentScope != null){
+									currentScope=new LinkedSymbolTable(currentScope, id);
+									gen("function", "_"+id, "", "");	
+								}else{
+									currentScope=new LinkedSymbolTable(id);
+									gen("glbl", "_"+id, "", "");
+								}
 								String nombre="";
 								boolean cons=false;
 								for(ParserResult p: fl){
@@ -2263,8 +2284,13 @@ subprogram_body			::=	subprogram_specification_is:s
 					  //Revisar que no venga un exit_statement
 					  if(tr.backpatch.verdadera.lista.size() > 0 || tr.backpatch.falsa.lista.size() > 0 )	
 						  agregarError("No puede salir de un subprograma con una sentencia de salida", tleft, tright);
-					  //TODO: ver si esto está bien...
-					  //gen("lbl","","","L"+e.toString());
+					//generar la salida:
+					Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
+					String id=s.toString();
+					if(currentScope.getAncestor() == null)
+						gen("glblExit", "", "", "");
+					else
+						gen("exit_"+id, "", "", "");
 					:} placeholder 
 					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					check_coherence(designator,sleft, sright, e, eleft, eright);:}
