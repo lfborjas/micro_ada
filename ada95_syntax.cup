@@ -155,8 +155,10 @@ public void generar_asignacion(ParserResult expression, Object result){
    @param foundLine, foundColumn, etc la línea y columna donde se encuentra la declaración.
 */
 public boolean compare_types(Object expected, Object found, int foundLine, int foundColumn){
-	Type e=(Type)expected;
-	Type f=(Type)found;
+	Type etipo=(Type)expected;
+	Type ftipo=(Type)found;
+	Type e=(etipo instanceof FunctionType)? (((FunctionType)etipo).getRange()) : etipo;
+	Type f=(ftipo instanceof FunctionType)? (((FunctionType)ftipo).getRange()) : ftipo;
 	if(! e.equals(f)){
 		StringBuffer errorMessage=new StringBuffer();
 		errorMessage.append("Se esperaba el tipo "+e.toString());
@@ -2346,7 +2348,11 @@ procedure_call			::=	name:n SEMICOLON
 							//assume it has only one element:
 							ParserResult uP=((ArrayList<ParserResult>)p).get(0);
 							String lugar=temp_nuevo();
-							gen("put", uP.value, "",lugar);
+							String tipo=uP.type.getClass().getSimpleName();
+							gen("put", 
+								tipo.split("Type")[0],
+								uP.value,
+								"");
 							RESULT=new ParserResult("put", uP.type, lugar);
 						}
 						
@@ -2359,8 +2365,9 @@ procedure_call			::=	name:n SEMICOLON
 							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
 							"float o integer)", ileft, iright);
 						}else{
+							String tipo=f.type.getClass().getSimpleName();
 							String lugar=i.toString();
-							gen("get", f.type.getClass().getSimpleName(), "", lugar);
+							gen("get", tipo.split("Type")[0], "", lugar);
 						}
 					
 					  }
@@ -2373,8 +2380,9 @@ procedure_call			::=	name:n SEMICOLON
 							agregarError("La función 'get' sólo acepta parámetros con tipos primitivos (boolean"+
 							"float o integer)", ileft, iright);
 						}else{
+							String tipo=f.type.getClass().getSimpleName();
 							String lugar=i.toString();
-							gen("get", f.type.getClass().getSimpleName(), "", lugar);
+							gen("get", tipo.split("Type")[0], "", lugar);
 						}
 					
 					  }
