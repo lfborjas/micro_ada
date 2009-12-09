@@ -20,6 +20,7 @@
 import java_cup.runtime.*;
 import java.util.Stack;
 import java.util.ArrayList;
+import java.util.HashMap;
 import AdaSemantic.*;
 /*Métodos que van en la clase de acciones: Poner acá todo lo que debería ser accesible por la gramática*/
 action code{:
@@ -32,6 +33,8 @@ int branches=0;
 /*Variables para la generación de código intermedio*/
 //las instrucciones
 ArrayList<Cuadruplo> cuadruplos=new ArrayList<Cuadruplo>();
+//las tablas de símbolos
+HashMap<String, LinkedSymbolTable> tablas=new HashMap<String, LinkedSymbolTable>();
 public static final int MIPS_TEMPS=9;
 //los temporales cf: http://en.wikipedia.org/wiki/MIPS_architecture
 boolean[] temps=new boolean[MIPS_TEMPS];
@@ -470,7 +473,20 @@ start with goal;
 constant_option	::=	| CONSTANT {:RESULT=true;:};
 //empezamos con goal, que será una unidad de compilación:
 
-goal	::=	compilation
+goal	::=	compilation:g {:
+if(parser.errores.size() == 0){	
+	if(DEBUG){
+		int i=0;
+		for(Cuadruplo c: cuadruplos){
+			System.out.println(i+"\t"+c.toString());
+			i++;
+		}
+	}
+	RESULT=new FrontEndResult(cuadruplos, tablas);
+}else{
+	RESULT=null;
+}
+:}
 	;
 //works as a marker, as described in the book, to let action code be executed at otherwise impossible places (like the end)
 placeholder ::= ;
@@ -2287,6 +2303,8 @@ subprogram_body			::=	subprogram_specification_is:s
 						gen("glblExit", "", "", "");
 					else
 						gen("exit_"+id, "", "", "");
+					//agregar ésta al mapa de tablas de símbolos
+					tablas.put(id, currentScope);
 					  //resetear las cosas:
 					  currentScope=currentScope.getAncestor();
 					  returns=new ArrayList<Type>();
