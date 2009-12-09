@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import AdaSemantic.FrontEndResult;
 /*Idea, manejar argumentos como help y debug... Pasarlos a una cosa tipo diccionario*/
 /**Clase que provee una CLI al mini-compilador de ADA95
 @autor Luis Felipe Borjas  10611066
@@ -118,13 +119,16 @@ public class Main {
 	}
 	
 	//si no hay errores en el parser, hacer el semántico:
+	Object result=null;
+	FrontEndResult parsed=null;
 	if(parserErrores.size()==0){		
 		semantic s= new semantic(new Ada95Lexer(new FileReader(filename)));
 		if(debug){
-			Object result = s.debug_parse().value;
+			result = s.debug_parse().value;
 		}else{
-			Object result = s.parse().value;
-		}
+			result = s.parse().value;
+			
+		}		
 		parserErrores=s.getErrores();
 		for(String error: parserErrores){
 			System.err.println(error);
@@ -143,6 +147,15 @@ public class Main {
 		System.err.println("Compilación fallida (Tiempo total: "+elapsed+" milisegundos)");
 	}else{
 		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");	
+		if(result != null){
+			if(result instanceof FrontEndResult){
+				System.out.println("Se generó con éxito la información de código intermedio y tabla de símbolos");
+				parsed=(FrontEndResult)result;
+				System.out.println(parsed.icode.size());
+				System.out.println(parsed.stables.size());
+				//TODO: hacer acá lo siguiente
+			}
+		}	
 		
 	}
 	
