@@ -13,7 +13,7 @@ public abstract class Type{
 	
 	/*Constants for the different widths*/
 	public static final int INTEGER_WIDTH=4;
-	public static final int FLOAT_WIDTH=8;
+	public static final int FLOAT_WIDTH=4;
 	public static final int BOOLEAN_WIDTH=1;
 	
 	public Type(String name){
