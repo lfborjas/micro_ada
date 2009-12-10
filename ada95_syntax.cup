@@ -429,7 +429,7 @@ non terminal label_list;
 non terminal simple_statement, compound_statement;
 non terminal label;
 non terminal null_statement, assignment_statement;
-non terminal if_statement, elsif_list, else_option, condition;
+non terminal if_statement, elsif_list, else_option, condition, if_header;
 non terminal loop_statement, basic_loop;
 //de p85-persch, pag 93:
 non terminal iteration_clause_option;
@@ -1674,82 +1674,126 @@ assignment_statement		::=	name:n ASSIGNMENT expression:e SEMICOLON
 					:}
 				;
 /*Encontrar un if o un elsif significa encontrar una nueva branch*/
-if_statement			::=	IF:i  condition:c
+if_header			::= 	IF:i condition:c THEN 
+					{:parser.setUnclosed("end if;", "if", ileft, iright);:}m:m sequence_of_statements:s 
 					{: branches++;
 					 if(c != null){
 						ParserResult pc=(ParserResult)c;
-						if(!(pc.type instanceof BooleanType))
+						if(!(pc.type instanceof BooleanType)){
 							agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
 							 cleft, cright);
-					 }:} 
-					THEN 
-					{:parser.setUnclosed("end if;", "if", ileft, iright);:}
-					  	m:m  sequence_of_statements:s 
-						/*n:nuno*/ m:mdos elsif_list:elsif 
-						/*n:ndos*/ else_option:els 
+							RESULT=null;
+						}else{
+							ParserResult pm=(ParserResult)m;
+							ParserResult ps=(ParserResult)s;
+							RESULT=new ParserResult(pm.value,
+										 new BackPatchResult(ps.backpatch.siguiente,
+		 	       										 pc.backpatch.verdadera,
+													 pc.backpatch.falsa));
+						}
+					}:}
+				;
+if_statement			::=	if_header:header	
+						else_option:els 
 					END IF SEMICOLON 
 					{:
-						/*Están estos casos: que no venga ni elsif ni else.
-						Que venga sólo else
-						Que venga sólo elsif*/
-						ParserResult m1=(ParserResult)m;
-						ParserResult ps=(ParserResult)s;
-						ParserResult pc=(ParserResult)c;
-						//ParserResult pn1=(ParserResult)nuno;
-						//ParserResult pn2=(ParserResult)ndos;
-						ParserResult m2=(ParserResult)mdos;
+					if(header != null){
+						ParserResult pc=(ParserResult)header;
 						ParserResult RetVal=new ParserResult();
-						completa(pc.backpatch.verdadera, m1.value);
-						RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente, pc.backpatch.falsa);
+						completa(pc.backpatch.verdadera, pc.value);
+						RetVal.backpatch.siguiente=ListaSalto.fusiona(pc.backpatch.siguiente, pc.backpatch.falsa);
 						if(els != null){
 							ParserResult pelse=(ParserResult)els;
 							completa(pc.backpatch.falsa, pelse.value);
-							RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente,
+							RetVal.backpatch.siguiente=ListaSalto.fusiona(pc.backpatch.siguiente,
 									           pelse.backpatch.siguiente);
-							if(elsif != null){
-								ParserResult pei=(ParserResult)elsif;
-								completa(pc.backpatch.falsa, m2.value);
-								completa(pei.backpatch.siguiente, pelse.value);			
-							}
-						}else if(elsif != null){
-							ParserResult pei=(ParserResult)elsif;
-							completa(pc.backpatch.falsa, m2.value);
-							//TODO: esto ya no sirve
-							/*RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente,
-										   ListaSalto.fusiona(pei.backpatch.siguiente,
-												      pn2.backpatch.siguiente));*/
 						}
 						RESULT=RetVal;
-						//Revisar que no venga un exit_statement
-						if(ps.backpatch.verdadera.lista.size() > 0 || ps.backpatch.falsa.lista.size() > 0 )	
-							agregarError("No puede salir de un subprograma con una sentencia de salida", sleft, sright);
+					 }else{
+						RESULT=new ParserResult(new BackPatchResult());
+					 }
 					:}
+				|	if_header:header
+						m:mdos n:n elsif_list:elsif
+						else_option:els
+					END IF SEMICOLON
+					{:
+					 if(header != null){ 
+							ParserResult pc=(ParserResult)header;
+							ParserResult pm2=(ParserResult)mdos;
+							ParserResult pn=(ParserResult)n;
+							ParserResult pelsif=(ParserResult)elsif;
+							ParserResult pelse=(ParserResult)els;
+							BackPatchResult siguiente=new BackPatchResult();
+							completa(pc.backpatch.verdadera, pc.value);
+							completa(pc.backpatch.falsa, pm2.value);
+							siguiente.siguiente=ListaSalto.fusiona(
+											ListaSalto.fusiona(pc.backpatch.siguiente,pn.backpatch.siguiente),
+											pelsif.backpatch.siguiente
+										);	
+							if(pelse != null){
+								completa(pelsif.backpatch.falsa, pelse.value);
+								siguiente.siguiente=ListaSalto.fusiona(siguiente.siguiente, pelse.backpatch.siguiente);
+							}else{
+								siguiente.siguiente=ListaSalto.fusiona(siguiente.siguiente, pelsif.backpatch.falsa);
+							}
+							RESULT=new ParserResult(siguiente);
+						}else{
+							RESULT=new ParserResult(new BackPatchResult());
+						}
+					:} 
 				;
-elsif_list			::=	| elsif_list:elsif n:n m:muno ELSIF condition:c THEN m:mdos sequence_of_statements:s
+
+elsif_list			::=	ELSIF condition:c THEN m:m sequence_of_statements:s
+					{:
+						branches++;
+						//comprobación:
+						if(c != null){
+							ParserResult pc=(ParserResult)c;
+							ParserResult pm=(ParserResult)m;
+							ParserResult ps=(ParserResult)s;
+							if(!(pc.type instanceof BooleanType))
+								agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
+							        cleft, cright);
+						//backpatching:
+							completa(pc.backpatch.verdadera, pm.value);			
+							RESULT=new ParserResult(
+							 new BackPatchResult(
+								ps.backpatch.siguiente,
+								new ListaSalto(),
+								pc.backpatch.falsa
+							 )
+							);
+						}
+					:}
+				
+					| elsif_list:elsif n:n ELSIF m:muno condition:c THEN m:mdos sequence_of_statements:s
 					 {: branches++;
-						ParserResult sr=(ParserResult)s;						
 					  if(c != null){
 						ParserResult pc=(ParserResult)c;
-						ParserResult mDosr=(ParserResult)mdos;
-						ParserResult nr=(ParserResult)n;
-						if(!(pc.type instanceof BooleanType))
+						ParserResult ps=(ParserResult)s;					
+						ParserResult pn=(ParserResult)n;
+						ParserResult pm1=(ParserResult)muno;
+						ParserResult pm2=(ParserResult)mdos;
+						ParserResult pelsif=(ParserResult)elsif;
+
+						if(!(pc.type instanceof BooleanType)){
 							agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
 						        cleft, cright);
-						/*elsif no pudo completar su lista de siguientes, hagámosle el favor*/
-						if(elsif != null){
-							ParserResult er=(ParserResult)elsif;
-							ParserResult mr=(ParserResult)muno;
-							completa(er.backpatch.siguiente, mr.value);
+						}else{
+							completa(pc.backpatch.verdadera, pm2.value);
+							completa(pelsif.backpatch.falsa, pm1.value);
+							RESULT=new ParserResult(
+								new BackPatchResult(
+									ListaSalto.fusiona(pn.backpatch.siguiente,
+										ListaSalto.fusiona(ps.backpatch.siguiente, pelsif.backpatch.siguiente)
+									),
+									new ListaSalto(),
+									pc.backpatch.falsa
+								)
+							);
 						}
-					 	completa(pc.backpatch.verdadera, mDosr.value);	
-						/*Subimos las que ocupan ser completadas:*/
-						RESULT=new ParserResult(new BackPatchResult(
-									ListaSalto.fusiona(sr.backpatch.siguiente,
-									ListaSalto.fusiona(pc.backpatch.siguiente, nr.backpatch.siguiente))));
 					 }
-						//Revisar que no venga un exit_statement
-						if(sr.backpatch.verdadera.lista.size() > 0 || sr.backpatch.falsa.lista.size() > 0 )	
-							agregarError("No puede salir de un subprograma con una sentencia de salida", sleft, sright);
 					
 					:} 
 				;

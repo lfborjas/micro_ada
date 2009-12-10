@@ -11,13 +11,13 @@ begin
 		a:=a+1;
 	end if;
 
---	if a=0 then
---		a:= 1;
---	elsif a=1 then
---		a:=2;
---	elsif a=2 then
---		a:=3;
---	else
---		a:=4;
---	end if;
+	if a=0 then
+		a:= 1;
+	elsif a=1 then
+		a:=2;
+	elsif a=2 then
+		a:=3;
+	else
+		a:=4;
+	end if;
 end Main;
