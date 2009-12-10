@@ -1757,9 +1757,10 @@ elsif_list			::=	ELSIF condition:c THEN m:m sequence_of_statements:s
 							ParserResult pc=(ParserResult)c;
 							ParserResult pm=(ParserResult)m;
 							ParserResult ps=(ParserResult)s;
-							if(!(pc.type instanceof BooleanType))
+							if(!(pc.type instanceof BooleanType)){
 								agregarError("Una condición debe ser de un tipo booleano y se encontró "+pc.type.toString(),
 							        cleft, cright);
+							}else{
 						//backpatching:
 							completa(pc.backpatch.verdadera, pm.value);			
 							RESULT=new ParserResult(
@@ -1769,6 +1770,7 @@ elsif_list			::=	ELSIF condition:c THEN m:m sequence_of_statements:s
 								pc.backpatch.falsa
 							 )
 							);
+							}
 						}
 					:}
 				
