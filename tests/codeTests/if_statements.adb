@@ -20,4 +20,19 @@ begin
 	else
 		a:=4;
 	end if;
+
+	if a /= 0 then
+		a:=5;
+	elsif a<0 then
+		a:=6;
+	end if;
+
+	if a > 1 then
+		a:=7;
+		a:=8;
+	elsif a < 1 then
+		a:=9;
+	elsif a = 1 then
+		a:=10;
+	end if;
 end Main;

@@ -1714,7 +1714,7 @@ if_statement			::=	if_header:header
 					 }
 					:}
 				|	if_header:header
-						m:mdos n:n elsif_list:elsif
+						n:n m:mdos  elsif_list:elsif
 						else_option:els
 					END IF SEMICOLON
 					{:
