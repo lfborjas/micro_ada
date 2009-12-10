@@ -43,7 +43,8 @@ int temp_provisorio=0;
 public String temp_nuevo(){
 	return "$t"+String.valueOf(++temp_provisorio);
 }
-
+/**La lista de saltos de salida en el loop actual (sólo funciona para salidas inmediatas)*/
+ListaSalto currentExit=null;
 /**Ir imprimiendo el código intermedio al generarlo*/
 public boolean DEBUG=true;
 /*Para agregar cuádruplos a la lista. Sólo generar el cuádruplo si no hay errores.*/
@@ -1593,12 +1594,8 @@ sequence_of_statements		::=	statement:s {:RESULT=s;:}
 						ParserResult mr=(ParserResult)m;
 						ParserResult sr=(ParserResult)s;
 						completa(qr.backpatch.siguiente, mr.value);
-						completa(qr.backpatch.falsa, mr.value);
 						RESULT=new ParserResult(
-							new BackPatchResult(sr.backpatch.siguiente, 
-							ListaSalto.fusiona(qr.backpatch.verdadera, sr.backpatch.verdadera),
-							sr.backpatch.falsa
-							)
+							new BackPatchResult(sr.backpatch.siguiente)
 						);
 					:}
 				;
@@ -1615,7 +1612,6 @@ simple_statement		::=	null_statement:n
 				|	assignment_statement:a
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				|	exit_statement:e
-					/*TODO: esto debe devolver algo mejor!*/
 					{:RESULT=e;:}
 				/*Al encontrar una sentencia de retorno, agregar la expresión. Si viene null es porque 
 				ya fue reportado un error antes. Idea: poner errorTypes en este caso. */
@@ -1637,8 +1633,17 @@ simple_statement		::=	null_statement:n
 				|	code_statement:c
 					{:RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));:}
 				;
-compound_statement		::=	if_statement:s {:parser.emptyLastUnclosed(); RESULT=s;:}
-				|	loop_statement:s {:parser.emptyLastUnclosed();RESULT=s;:}
+compound_statement		::=	if_statement:s {:parser.emptyLastUnclosed(); RESULT=s;
+					:}
+				|	loop_statement:s 
+						{:parser.emptyLastUnclosed();
+						  RESULT=s;
+						  //completar el currentExit con la siguiente sentencia:
+						  if(currentExit != null){
+							completa(currentExit, cuadruplos.size());
+							currentExit=null;
+						  }
+						:}
 				|	block{:parser.emptyLastUnclosed();:}
 				;
 label				::=	LEFTLABEL identifier RIGHTLABEL
@@ -1804,9 +1809,6 @@ else_option			::=	| n:n ELSE m:m sequence_of_statements:s
 				  ParserResult nr=(ParserResult)n;
 				  ps.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente, nr.backpatch.siguiente);
 				  RESULT=new ParserResult(mr.value, ps.backpatch);
-				  //Revisar que no venga un exit_statement
-				  if(ps.backpatch.verdadera.lista.size() > 0 || ps.backpatch.falsa.lista.size() > 0 )	
-					  agregarError("No puede salir de un subprograma con una sentencia de salida", sleft, sright);
 				:}
 				;
 condition			::=	expression:e {:RESULT=e;:}
@@ -1814,32 +1816,42 @@ condition			::=	expression:e {:RESULT=e;:}
 //acá iría el bloque case, seguido de la alternative_list
 loop_statement			::=	iteration_clause_option:o
 					 m:m basic_loop:s SEMICOLON
-					{://se asume que si la iteration_clause existe, se creó una st para ésta
-					 if(o != null)
-						currentScope=new LinkedSymbolTable(currentScope); 
+					{:
+					 //se asume que si la iteration_clause existe, se creó una st para ésta
+					 if(o != null && (((ParserResult)o).value instanceof ArrayList))
+						currentScope=currentScope.getAncestor(); 
 					:}
 					placeholder
 					{:/*la iteration clause ya trae las cosas de la condición Y el marcador antes de ésta*/
-						ParserResult iteration=(ParserResult)o;
 						ParserResult mr=(ParserResult)m;
 						ParserResult sr=(ParserResult)s;
-						completa(iteration.backpatch.verdadera, mr.value);
-						if(iteration.value instanceof ArrayList){
-							ArrayList<Object> post=(ArrayList)iteration.value;
-							completa(sr.backpatch.siguiente, cuadruplos.size());
-							Cuadruplo step=(Cuadruplo)post.get(1);
-							gen(step.operador, step.arg1, step.arg2, step.res);
-							//genera un goto adonde está la condición:
-							gen("goto", "", "", post.get(0));
-						}else{//no es una lista, si no un simple m
-							completa(sr.backpatch.siguiente, iteration.value);	
-							gen("goto","", "", iteration.value);
+						ListaSalto siguiente;
+						if(o != null){
+							ParserResult iteration=(ParserResult)o;
+							completa(iteration.backpatch.verdadera, mr.value);						
+							if(iteration.value instanceof ArrayList){
+								ArrayList<Object> post=(ArrayList)iteration.value;
+								completa(sr.backpatch.siguiente, cuadruplos.size());
+								Cuadruplo step=(Cuadruplo)post.get(1);
+								gen(step.operador, step.arg1, step.arg2, step.res);
+								//genera un goto adonde está la condición:
+								gen("goto", "", "", post.get(0));
+							}else{//no es una lista, si no un simple m
+								completa(sr.backpatch.siguiente, iteration.value);	
+								gen("goto","", "", iteration.value);
+							}
+							/*Completar la sequence_of_staments que podría traer las listas de los exit_staments
+							  Verdadera: si se cumple será la siguiente (porque sale)
+							  Falsa: completarla con la condición */
+							//completa(sr.backpatch.falsa, iteration.value);
+							//siguiente=ListaSalto.fusiona(iteration.backpatch.falsa, sr.backpatch.verdadera);
+							siguiente=iteration.backpatch.falsa;
+						}else{//es un loop normal, sin iteración.
+							completa(sr.backpatch.siguiente, mr.value);
+							gen("goto", "", "", mr.value);
+							//siguiente=sr.backpatch.verdadera;
+							siguiente=new ListaSalto();
 						}
-						/*Completar la sequence_of_staments que podría traer las listas de los exit_staments
-						  Verdadera: si se cumple será la siguiente (porque sale)
-						  Falsa: completarla con la condición */
-						completa(sr.backpatch.falsa, iteration.value);
-						ListaSalto siguiente=ListaSalto.fusiona(iteration.backpatch.falsa, sr.backpatch.verdadera);
 						RESULT=new ParserResult(
 							new BackPatchResult(siguiente)
 						);
@@ -1851,13 +1863,13 @@ loop_statement			::=	iteration_clause_option:o
 					String sj=(String)j;
 					if(!si.equalsIgnoreCase(sj))
 						agregarError("Se esperaba 'end loop "+si+"' y se encontró 'end loop "+sj+"'", jleft, jright);
-					if(o != null){						
-						currentScope=new LinkedSymbolTable(currentScope); 
-					  }
+					ParserResult mr=(ParserResult)m;
+					ParserResult sr=(ParserResult)s;						
+					if(o != null && (((ParserResult)o).value instanceof ArrayList)){
+						currentScope=currentScope.getAncestor(); 
+					  
 					/*la iteration clause ya trae las cosas de la condición Y el marcador antes de ésta*/
 						ParserResult iteration=(ParserResult)o;
-						ParserResult mr=(ParserResult)m;
-						ParserResult sr=(ParserResult)s;						
 						completa(iteration.backpatch.verdadera, mr.value);
 						/*Aquí hay una disyuntiva, o viene una lista o no, si viene
 						una, es porque es un for y hay que generarlo*/
@@ -1873,15 +1885,23 @@ loop_statement			::=	iteration_clause_option:o
 							gen("goto", "", "", iteration.value);
 						}
 						//TODO: cambiar esto para revisar que el value de la e_stmnt sea una etiqueta de este loop.
-						completa(sr.backpatch.falsa, iteration.value);
-						ListaSalto siguiente=ListaSalto.fusiona(iteration.backpatch.falsa, sr.backpatch.verdadera);
+						//completa(sr.backpatch.falsa, iteration.value);
 						RESULT=new ParserResult(
-							new BackPatchResult(siguiente)
+							new BackPatchResult(iteration.backpatch.falsa)
 						);				
+					}else{
+						completa(sr.backpatch.siguiente, mr.value);
+						gen("goto", "", "", mr.value);
+						//siguiente=sr.backpatch.verdadera;
+						RESULT=new ParserResult(new BackPatchResult(new ListaSalto()));
+						
+					}
 					:}	
 				;
 basic_loop			::=	LOOP:l
-					{:parser.setUnclosed("end loop;", "loop",lleft,lright);:}
+					{:parser.setUnclosed("end loop;", "loop",lleft,lright);
+					  currentExit=null;
+					 :}
 						sequence_of_statements:s 
 					END LOOP
 					{:RESULT=s;:}  
@@ -1986,6 +2006,12 @@ declare_part_option		::=
 exit_statement			::=	EXIT name_option:n when_option:w SEMICOLON
 					{:if(w != null){
 						  ParserResult wr=(ParserResult)w;
+						  completa(wr.backpatch.falsa, cuadruplos.size());
+						  if(currentExit != null){
+							currentExit=ListaSalto.fusiona(currentExit, wr.backpatch.verdadera);
+						  }else{
+							currentExit=wr.backpatch.verdadera;
+						  }
 						  if(n != null){
 							  ParserResult nr=(ParserResult)n;		
 							  RESULT=new ParserResult(nr.value, wr.type, wr.backpatch);
@@ -1995,13 +2021,18 @@ exit_statement			::=	EXIT name_option:n when_option:w SEMICOLON
 					  }else{//there is no condition, but a goto must be generated:
 					  ListaSalto verdadero=new ListaSalto(cuadruplos.size());
 					  BackPatchResult bpr=new BackPatchResult(verdadero, new ListaSalto()); 
-					  gen("goto", " ", "", "");
+					  gen("goto", "", "", " ");
       						if(n != null){
 							ParserResult nr=(ParserResult)n;		
 							RESULT=new ParserResult(nr.value, bpr); 
 						}else{
 							RESULT=new ParserResult(bpr);
 						}
+					  if(currentExit != null){
+						currentExit=ListaSalto.fusiona(currentExit, verdadero);
+					  }else{
+						currentExit=verdadero;
+					  }
 					  }
 					:}
 				;
@@ -2359,9 +2390,9 @@ subprogram_body			::=	subprogram_specification_is:s
 					  currentScope=currentScope.getAncestor();
 					  returns=new ArrayList<Type>();
 					  branches=0;
-					  //Revisar que no venga un exit_statement
-					  if(tr.backpatch.verdadera.lista.size() > 0 || tr.backpatch.falsa.lista.size() > 0 )	
-						  agregarError("No puede salir de un subprograma con una sentencia de salida", tleft, tright);
+				  	 //Revisar que no venga un exit_statement
+					  if(currentExit != null )	
+						  agregarError("No puede salir de un subprograma con una sentencia de salida", sleft, sright);
 					:} placeholder 
 					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					check_coherence(designator,sleft, sright, e, eleft, eright);:}

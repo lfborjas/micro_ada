@@ -27,4 +27,5 @@ begin
 		a:=a+1;
 	exit when a>10;
 	end loop;
+
 end Main;
