@@ -1,5 +1,5 @@
 procedure Main is
-a: Integer:=0;
+a: Integer:=5;
 begin
 	while a<=0 
 	loop
@@ -17,6 +17,16 @@ begin
 		else
 			a:=a-3;
 		end if;
+	end loop;
+	
+	for i in a..a-5
+	loop
+		put("nunca me debí haber ejecutado, pero nadie me puede detectar!");
+	end loop;
+
+	for i in 5..1
+	loop
+		put("nunca me ejecutaré!");
 	end loop;
 
 	loop
