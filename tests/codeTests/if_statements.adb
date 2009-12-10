@@ -8,7 +8,7 @@ begin
 	if a < 9 then
 		put("menor que nueve");
 	else
-		null;
+		a:=a+1;
 	end if;
 
 --	if a=0 then

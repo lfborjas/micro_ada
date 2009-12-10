@@ -1685,8 +1685,8 @@ if_statement			::=	IF:i  condition:c
 					THEN 
 					{:parser.setUnclosed("end if;", "if", ileft, iright);:}
 					  	m:m  sequence_of_statements:s 
-						n:nuno m:mdos elsif_list:elsif 
-						n:ndos else_option:els 
+						/*n:nuno*/ m:mdos elsif_list:elsif 
+						/*n:ndos*/ else_option:els 
 					END IF SEMICOLON 
 					{:
 						/*Están estos casos: que no venga ni elsif ni else.
@@ -1695,8 +1695,8 @@ if_statement			::=	IF:i  condition:c
 						ParserResult m1=(ParserResult)m;
 						ParserResult ps=(ParserResult)s;
 						ParserResult pc=(ParserResult)c;
-						ParserResult pn1=(ParserResult)nuno;
-						ParserResult pn2=(ParserResult)ndos;
+						//ParserResult pn1=(ParserResult)nuno;
+						//ParserResult pn2=(ParserResult)ndos;
 						ParserResult m2=(ParserResult)mdos;
 						ParserResult RetVal=new ParserResult();
 						completa(pc.backpatch.verdadera, m1.value);
@@ -1705,8 +1705,7 @@ if_statement			::=	IF:i  condition:c
 							ParserResult pelse=(ParserResult)els;
 							completa(pc.backpatch.falsa, pelse.value);
 							RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente,
-									           ListaSalto.fusiona(pelse.backpatch.siguiente,
-												      pn2.backpatch.siguiente));
+									           pelse.backpatch.siguiente);
 							if(elsif != null){
 								ParserResult pei=(ParserResult)elsif;
 								completa(pc.backpatch.falsa, m2.value);
@@ -1715,9 +1714,10 @@ if_statement			::=	IF:i  condition:c
 						}else if(elsif != null){
 							ParserResult pei=(ParserResult)elsif;
 							completa(pc.backpatch.falsa, m2.value);
-							RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente,
+							//TODO: esto ya no sirve
+							/*RetVal.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente,
 										   ListaSalto.fusiona(pei.backpatch.siguiente,
-												      pn2.backpatch.siguiente));
+												      pn2.backpatch.siguiente));*/
 						}
 						RESULT=RetVal;
 						//Revisar que no venga un exit_statement
@@ -1754,9 +1754,11 @@ elsif_list			::=	| elsif_list:elsif n:n m:muno ELSIF condition:c THEN m:mdos seq
 					:} 
 				;
 /*Se asume que toda sentencia (y toda lista de sentencias) retorna su listaSiguiente*/
-else_option			::=	| ELSE m:m sequence_of_statements:s
+else_option			::=	| n:n ELSE m:m sequence_of_statements:s
 				{:ParserResult ps=(ParserResult)s;
 				  ParserResult mr=(ParserResult)m;
+				  ParserResult nr=(ParserResult)n;
+				  ps.backpatch.siguiente=ListaSalto.fusiona(ps.backpatch.siguiente, nr.backpatch.siguiente);
 				  RESULT=new ParserResult(mr.value, ps.backpatch);
 				  //Revisar que no venga un exit_statement
 				  if(ps.backpatch.verdadera.lista.size() > 0 || ps.backpatch.falsa.lista.size() > 0 )	
