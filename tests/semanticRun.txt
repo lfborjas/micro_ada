@@ -1,0 +1,168 @@
+Qué probamos?
+>expressionerrors.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+expressionerrors.adb:2:13: expected type "Standard.Integer"
+expressionerrors.adb:2:13: found type universal real
+expressionerrors.adb:6:14: invalid operand types for operator "*"
+expressionerrors.adb:6:14: left operand has type "Standard.Integer"
+expressionerrors.adb:6:14: right operand has type "Standard.Float"
+Se esperaba el tipo Integer Y se encontró Float En línea 2, columna 13
+Se esperaba el tipo Integer Y se encontró Float En línea 6, columna 8
+Se encontraron 2 errores.
+Compilación fallida (Tiempo total: 62.0 milisegundos)
+Qué probamos?
+>assignmentTest.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+assignmentTest.adb:3:04: "lalo" is undefined
+assignmentTest.adb:10:15: expected type "Standard.Integer"
+assignmentTest.adb:10:15: found type "Standard.Boolean"
+assignmentTest.adb:11:18: expected type "Standard.Float"
+assignmentTest.adb:11:18: found type universal integer
+assignmentTest.adb:12:16: expected type "Standard.Boolean"
+assignmentTest.adb:12:16: found type universal integer
+ No se encuentra el símbolo 'lalo'. En línea 3, columna 4
+ No se encuentra el símbolo 'a'. En línea 5, columna 4
+Se esperaba el tipo Integer Y se encontró Boolean En línea 10, columna 15
+Se esperaba el tipo Float Y se encontró Integer En línea 11, columna 19
+Se esperaba el tipo Boolean Y se encontró Integer En línea 12, columna 17
+ No se encuentra el símbolo 'a'. En línea 17, columna 6
+Se encontraron 6 errores.
+Compilación fallida (Tiempo total: 64.0 milisegundos)
+Qué probamos?
+>scopeTest.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+scopeTest.adb:3:09: missing "return" statement in function body
+scopeTest.adb:3:35: "dummy" conflicts with declaration at line 3
+'dummy' ya ha sido declarado. En línea 3, columna 40
+El lado izquierdo de la asignación debe ser una variable, no un objeto constante. En línea 6, columna 3
+Sentencia de retorno faltante para el subprograma 'x'. En línea 3, columna 57
+Se encontraron 3 errores.
+Compilación fallida (Tiempo total: 63.0 milisegundos)
+Qué probamos?
+>functionTest.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+functionTest.adb:3:28: functions can only have "in" parameters
+functionTest.adb:5:09: assignment to "in" mode parameter not allowed
+functionTest.adb:14:09: warning: "return" statement missing following this statement
+functionTest.adb:14:09: warning: Program_Error may be raised at run time
+functionTest.adb:15:24: expected type "Standard.Boolean"
+functionTest.adb:15:24: found type universal integer
+functionTest.adb:26:18: expected type "Standard.Boolean"
+functionTest.adb:26:18: found type universal integer
+functionTest.adb:27:14: too many arguments in call to "foo"
+functionTest.adb:30:14: expected type "Standard.Float"
+functionTest.adb:30:14: found type "Standard.Integer"
+functionTest.adb:32:09: "put" is undefined (more references follow)
+functionTest.adb:32:09: possible missing "with Ada.Text_IO; use Ada.Text_IO"
+functionTest.adb:37:09: "get" is undefined (more references follow)
+functionTest.adb:39:09: procedure cannot return value (use function)
+Las funciones sólo pueden tener parámetros de modo in. En línea 3, columna 44
+El lado izquierdo de la asignación debe ser una variable, no un objeto constante. En línea 5, columna 3
+Se esperaba el tipo Boolean Y se encontró Integer En línea 11, columna 49
+Sentencia de retorno faltante para el subprograma 'useless'. En línea 11, columna 49
+Argumento incorrecto para la función 'foo' encontrado 'Integer', se esperaba 'Boolean'. En línea 26, columna 7
+La función 'foo' recibe 2 parámetros. 3 suministrados. En línea 27, columna 7
+Se esperaba el tipo Float Y se encontró Integer En línea 30, columna 18
+La función 'PUT' solamente admite 1 parámetro, 2 suministrados. En línea 36, columna 15
+Un procedimiento no puede retornar un valor (En el procedimiento 'Main') . En línea 1, columna 16
+Se encontraron 9 errores.
+Compilación fallida (Tiempo total: 76.0 milisegundos)
+Qué probamos?
+>statementsTest.adb:1:11: warning: file name does not match unit name, should be "statementtest.adb"
+statementsTest.adb:12:19: incompatible types in range
+statementsTest.adb:16:14: assignment to loop parameter not allowed
+statementsTest.adb:33:13: expected a boolean type
+statementsTest.adb:33:13: found type universal integer
+statementsTest.adb:35:16: expected a boolean type
+statementsTest.adb:35:16: found type universal integer
+Se esperaba el tipo Integer Y se encontró Float En línea 12, columna 14
+El lado izquierdo de la asignación debe ser una variable, no un objeto constante. En línea 16, columna 7
+Una condición debe ser de un tipo booleano y se encontró Integer. En línea 33, columna 7
+Una condición debe ser de un tipo booleano y se encontró Integer. En línea 35, columna 13
+Se encontraron 4 errores.
+Compilación fallida (Tiempo total: 69.0 milisegundos)
+Qué probamos?
+>recordsTest.adb:1:11: warning: file name does not match unit name, should be "recordstest.adb"
+recordsTest.adb:15:16: no selector "Jahre" for type "Date" defined at line 2
+recordsTest.adb:17:26: expected type "Standard.Integer"
+recordsTest.adb:17:26: found type universal real
+recordsTest.adb:19:20: invalid prefix in selected component "Day"
+No se puede encontrar el componente 'Jahre' para el prefijo 'Ada_Birthday'. En línea 15, columna 4
+Se esperaba el tipo Integer Y se encontró Float En línea 17, columna 26
+No se puede encontrar el componente 'Day' para el prefijo 'Ada_Birthday.Day'. En línea 19, columna 17
+Se encontraron 3 errores.
+Compilación fallida (Tiempo total: 64.0 milisegundos)
+Qué probamos?
+>expressionerrors.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+expressionerrors.adb:2:13: expected type "Standard.Integer"
+expressionerrors.adb:2:13: found type universal real
+expressionerrors.adb:6:14: invalid operand types for operator "*"
+expressionerrors.adb:6:14: left operand has type "Standard.Integer"
+expressionerrors.adb:6:14: right operand has type "Standard.Float"
+Se esperaba el tipo Integer Y se encontró Float En línea 2, columna 13
+Se esperaba el tipo Integer Y se encontró Float En línea 6, columna 8
+Se encontraron 2 errores.
+Compilación fallida (Tiempo total: 70.0 milisegundos)
+Qué probamos?
+>assignmentTest.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+assignmentTest.adb:3:04: "lalo" is undefined
+assignmentTest.adb:10:15: expected type "Standard.Integer"
+assignmentTest.adb:10:15: found type "Standard.Boolean"
+assignmentTest.adb:11:18: expected type "Standard.Float"
+assignmentTest.adb:11:18: found type universal integer
+assignmentTest.adb:12:16: expected type "Standard.Boolean"
+assignmentTest.adb:12:16: found type universal integer
+ No se encuentra el símbolo 'lalo'. En línea 3, columna 4
+ No se encuentra el símbolo 'a'. En línea 5, columna 4
+Se esperaba el tipo Integer Y se encontró Boolean En línea 10, columna 15
+Se esperaba el tipo Float Y se encontró Integer En línea 11, columna 19
+Se esperaba el tipo Boolean Y se encontró Integer En línea 12, columna 17
+ No se encuentra el símbolo 'a'. En línea 17, columna 6
+Se encontraron 6 errores.
+Compilación fallida (Tiempo total: 73.0 milisegundos)
+Qué probamos?
+>scopeTest.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+scopeTest.adb:3:09: missing "return" statement in function body
+scopeTest.adb:3:35: "dummy" conflicts with declaration at line 3
+'dummy' ya ha sido declarado. En línea 3, columna 40
+El lado izquierdo de la asignación debe ser una variable, no un objeto constante. En línea 6, columna 3
+Sentencia de retorno faltante para el subprograma 'x'. En línea 3, columna 57
+Se encontraron 3 errores.
+Compilación fallida (Tiempo total: 64.0 milisegundos)
+Qué probamos?
+>functionTest.adb:1:11: warning: file name does not match unit name, should be "main.adb"
+functionTest.adb:3:28: functions can only have "in" parameters
+functionTest.adb:5:09: assignment to "in" mode parameter not allowed
+functionTest.adb:14:09: warning: "return" statement missing following this statement
+functionTest.adb:14:09: warning: Program_Error may be raised at run time
+functionTest.adb:15:24: expected type "Standard.Boolean"
+functionTest.adb:15:24: found type universal integer
+functionTest.adb:26:18: expected type "Standard.Boolean"
+functionTest.adb:26:18: found type universal integer
+functionTest.adb:27:14: too many arguments in call to "foo"
+functionTest.adb:30:14: expected type "Standard.Float"
+functionTest.adb:30:14: found type "Standard.Integer"
+functionTest.adb:32:09: "put" is undefined (more references follow)
+functionTest.adb:32:09: possible missing "with Ada.Text_IO; use Ada.Text_IO"
+functionTest.adb:37:09: "get" is undefined (more references follow)
+functionTest.adb:39:09: procedure cannot return value (use function)
+Las funciones sólo pueden tener parámetros de modo in. En línea 3, columna 44
+El lado izquierdo de la asignación debe ser una variable, no un objeto constante. En línea 5, columna 3
+Se esperaba el tipo Boolean Y se encontró Integer En línea 11, columna 49
+Sentencia de retorno faltante para el subprograma 'useless'. En línea 11, columna 49
+Argumento incorrecto para la función 'foo' encontrado 'Integer', se esperaba 'Boolean'. En línea 26, columna 7
+La función 'foo' recibe 2 parámetros. 3 suministrados. En línea 27, columna 7
+Se esperaba el tipo Float Y se encontró Integer En línea 30, columna 18
+La función 'PUT' solamente admite 1 parámetro, 2 suministrados. En línea 36, columna 15
+Un procedimiento no puede retornar un valor (En el procedimiento 'Main') . En línea 1, columna 16
+Se encontraron 9 errores.
+Compilación fallida (Tiempo total: 90.0 milisegundos)
+Qué probamos?
+>statementsTest.adb:1:11: warning: file name does not match unit name, should be "statementtest.adb"
+statementsTest.adb:12:19: incompatible types in range
+statementsTest.adb:16:14: assignment to loop parameter not allowed
+statementsTest.adb:33:13: expected a boolean type
+statementsTest.adb:33:13: found type universal integer
+statementsTest.adb:35:16: expected a boolean type
+statementsTest.adb:35:16: found type universal integer
+java.lang.NullPointerException
+	at CUP$semantic$actions.CUP$semantic$do_action(semantic.java:3196)
+	at semantic.do_action(semantic.java:1290)
+	at java_cup.runtime.lr_parser.parse(lr_parser.java:584)
+	at Main.main(Main.java:129)

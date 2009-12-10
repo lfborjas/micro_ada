@@ -25,11 +25,19 @@ for prueba in pruebas:
 	print "Prueba %d: %s; en archivo '%s'\n"% (i,prueba[0], prueba[1])
 	i+=1 
 
-a_ejecutar=int(raw_input("Qué probamos?\n>"))-1
+a_ejecutar=int(raw_input("Qué probamos?( 0 para probar todas )\n>"))-1
 if a_ejecutar < len(pruebas):
-	print "="*10 + "EJECUCIÓN EN GNAT:"+"="*10
-	os.popen('gcc -S %s'%root+pruebas[a_ejecutar][1])
-	print "$"*10 + "EJECUCIÓN EN MAIN:"+"$"*10
-	os.popen('java Main %s' % root+pruebas[a_ejecutar][1])
+	if a_ejecutar==-1:
+		for prueba in pruebas:
+			print "Prueba: %s"%prueba[0]
+			print "="*10 + "EJECUCIÓN EN GNAT:"+"="*10
+			os.popen('gcc -S %s'%root+prueba[1])
+			print "$"*10 + "EJECUCIÓN EN MAIN:"+"$"*10
+			os.popen('java Main %s' % root+prueba[1])
+	else:
+		print "="*10 + "EJECUCIÓN EN GNAT:"+"="*10
+		os.popen('gcc -S %s'%root+pruebas[a_ejecutar][1])
+		print "$"*10 + "EJECUCIÓN EN MAIN:"+"$"*10
+		os.popen('java Main %s' % root+pruebas[a_ejecutar][1])
 else:
 	print "Prueba inválida!"
