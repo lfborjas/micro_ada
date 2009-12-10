@@ -1,0 +1,14 @@
+V "GNAT Lib v4.3"
+M P W=b
+A -mtune=generic
+P ZX
+R nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+
+U main%b		loop_statements.adb	73742fd7 NE SU
+
+D loop_statements.adb	20091210170820 73742fd7
+D system.ads		20090219091504 e2b32c27
+X 1 loop_statements.adb
+1U11*Main 1b11 8l5 8t9
+2i1 a{integer} 4r15 6m17 6r20
+

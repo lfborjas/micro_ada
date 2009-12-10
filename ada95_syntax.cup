@@ -1816,7 +1816,7 @@ loop_statement			::=	iteration_clause_option:o
 					 m:m basic_loop:s SEMICOLON
 					{://se asume que si la iteration_clause existe, se creó una st para ésta
 					 if(o != null)
-						currentScope=currentScope.getAncestor();
+						currentScope=new LinkedSymbolTable(currentScope); 
 					:}
 					placeholder
 					{:/*la iteration clause ya trae las cosas de la condición Y el marcador antes de ésta*/
