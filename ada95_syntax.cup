@@ -637,12 +637,18 @@ identifier_list		::=	identifier:i COMMA identifier:j
 				:}
 			;
 /*TODO: ver qué ondas con la discriminant part: cf. en.wikibooks.org/wiki/Ada_Programming/Types/record */
-type_declaration	::=	TYPE identifier:i discriminant_part_option:p IS type_definition:t SEMICOLON 
+type_declaration	::=	TYPE identifier:i 
+				 discriminant_part_option:p IS {:gen("initRecord", i.toString(), "", "");:} type_definition:t SEMICOLON 
 				{:
 				//viene una tabla de símbolos: porque siempre son records
 				LinkedSymbolTable table=(LinkedSymbolTable)t;				
-				if(!currentScope.put(i, new AdaSymbol(new RecordType(((String)i),table))))
+				if(!currentScope.put(i, new AdaSymbol(new RecordType(((String)i),table)))){
 					agregarError("El tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
+				}else{
+					gen("defRecord",i.toString().toLowerCase(),String.valueOf(table.desplazamiento), "" );
+					table.id=i.toString().toLowerCase();
+					currentScope.addChild(table);
+				}
 				:}
 			|	incomplete_type_declaration
 			;
@@ -1568,18 +1574,18 @@ relational_operator		::=	EQUAL {:RESULT= new ParserResult("==");:}
 				|	GTEQ{:RESULT= new ParserResult(">=");:}
 				|	LTEQ {:RESULT= new ParserResult("<=");:}
 				;
-adding_operator			::=	PLUS {:RESULT=new ParserResult("+");:}	
-				|	MINUS {:RESULT= new ParserResult("-");:}
+adding_operator			::=	PLUS {:RESULT=new ParserResult("add");:}	
+				|	MINUS {:RESULT= new ParserResult("sub");:}
 				|	CONCATENATE {:RESULT= new ParserResult("&");:}
 				;
 unary_operator			::=	PLUS:p {:RESULT=new ParserResult("+", new IntegerType());:}
 				|	MINUS:m {:RESULT=new ParserResult("-", new IntegerType());:}
-				|	NOT:n	{:RESULT=new ParserResult("!", new BooleanType());:}
+				|	NOT:n	{:RESULT=new ParserResult("not", new BooleanType());:}
 				|	ABS:a	{:RESULT=new ParserResult("abs", new IntegerType());:}
 				;
-multiplying_operator		::=	MULTIPLY {:RESULT= new ParserResult("*");:}
-				|	DIVIDE {:RESULT= new ParserResult("/");:}
-				|	MOD {:RESULT= new ParserResult("%");:}
+multiplying_operator		::=	MULTIPLY {:RESULT= new ParserResult("mul");:}
+				|	DIVIDE {:RESULT= new ParserResult("div");:}
+				|	MOD {:RESULT= new ParserResult("mod");:}
 				|	REM {:RESULT= new ParserResult("rem");:}
 				;
 qualified_expression		::=	name TICK LEFTPAR expression RIGHTPAR
@@ -1913,7 +1919,9 @@ basic_loop			::=	LOOP:l
 iteration_clause_option		::=
 				|	FOR identifier:i IN discrete_range:r m:m
 					{:
-					currentScope=new LinkedSymbolTable(currentScope); 
+					LinkedSymbolTable scope=new LinkedSymbolTable(currentScope); 
+					currentScope.addChild(scope);
+					currentScope=scope;
 					//ver si viene algo en el rango:
 					Type tipo=(r != null) ? ((ParserResult)r).type : new IntegerType();
 					if(!currentScope.put(i, new AdaSymbol(tipo, true))){
@@ -1948,7 +1956,9 @@ iteration_clause_option		::=
 					:}
 				|	FOR identifier:i IN REVERSE discrete_range:r m:m
 					{:
-					currentScope=new LinkedSymbolTable(currentScope); 
+					LinkedSymbolTable scope=new LinkedSymbolTable(currentScope); 
+					currentScope.addChild(scope);
+					currentScope=scope;
 					Type tipo=(r != null) ? ((ParserResult)r).type : new IntegerType();
 					if(!currentScope.put(i, new AdaSymbol(tipo, true))){
 						agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
@@ -2107,13 +2117,15 @@ subprogram_specification	::=	PROCEDURE identifier:i formal_part_option:f
 				;
 subprogram_specification_is	::=	PROCEDURE identifier:i IS 
 					{:
-					String id=i.toString();
+					String id=i.toString().toLowerCase();
                                          if(currentScope != null){
                                                 if(!currentScope.put(i, new AdaSymbol(new FunctionType()))){
                                                         agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
                                                 }else{
-							currentScope=new LinkedSymbolTable(currentScope, id);
-							gen("function", "_"+id, "", "");
+							LinkedSymbolTable scope=new LinkedSymbolTable(currentScope, id);
+							currentScope.addChild(scope);
+							currentScope=scope;
+							gen("function", id, "", "");
 						}
 
                                          }else{
@@ -2128,7 +2140,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 	
 				|	PROCEDURE identifier:i formal_part:f IS 
 					{:
-					  String id=i.toString();
+					  String id=i.toString().toLowerCase();
 					  //formal part es una lista de parser results:
 					  if( f!= null){											  	
 						ArrayList<ParserResult> fl=(ArrayList<ParserResult>)f;
@@ -2140,11 +2152,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 							agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 						}else{
 							if(currentScope != null){
-								currentScope=new LinkedSymbolTable(currentScope, id);
-								gen("function", "_"+id, "", "");
+								LinkedSymbolTable scope=new LinkedSymbolTable(currentScope, id);
+								currentScope.addChild(scope);
+								currentScope=scope;
+								gen("function", id, "", "");
 							}else{
 								currentScope=new LinkedSymbolTable(id);
-								gen("glbl", "_"+id, "", "");
+								gen("glbl", id, "", "");
 							}
 							String nombre="";
 							boolean cons=false;
@@ -2162,7 +2176,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 					RESULT=i;:}
 				|	FUNCTION designator:i formal_part_option:f RETURN subtype_indication:s IS 
 					{:
-					String id=i.toString();
+					String id=i.toString().toLowerCase();
 					//es una función, así que al menos espera una branch:
 					branches=1;
 					ParserResult ps=(ParserResult)s;
@@ -2178,11 +2192,13 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 							}else{
 								if(currentScope != null){
-									currentScope=new LinkedSymbolTable(currentScope, id);
-									gen("function", "_"+id, "", "");	
+									LinkedSymbolTable scope=new LinkedSymbolTable(currentScope, id);
+									currentScope.addChild(scope);
+									currentScope=scope;		
+									gen("function", id, "", "");	
 								}else{
 									currentScope=new LinkedSymbolTable(id);
-									gen("glbl", "_"+id, "", "");
+									gen("glbl", id, "", "");
 								}
 								String nombre="";
 								boolean cons=false;
@@ -2206,10 +2222,15 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 						if((currentScope != null) && !currentScope.put(i, new AdaSymbol(new FunctionType(ps.type))))
 							agregarError("'"+((String)i)+"' ya ha sido declarado.", ileft, iright);
 						else{	
-							if(currentScope != null)
-								currentScope=new LinkedSymbolTable(currentScope);
-							else
-								currentScope=new LinkedSymbolTable();
+							if(currentScope != null){
+								LinkedSymbolTable scope=new LinkedSymbolTable(currentScope, id);
+								currentScope.addChild(scope);
+								currentScope=scope;		
+								gen("function", id, "", "");	
+							}else{
+								currentScope=new LinkedSymbolTable(id);
+								gen("glbl", id, "", "");
+							}
 						}
 						
 					}
@@ -2351,7 +2372,7 @@ subprogram_body			::=	subprogram_specification_is:s
 					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					parser.setUnclosed((" end "+((String)designator)+";"), "begin",bleft, bright);
 					//crear el código para inicializar la función
-					gen("initFunction", String.valueOf(currentScope.desplazamiento), "", "");
+					gen("initFunction", designator.toString(), String.valueOf(currentScope.desplazamiento), "");
 					:}
 						sequence_of_statements:t
 					END designator_option:e SEMICOLON
@@ -2385,7 +2406,7 @@ subprogram_body			::=	subprogram_specification_is:s
 					if(currentScope.getAncestor() == null)
 						gen("glblExit", "", "", "");
 					else
-						gen("exit_"+id, "", "", "");
+						gen("exit",id, "", "");
 					//agregar ésta al mapa de tablas de símbolos
 					tablas.put(id, currentScope);
 					  //resetear las cosas:

@@ -24,6 +24,7 @@ public class LinkedSymbolTable{
 		this.ancestor= ancestor;
 		this.desplazamiento=0;
 		this.id="";
+		this.offspring=new ArrayList<LinkedSymbolTable>();
 	}
 	
 	public LinkedSymbolTable(LinkedSymbolTable ancestor, String id){
@@ -31,6 +32,7 @@ public class LinkedSymbolTable{
 		table=new LinkedHashMap<String, AdaSymbol>();
 		this.ancestor= ancestor;
 		this.desplazamiento=0;
+		this.offspring=new ArrayList<LinkedSymbolTable>();
 	}
 
 	public LinkedSymbolTable(){
@@ -38,6 +40,7 @@ public class LinkedSymbolTable{
 		this.ancestor=null;
 		this.desplazamiento=0;	
 		this.id="";
+		this.offspring=new ArrayList<LinkedSymbolTable>();
 	}
 	
 	public LinkedSymbolTable(String id){
@@ -45,6 +48,7 @@ public class LinkedSymbolTable{
 		table=new LinkedHashMap<String, AdaSymbol>();
 		this.ancestor=null;
 		this.desplazamiento=0;	
+		this.offspring=new ArrayList<LinkedSymbolTable>();
 	}
 	
 	public LinkedSymbolTable getAncestor(){

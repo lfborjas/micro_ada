@@ -14,7 +14,7 @@ public class FunctionType extends Type{
 	public FunctionType(Type range){
 		super();
 		this.range=range;
-		this.width=range.width;
+		this.width=0;
 		this.name="function";
 	}
 
