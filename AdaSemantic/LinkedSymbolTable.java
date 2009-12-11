@@ -1,5 +1,6 @@
 package AdaSemantic;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 /**
 	A class to represent a symbol table for a scope
 	@author Luis Felipe Borjas
@@ -15,6 +16,8 @@ public class LinkedSymbolTable{
 	public int desplazamiento;
 	/**El nombre de esta tabla*/	
 	public String id;
+	/**Los hijos de esta tabla*/
+	public ArrayList<LinkedSymbolTable> offspring;
 
 	public LinkedSymbolTable(LinkedSymbolTable ancestor){
 		table=new LinkedHashMap<String, AdaSymbol>();
@@ -112,5 +115,9 @@ public class LinkedSymbolTable{
 		found=f.symbolTable.getTable().get(splitId[splitId.length-1]);
 		return found;
 	}	
+
+	public void addChild(LinkedSymbolTable child){
+		this.offspring.add(child);
+	}
 	
 }
