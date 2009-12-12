@@ -31,5 +31,9 @@ public class FloatType extends PrimitiveType{
 	public boolean isNumeric(){
 		return true;
 	}
+	
+	public boolean isDiscrete(){
+		return false;
+	}
 }
 

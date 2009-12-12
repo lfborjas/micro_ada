@@ -699,7 +699,7 @@ range	::=	simple_expression:t DOUBLEDOT simple_expression:f
 					 if((pr.type != null) && (qr.type != null)){
 					 Type ptipo=(pr.type instanceof FunctionType)? (((FunctionType)pr.type).getRange()) : pr.type;
 					 Type qtipo=(qr.type instanceof FunctionType)? (((FunctionType)qr.type).getRange()) : qr.type;
-						if(ptipo.isNumeric() && qtipo.isNumeric()){
+						if(ptipo.isDiscrete() && qtipo.isDiscrete()){
 							//comparar los tipos!
 							if(compare_types(ptipo,qtipo, fleft, fright)){
 								ArrayList<Object> rVal=new ArrayList<Object>();
@@ -711,10 +711,10 @@ range	::=	simple_expression:t DOUBLEDOT simple_expression:f
 							}
 						}else{
 							//determine who's to blame:
-							if(!ptipo.isNumeric())
-							    agregarError("Se esperaba un tipo numérico y se encontró "+ptipo.toString(), tleft, tright);
+							if(!ptipo.isDiscrete())
+							    agregarError("Se esperaba un tipo discreto y se encontró "+ptipo.toString(), tleft, tright);
 							else 
-							    agregarError("Se esperaba un tipo numérico y se encontró "+qtipo.toString(), fleft, fright);
+							    agregarError("Se esperaba un tipo discreto y se encontró "+qtipo.toString(), fleft, fright);
 							RESULT=null;
 						}
 						

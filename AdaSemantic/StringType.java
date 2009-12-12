@@ -25,5 +25,8 @@ public class StringType extends PrimitiveType{
 	public boolean isNumeric(){
 		return false;
 	}
-
+	
+	public boolean isDiscrete(){
+		return false;
+	}
 }

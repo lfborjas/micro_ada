@@ -41,6 +41,9 @@ public class ErrorType extends PrimitiveType{
 
 	public boolean isNumeric(){
 		return false;
+	}
+	public boolean isDiscrete(){
+		return false;
 	}	
 }
 

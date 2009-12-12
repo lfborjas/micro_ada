@@ -33,4 +33,8 @@ public class IntegerType extends PrimitiveType{
 	public boolean isNumeric(){
 		return true;
 	}
+	
+	public boolean isDiscrete(){
+		return true;
+	}
 }

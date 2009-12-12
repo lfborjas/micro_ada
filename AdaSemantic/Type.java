@@ -104,5 +104,5 @@ public abstract class Type{
 	public abstract String toString();
 	public abstract boolean isPrimitive();
 	public abstract boolean isNumeric();
-	
+	public abstract boolean isDiscrete();	
 }

@@ -33,5 +33,9 @@ public class BooleanType extends PrimitiveType{
 	public boolean isNumeric(){
 		return false;
 	}
+
+	public boolean isDiscrete(){
+		return true;
+	}
 }
 

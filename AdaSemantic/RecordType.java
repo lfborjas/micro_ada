@@ -83,4 +83,8 @@ public class RecordType extends Type{
 	public boolean isNumeric(){
 		return false;
 	}
+
+	public boolean isDiscrete(){
+		return false;
+	}
 }

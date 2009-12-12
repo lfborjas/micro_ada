@@ -95,6 +95,8 @@ public class FunctionType extends Type{
 	public boolean isNumeric(){
 		return false;
 	}
-
+	public boolean isDiscrete(){
+		return false;
+	}
 		
 }
