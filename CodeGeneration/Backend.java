@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.LinkedHashMap;
 import java.util.Collections;
+import java.util.HashSet;
 /**
 La súper clase de generación de código.
 Genera código final para MIPS
@@ -125,22 +126,25 @@ public class Backend{
 	   no debería haber nada más que una entrada a función o record, así que está bien, no?*/
 	private void findBasicBlocks(ArrayList<Cuadruplo> code){
 		if(DEBUG){System.out.println("Determinando bloques básicos...");}
-		ArrayList<Integer> leaders=new ArrayList<Integer>();		
 		//encontrar las instrucciones líderes
+		HashSet<Integer> leaderSet=new HashSet<Integer>();
 		Integer iteration;
 		Cuadruplo instruction;
 		for(int i=1; i<code.size();i++){
 			instruction=code.get(i);
 			iteration=new Integer(i);
 			if(instruction.operador.matches(JUMPS)){
-				leaders.add(new Integer(instruction.res));
+				leaderSet.add(new Integer(instruction.res));
 				if(i <= code.size()-1)					
-					leaders.add(iteration+1);
+					leaderSet.add(iteration+1);
 			}else if(instruction.operador.matches(BEGINNERS)){
-				leaders.add(iteration);
+				leaderSet.add(iteration);
 			}
 			
 		}
+		//convertir el set en lista:		
+		ArrayList<Integer> leaders=new ArrayList<Integer>();		
+		leaders.addAll(leaderSet);
 		//ordenar los líderes:
 		Collections.sort(leaders);
 		if(DEBUG){System.out.println(String.format("Son líderes: %s",leaders));}
