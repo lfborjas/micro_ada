@@ -2,6 +2,8 @@ package CodeGeneration;
 import AdaSemantic.*;
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.LinkedHashMap;
+import java.util.Collections;
 /**
 La súper clase de generación de código.
 Genera código final para MIPS
@@ -123,27 +125,38 @@ public class Backend{
 	   no debería haber nada más que una entrada a función o record, así que está bien, no?*/
 	private void findBasicBlocks(ArrayList<Cuadruplo> code){
 		if(DEBUG){System.out.println("Determinando bloques básicos...");}
-		BasicBlock current=new BasicBlock();
-		Cuadruplo  instruction;
-		current.beginning=1;
-		current.label=String.format("%s%d", "L", 0);
-		ArrayList<Integer> gotos=new ArrayList<Integer>();
+		ArrayList<Integer> leaders=new ArrayList<Integer>();		
+		//encontrar las instrucciones líderes
 		Integer iteration;
-		//empezamos en 1 porque la primera instrucción siempre es el glbl
-		for(int i=1;i<code.size();i++){
+		Cuadruplo instruction;
+		for(int i=1; i<code.size();i++){
 			instruction=code.get(i);
 			iteration=new Integer(i);
-			if(instruction.operador.matches(BBDELIMITERS) || gotos.contains(iteration)){
-				current.end=i;
-				this.basicBlocks.add(current);
-				//no generar un bloque básico para la última instrucción:
-				if(i < code.size()-1) 
-					current=new BasicBlock(String.format("%s%d", "L", basicBlocks.size()), i+1);
+			if(instruction.operador.matches(JUMPS)){
+				leaders.add(new Integer(instruction.res));
+				if(i <= code.size()-1)					
+					leaders.add(iteration+1);
+			}else if(instruction.operador.matches(BEGINNERS)){
+				leaders.add(iteration);
 			}
-			if(instruction.operador.matches(JUMPS))
-				gotos.add(iteration);
+			
 		}
-		
+		//ordenar los líderes:
+		Collections.sort(leaders);
+		if(DEBUG){System.out.println(String.format("Son líderes: %s",leaders));}
+		Integer leader;
+		String label;
+		int i;
+		for(i=0;i<leaders.size()-1;i++){
+			leader=leaders.get(i).intValue();
+			instruction=code.get(leader);
+			label=(instruction.operador.matches(BEGINNERS)) ? instruction.arg1 : String.format("%s%d", "L",i);
+			this.basicBlocks.add(
+					new BasicBlock(label, leader, leaders.get(i+1).intValue()-1)
+				);
+		}
+		//terminar el último bloque básico:
+		this.basicBlocks.add(new BasicBlock(String.format("%s%d", "L", i), leaders.get(i++), code.size()-1));
 		
 		if(DEBUG){
 			for(BasicBlock b: this.basicBlocks)
