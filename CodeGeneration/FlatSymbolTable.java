@@ -15,8 +15,9 @@ public class FlatSymbolTable{
 		AdaSymbol val=null;
 		for(Map.Entry entry: v.getTable().entrySet()){
 			val=(AdaSymbol)entry.getValue();
-			if(!(val.type instanceof FunctionType) )
-				this.table.put(v.getFlatId()+"."+entry.getKey(), (AdaSymbol)entry.getValue());
+			String cle=v.getFlatId()+"."+entry.getKey();
+			if(!(val.type instanceof FunctionType) && !this.table.containsKey(cle))
+				this.table.put(cle, (AdaSymbol)entry.getValue());
 		}
 		//hacer el recorrido en preorden de los hijos:
 		for(LinkedSymbolTable child: v.offspring)

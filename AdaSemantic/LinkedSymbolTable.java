@@ -21,9 +21,11 @@ public class LinkedSymbolTable{
 
 	public LinkedSymbolTable(LinkedSymbolTable ancestor){
 		table=new LinkedHashMap<String, AdaSymbol>();
-		this.ancestor= ancestor;
-		this.desplazamiento=ancestor.desplazamiento;
+		this.ancestor= ancestor;		
 		this.id="";
+		this.desplazamiento=ancestor.desplazamiento;
+		//for(LinkedSymbolTable t=ancestor; t!= null && t.id.isEmpty() ; t=t.getAncestor())
+		//	this.desplazamiento=t.desplazamiento;
 		this.offspring=new ArrayList<LinkedSymbolTable>();
 	}
 	
@@ -63,6 +65,7 @@ public class LinkedSymbolTable{
 		String id=(String)oid;
 		//because of the case insensitiveness of ada:
 		id=id.toLowerCase();
+		//anonymus tables are like an extension of this, so, don't actually put them
 		if(!(this.table.containsKey(id))){
 			//dar la dirección de memoria:
 			tipo.address=this.desplazamiento;
