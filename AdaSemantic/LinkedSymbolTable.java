@@ -119,6 +119,14 @@ public class LinkedSymbolTable{
 		found=f.symbolTable.getTable().get(splitId[splitId.length-1]);
 		return found;
 	}	
+	
+	public String getFlatId(){
+		String ret=this.id;
+		for(LinkedSymbolTable t=this.getAncestor(); t != null; t=t.getAncestor()){
+				ret=(ret.isEmpty()) ? t.id : t.id+"_"+ret;
+		}
+		return ret;
+	}
 
 	public void addChild(LinkedSymbolTable child){
 		this.offspring.add(child);

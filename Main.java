@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import AdaSemantic.FrontEndResult;
+import CodeGeneration.*;
 /*Idea, manejar argumentos como help y debug... Pasarlos a una cosa tipo diccionario*/
 /**Clase que provee una CLI al mini-compilador de ADA95
 @autor Luis Felipe Borjas  10611066
@@ -152,7 +153,7 @@ public class Main {
 				System.out.println("Se generó con éxito la información de código intermedio y tabla de símbolos");
 				parsed=(FrontEndResult)result;
 				System.out.println(parsed.icode.size());
-				System.out.println(parsed.stables.size());
+				System.out.println(parsed.table.toString());
 				//TODO: hacer acá lo siguiente
 			}
 		}	

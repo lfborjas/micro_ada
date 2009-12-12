@@ -22,5 +22,7 @@ end record;
 		end loop;
 	end sub;
 begin
-	put("es ist wunderbar!");
+	for i in 1..10 loop
+		put("es ist wunderbar!");
+	end loop;
 end foobar;

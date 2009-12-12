@@ -35,7 +35,8 @@ public class AdaSymbol{
 	}
 
 	public String toString(){
-		return "Symbol of type "+type.toString()+" in address "+String.valueOf(this.address);
+		String cons=(constant) ? "Constant ": "";
+		return cons+type.toString()+"@"+String.valueOf(this.address);
 	}
 
 	
