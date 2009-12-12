@@ -155,6 +155,7 @@ public class Main {
 				System.out.println(parsed.icode.size());
 				System.out.println(parsed.table.toString());
 				//TODO: hacer acá lo siguiente
+				Backend backend=new Backend(parsed.icode, parsed.table, debug);
 			}
 		}	
 		

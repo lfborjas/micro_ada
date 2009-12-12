@@ -6,9 +6,9 @@ type date is record
 	year:integer:= 1989;
 end record;
 	procedure sub is
-		b: float;
+		b: float:=0.0;
 		procedure foobar is
-		c: boolean;
+		c: boolean:=true;
 		d: date;
 			begin
 				if true then

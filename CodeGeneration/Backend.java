@@ -22,18 +22,20 @@ public class Backend{
 	public boolean DEBUG;
 	/*Lo que ocupa internamente*/
 	private ArrayList<BasicBlock> basicBlocks;
-	private final static String DECLARERS="function|glbl";
+	private final static String DECLARERS="function|glbl|record";
 	private final static String BBDELIMITERS="initFunction|initRecord|if.*|goto";
-	private final static String BEGINNERS="initFunction";
+	private final static String BEGINNERS="initFunction|initRecord";
+	private final static String JUMPS="if.*|goto";
+	private final static String ENDERS="exit|glblExit";
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/**El constructor, recibe del front-end las cosas y del main si debuggear*/
 	public Backend(ArrayList<Cuadruplo> i, FlatSymbolTable t, boolean dbg){
 		icode=i;
 		st=t;
-		DEBUG=dbg;
+		DEBUG=true;//dbg;
 		this.icode=reorderCode(this.icode);
-		findBasicBlocks(this.icode);
+		//findBasicBlocks(this.icode);
 	}
 
 	/**El método que mueve todo el código de la parte declarativa de un subprograma 
@@ -43,29 +45,65 @@ public class Backend{
 		//cada vez que encuentre un function, poner la parte declarativa acá
 		Stack<ArrayList<Cuadruplo>> declarativePart=new Stack<ArrayList<Cuadruplo>>();
 		//acordate de saltarte los records!
-		boolean stackMe=false;		
+		boolean stackMode=false;		
 		ArrayList<Cuadruplo> toStack=new ArrayList<Cuadruplo>();
-
+		//reordenamiento propio
+		declarativePart.push(new ArrayList<Cuadruplo>());
 		for(Cuadruplo instruction: code){
+			if(reordered.contains(instruction))
+				continue;
 			//si es un declarador, meter todo en el stack
-			
 			if(instruction.operador.matches(DECLARERS)){
-				stackMe=true;
+				stackMode=true;
+				if(!toStack.isEmpty()){
+					declarativePart.push(toStack);
+					toStack=new ArrayList<Cuadruplo>();
+				}
 				reordered.add(instruction);
 				continue;
 			}else if(instruction.operador.matches(BEGINNERS)){
-				stackMe=false;
+				if(!toStack.isEmpty()){
+					declarativePart.push(toStack);
+					toStack=new ArrayList<Cuadruplo>();
+				}
+				stackMode=false;
 				reordered.add(instruction);
-				if(declarativePart.peek() != null)
-					reordered.addAll(declarative.pop());
+				if(!declarativePart.isEmpty()){
+					reordered.addAll(declarativePart.pop());
+					if(!declarativePart.isEmpty())
+						toStack=declarativePart.pop();
+					else
+						toStack=new ArrayList<Cuadruplo>();
+				}
+				
 				continue;
+			}else if(instruction.operador.matches(ENDERS)){
+				stackMode=true;
+				reordered.add(instruction);
+				continue;
+			}else if(stackMode){
+				toStack.add(instruction);
+				continue;
+			}else{
+				reordered.add(instruction);
 			}
 	
-			if(stackMe){
-				
-			}
 				
 		}
+		System.out.println(reordered.size());
+		//ahora, arreglar los gotos:
+		int j=0;
+		for(Cuadruplo i: reordered){
+			if(i.operador.matches(JUMPS)){
+				i.res=String.valueOf(Integer.parseInt(i.res)
+			              -(code.indexOf(i)-reordered.indexOf(i)));
+			}
+			if(DEBUG){
+				System.out.println(String.format("%d\t%s",j++,i));
+			}
+		}
+
+	return reordered;	
 	}
 
 	/**El método que determina los bloques básicos*/
