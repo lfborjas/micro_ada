@@ -11,7 +11,7 @@ public class LinkedSymbolTable{
 	/**The Symbol table for this scope*/
 	private LinkedHashMap<String, AdaSymbol> table;
 	/**The immediate outer scope*/
-	private LinkedSymbolTable ancestor;
+	public LinkedSymbolTable ancestor;
 	/**La primera dirección relativa libre*/
 	public int desplazamiento;
 	/**El nombre de esta tabla*/	

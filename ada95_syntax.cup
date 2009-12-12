@@ -644,13 +644,14 @@ type_declaration	::=	TYPE identifier:i
 				 discriminant_part_option:p IS {:gen("record", i.toString(), "", "");:} type_definition:t SEMICOLON 
 				{:
 				//viene una tabla de símbolos: porque siempre son records
-				LinkedSymbolTable table=(LinkedSymbolTable)t;				
+				LinkedSymbolTable table=(LinkedSymbolTable)t;
 				if(!currentScope.put(i, new AdaSymbol(new RecordType(((String)i),table)))){
 					agregarError("El tipo '"+((String)i)+"' ya ha sido declarado", ileft, iright);
 				}else{
-					gen("initRecord",i.toString().toLowerCase(),String.valueOf(table.desplazamiento), "" );					      gen("exit", i.toString().toLowerCase(), "", "");
 					table.id=i.toString().toLowerCase();
+					table.ancestor=currentScope;
 					currentScope.addChild(table);
+					gen("initRecord",table.getFlatId(),String.valueOf(table.desplazamiento), "" );					      	      gen("exit", table.getFlatId(), "", "");
 				}
 				:}
 			|	incomplete_type_declaration
@@ -2375,7 +2376,8 @@ subprogram_body			::=	subprogram_specification_is:s
 					{:Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					parser.setUnclosed((" end "+((String)designator)+";"), "begin",bleft, bright);
 					//crear el código para inicializar la función
-					gen("initFunction", designator.toString(), String.valueOf(currentScope.desplazamiento), "");
+					gen("initFunction", currentScope.getFlatId(),
+					 String.valueOf(currentScope.desplazamiento), "");
 					:}
 						sequence_of_statements:t
 					END designator_option:e SEMICOLON
@@ -2409,7 +2411,7 @@ subprogram_body			::=	subprogram_specification_is:s
 					if(currentScope.getAncestor() == null)
 						gen("glblExit", "", "", "");
 					else
-						gen("exit",id, "", "");
+						gen("exit",currentScope.getFlatId(), "", "");
 					  //resetear las cosas: el main no debería desaparecer!
 					if(currentScope.getAncestor() != null)
 						  currentScope=currentScope.getAncestor();
