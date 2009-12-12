@@ -1,6 +1,6 @@
 package CodeGeneration;
 /**Para representar los bloques básicos.*/
-class BasicBlock{
+public class BasicBlock{
 	public String label;
 	public int beginning;
 	public int end;
