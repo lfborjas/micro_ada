@@ -22,11 +22,15 @@ public class Backend{
 	public boolean DEBUG;
 	/*Lo que ocupa internamente*/
 	private ArrayList<BasicBlock> basicBlocks;
+	private String data="\t.data\n";
+	private String text="\t.text\n";
+	/*Expresiones regulares*/
 	private final static String DECLARERS="function|glbl|record";
 	private final static String BBDELIMITERS="initFunction|initRecord|if.*|goto";
 	private final static String BEGINNERS="initFunction|initRecord";
 	private final static String JUMPS="if.*|goto";
 	private final static String ENDERS="exit|glblExit";
+	private final static String ERASABLES="function|record";
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/**El constructor, recibe del front-end las cosas y del main si debuggear*/
@@ -41,6 +45,9 @@ public class Backend{
 	/**El método que mueve todo el código de la parte declarativa de un subprograma 
 	   al cuerpo. ¡Importante para poder generar los bloques básicos!*/	
 	private ArrayList<Cuadruplo> reorderCode(ArrayList<Cuadruplo> code){
+		if(DEBUG){
+			System.out.println("Reordenando el código intermedio...");
+		}
 		ArrayList<Cuadruplo> reordered=new ArrayList<Cuadruplo>	();
 		//cada vez que encuentre un function, poner la parte declarativa acá
 		Stack<ArrayList<Cuadruplo>> declarativePart=new Stack<ArrayList<Cuadruplo>>();
@@ -59,7 +66,8 @@ public class Backend{
 					declarativePart.push(toStack);
 					toStack=new ArrayList<Cuadruplo>();
 				}
-				reordered.add(instruction);
+				if(!instruction.operador.matches(ERASABLES))
+					reordered.add(instruction);
 				continue;
 			}else if(instruction.operador.matches(BEGINNERS)){
 				if(!toStack.isEmpty()){
@@ -90,7 +98,7 @@ public class Backend{
 	
 				
 		}
-		System.out.println(reordered.size());
+		System.out.println(String.format("Código reordenado: con %d cuádruplos",reordered.size()));
 		//ahora, arreglar los gotos:
 		int j=0;
 		for(Cuadruplo i: reordered){
