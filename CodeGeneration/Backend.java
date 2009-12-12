@@ -44,7 +44,7 @@ public class Backend{
 		this.basicBlocks=new ArrayList<BasicBlock>();
 		icode=i;
 		st=t;
-		DEBUG=true;//dbg;
+		DEBUG=dbg;
 		this.icode=reorderCode(this.icode);
 		findBasicBlocks(this.icode);
 	}
@@ -105,7 +105,9 @@ public class Backend{
 	
 				
 		}
-		System.out.println(String.format("Código reordenado: con %d cuádruplos",reordered.size()));
+		if(DEBUG){
+			System.out.println(String.format("Código reordenado: con %d cuádruplos",reordered.size()));
+		}
 		//ahora, arreglar los gotos:
 		int j=0;
 		for(Cuadruplo i: reordered){

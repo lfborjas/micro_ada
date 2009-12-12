@@ -96,11 +96,12 @@ public class Main {
     try {     	
       long start=System.currentTimeMillis();
       parser p = new parser(new Ada95Lexer(new FileReader(filename)));
-      if(debug){	
-	      Object result = p.debug_parse().value;
-	}else{
+      	//quitaré este debug, ya no me sirve:
+	//if(debug){	
+	//      Object result = p.debug_parse().value;
+	//}else{
 	     Object result = p.parse().value;
-	}
+	//}
 	//sacar los errores y advertencias del parser
 	ArrayList<String> parserErrores=p.getErrores();
 	ArrayList<String> parserAdvertencias=p.getAdvertencias();
@@ -120,16 +121,16 @@ public class Main {
 	}
 	
 	//si no hay errores en el parser, hacer el semántico:
-	Object result=null;
+	result=null;
 	FrontEndResult parsed=null;
 	if(parserErrores.size()==0){		
 		semantic s= new semantic(new Ada95Lexer(new FileReader(filename)));
-		if(debug){
-			result = s.debug_parse().value;
-		}else{
+		//if(debug){
+			//result = s.debug_parse().value;
+		//}else{
 			result = s.parse().value;
 			
-		}		
+		//}		
 		parserErrores=s.getErrores();
 		for(String error: parserErrores){
 			System.err.println(error);
@@ -147,18 +148,24 @@ public class Main {
 		System.err.println("Se "+pluralize_finding+" "+(parserErrores.size())+" "+pluralize_errors+".");
 		System.err.println("Compilación fallida (Tiempo total: "+elapsed+" milisegundos)");
 	}else{
-		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");	
 		if(result != null){
 			if(result instanceof FrontEndResult){
-				System.out.println("Se generó con éxito la información de código intermedio y tabla de símbolos");
 				parsed=(FrontEndResult)result;
-				System.out.println(parsed.icode.size());
-				System.out.println(parsed.table.toString());
+				if(debug){
+					System.out.println(String.format("Generados %d cuádruplos",parsed.icode.size()));
+					for(int i=0; i< parsed.icode.size(); i++){
+						System.out.printf("%d\t%s\n", i, parsed.icode.get(i));
+					}
+					System.out.println("La tabla de símbolos a usar: ");
+					System.out.println(parsed.table.toString());
+				}
 				//TODO: hacer acá lo siguiente
 				Backend backend=new Backend(parsed.icode, parsed.table, debug);
 			}
 		}	
-		
+		end=System.currentTimeMillis();
+		elapsed=(end-start);
+		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");	
 	}
 	
 	
