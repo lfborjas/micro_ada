@@ -18,6 +18,10 @@ public class BasicBlock{
 		this.end=e;
 	}
 
+	public BasicBlock(String l, int b){
+		this.label=l;
+		this.beginning=b;		
+	}
 	public String toString(){
 		return String.format("%s: [%d - %d]", this.label, this.beginning, this.end);
 	}

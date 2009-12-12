@@ -20,26 +20,30 @@ public class Backend{
 	
 	/**Para debugear:*/
 	public boolean DEBUG;
-	/*Lo que ocupa internamente*/
-	private ArrayList<BasicBlock> basicBlocks;
-	private String data="\t.data\n";
-	private String text="\t.text\n";
 	/*Expresiones regulares*/
 	private final static String DECLARERS="function|glbl|record";
-	private final static String BBDELIMITERS="initFunction|initRecord|if.*|goto";
+	private final static String BBDELIMITERS="exit|if.*|goto|glblExit";
 	private final static String BEGINNERS="initFunction|initRecord";
 	private final static String JUMPS="if.*|goto";
 	private final static String ENDERS="exit|glblExit";
 	private final static String ERASABLES="function|record";
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
+	/*Lo que ocupa internamente*/
+	private ArrayList<BasicBlock> basicBlocks;
+	private StringBuilder data;
+	private StringBuilder text;
+
 	/**El constructor, recibe del front-end las cosas y del main si debuggear*/
 	public Backend(ArrayList<Cuadruplo> i, FlatSymbolTable t, boolean dbg){
+		data=new StringBuilder("\t.data\n");
+		text=new StringBuilder("\t.text\n");
+		this.basicBlocks=new ArrayList<BasicBlock>();
 		icode=i;
 		st=t;
 		DEBUG=true;//dbg;
 		this.icode=reorderCode(this.icode);
-		//findBasicBlocks(this.icode);
+		findBasicBlocks(this.icode);
 	}
 
 	/**El método que mueve todo el código de la parte declarativa de un subprograma 
@@ -114,10 +118,30 @@ public class Backend{
 	return reordered;	
 	}
 
-	/**El método que determina los bloques básicos*/
+	/**El método que determina los bloques básicos: puesto que el código ya está reordenado, toma las
+	   salidas, los if y los goto como los terminadores de un bloque. Luego de una salida
+	   no debería haber nada más que una entrada a función o record, así que está bien, no?*/
 	private void findBasicBlocks(ArrayList<Cuadruplo> code){
-		for(Cuadruplo instruction : code){
-		/**TODO*/
+		if(DEBUG){System.out.println("Determinando bloques básicos...");}
+		BasicBlock current=new BasicBlock();
+		Cuadruplo  instruction;
+		current.beginning=1;
+		current.label=String.format("%s%d", "L", 0);
+		ArrayList<Integer> gotos=new ArrayList<Integer>();
+		Integer iteration;
+		//empezamos en 1 porque la primera instrucción siempre es el glbl
+		for(int i=1;i<code.size();i++){
+			instruction=code.get(i);
+			iteration=new Integer(i);
+			if(instruction.operador.matches(BBDELIMITERS) || gotos.contains(iteration)){
+				current.end=i;
+				this.basicBlocks.add(current);
+				//no generar un bloque básico para la última instrucción:
+				if(i < code.size()-1) 
+					current=new BasicBlock(String.format("%s%d", "L", basicBlocks.size()), i+1);
+			}
+			if(instruction.operador.matches(JUMPS))
+				gotos.add(iteration);
 		}
 		
 		
