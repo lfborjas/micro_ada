@@ -22,7 +22,7 @@ public class LinkedSymbolTable{
 	public LinkedSymbolTable(LinkedSymbolTable ancestor){
 		table=new LinkedHashMap<String, AdaSymbol>();
 		this.ancestor= ancestor;
-		this.desplazamiento=0;
+		this.desplazamiento=ancestor.desplazamiento;
 		this.id="";
 		this.offspring=new ArrayList<LinkedSymbolTable>();
 	}

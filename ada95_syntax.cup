@@ -2133,8 +2133,8 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 
                                          }else{
                                           currentScope=new LinkedSymbolTable(id);
-                                          boolean neverused=currentScope.put("put", new AdaSymbol(new IntegerType()));
-                                          boolean neveruser2=currentScope.put("get", new AdaSymbol(new IntegerType()));
+                                          boolean neverused=currentScope.put("put", new AdaSymbol(new FunctionType()));
+                                          boolean neveruser2=currentScope.put("get", new AdaSymbol(new FunctionType()));
 					  gen("glbl", id, "", ""); //glbl genera las cosas iniciales. Pero todas las vars van en regs...
                                          }
 
