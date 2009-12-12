@@ -34,7 +34,14 @@ public class FlatSymbolTable{
 	}
 
 	/**Para obtener un valor: buscar en currentScope, y de ahí, en sus ancestros.*/
-	public AdaSymbol get(String currentScope, String key){return null;}
-
+	public SymbolLookup get(String currentScope, String key){
+		SymbolLookup retVal=new SymbolLookup();
+		String[] tokenized=currentScope.split("__");
+	}
+	
+	/**Para poner algo en esta tabla*/
+	public void put(String key, AdaSymbol sym){
+		this.table.put(key, sym);
+	}
 	/**Para obtener la dirección de un símbolo*/
 }
