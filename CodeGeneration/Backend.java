@@ -33,8 +33,13 @@ public class Backend{
 	private final static String JUMPS="if.*|goto|call";
 	private final static String ENDERS="exit|glblExit";
 	private final static String ERASABLES="function|record";
-	private final static String FE_TEMP="\\$t[1-9]+";
+	private final static String FE_TEMP="\\$t[0-9]+";
 	private final static String PSEUDOINSTRUCTIONS="initRecord|initFunction|exit|call";
+	private final static String INTEGER_LITERAL="[0-9]+";
+	private final static String FLOAT_LITERAL="[0-9]+\\.[0-9]+";
+	private final static String STRING_LITERAL="\".*\"";
+	private final static String CONSTANT=String.format("%s|%s|%s", INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL);
+	private final static String NOT_VAR=String.format("integer|string|float|boolean|%s", CONSTANT);
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/*Lo que ocupa internamente*/
@@ -185,95 +190,83 @@ public class Backend{
 		}
 	}//findBasicBlocks
 
+	/**Función que establece la información de una variable*/
+	private void setVarInfo(String var, String currentScope, boolean isAlive, int nextUse){
+		AdaSymbol sym;
+			if(!var.isEmpty() && !var.matches(NOT_VAR)){
+				if(var.matches(FE_TEMP)){
+					this.frontEndTemps.put(var, new VarInfo(isAlive, nextUse));
+				}else{
+					SymbolLookup t=this.st.get(currentScope, var);
+					sym=(t==null)?null:t.symbol;
+					if(sym != null){
+						sym.isAlive=isAlive;
+						sym.nextUse=nextUse;
+					}
+				}
+			}
+	}//setVarInfo
+
 	/**La función que determina la información de siguiente uso de las direcciones en las instrucciones
 	*  OBSTACULOS: alguna de las direcciones podría no estar en ninguna tabla o ser una constante
 		       no debería generar para pseudo-instrucciones*/
-	//@deprecated
 	private void getNextUse(){
 		if(DEBUG){System.out.println("Determinando la información de siguiente uso...");}
 		Cuadruplo instruction;
 		String currentScope="";
-		String fmt="%s.%s";
 		VarInfo temp;
 		AdaSymbol var;
 		HashMap<String, String> dirs=new HashMap<String, String>(3);
-		for(int i=this.icode.size()-1; i>=0;i++){
-			instruction=icode.get(i);
-			if(instruction.operador.matches(ENDERS)){
-				currentScope=instruction.arg1;				
-			}
-			//no generar info de siguiente uso para estas:
-			if(instruction.operador.matches(PSEUDOINSTRUCTIONS))
-				continue;
-			//hay instrucciones que no tienen ninguna dirección
-			if(!instruction.res.isEmpty()){dirs.put("res", instruction.res);}
-			if(!instrucion.arg1.isEmpty()){dirs.put("arg1", instruction.arg1);}
-			if(!instruction.arg2.isEmpty()){dirs.put("arg2", instruction.arg2);}
-			//adjuntar a la instrucción la info en la st de las variables
-			for(Map.Entry dir: dirs.entrySet){
-				if(dir.getValue().matches(FE_TEMP)){//es un temporal
-					temp=this.frontEndTemps.get(dir.getValue());
-					instruction.info.put(
-						dir.getKey(),
-						temp
-					);
-				}else{//es una variable normal					
-					SymbolLookup t=this.st.get(currentScope, dir.getValue());
-					var=(t==null)?null:t.symbol;
-					if(var != null){
+		for(BasicBlock block: this.basicBlocks){
+			for(int i=block.end; i>=block.beginning;i--){
+				instruction=icode.get(i);
+				if(instruction.operador.matches(ENDERS)){
+					currentScope=instruction.arg1;				
+				}
+				//no generar info de siguiente uso para estas:
+				if(instruction.operador.matches(PSEUDOINSTRUCTIONS))
+					continue;
+				//hay instrucciones que no tienen ninguna dirección
+				if(!instruction.res.isEmpty()){dirs.put("res", instruction.res);}
+				if(!instruction.arg1.isEmpty()){dirs.put("arg1", instruction.arg1);}
+				if(!instruction.arg2.isEmpty()){dirs.put("arg2", instruction.arg2);}
+				//adjuntar a la instrucción la info en la st de las variables
+				for(Map.Entry dir: dirs.entrySet()){
+					if(dir.getValue().toString().matches(FE_TEMP)){//es un temporal
+						temp=this.frontEndTemps.get(dir.getValue());
 						instruction.info.put(
-							dir.getKey(),
-							new VarInfo(var.isAlive, var.nextUse)
+							dir.getKey().toString(),
+							temp
 						);
-					}
-				}				
-			}//fin del paso 1
+					}else{//es una variable normal					
+						SymbolLookup t=this.st.get(currentScope, dir.getValue().toString());
+						var=(t==null)?null:t.symbol;
+						if(var != null){
+							instruction.info.put(
+								dir.getKey().toString(),
+								new VarInfo(var.isAlive, var.nextUse)
+							);
+						}
+					}				
+				}//fin del paso 1
 
-			//poner en la tabla de símbolos al lado izquierdo como inactivo y no usado:
-			if(!instruction.res.isEmpty()){
-				if(instruction.res.matches(FE_TEMP)){
-					this.frontEndTemps.put(instruction.res, new VarInfo(false, UNUSED));
-				}else{
-					SymbolLookup t=this.st.get(currentScope, instruction.res);
-					var=(t==null)?null:t.symbol;
-					if(var != null){
-						var.isAlive=false;
-						var.nextUse=UNUSED;
-					}
-				}//fin del paso 2
-			}
-			//poner al lado derecho como activo y usado en esta instrucción:
-			
-			if(!instruction.arg1.isEmpty()){
-				if(instruction.res.matches(FE_TEMP)){
-					this.frontEndTemps.put(instruction.arg1, new VarInfo(false, UNUSED));
-				}else{
-					SymbolLookup t=this.st.get(currentScope, instruction.arg1);
-					var=(t==null)?null:t.symbol;
-					if(var != null){
-						var.isAlive=false;
-						var.nextUse=UNUSED;
-					}
-				}
-			}
-	
-			if(!instruction.arg2.isEmpty()){
-				if(instruction.res.matches(FE_TEMP)){
-					this.frontEndTemps.put(instruction.arg2, new VarInfo(false, UNUSED));
-				}else{
-					SymbolLookup t=this.st.get(currentScope, instruction.arg2);
-					var=(t==null)?null:t.symbol;
-					if(var != null){
-						var.isAlive=false;
-						var.nextUse=UNUSED;
-					}
-				}
-			}
-		}//iterar en reversa sobre las instrucciones.
+				//poner en la tabla de símbolos al lado izquierdo como inactivo y no usado:
+				setVarInfo(instruction.res, currentScope, false, UNUSED);
+				//poner al lado derecho como activo y usado en esta instrucción:
+				setVarInfo(instruction.arg1, currentScope, true, i);
+				setVarInfo(instruction.arg2, currentScope, true, i);
+		
+			}//iterar en reversa sobre las instrucciones del bloque básico.
+		}//por cada bloque básico
+
 		if(DEBUG){
 			System.out.println("La información de siguiente uso:");
 			for(Cuadruplo c: this.icode)	
 				System.out.println(c.info);
+			System.out.printf("La tabla de símbolos:\n %s ", this.st.toString());
+			for(Map.Entry v: this.frontEndTemps.entrySet()){
+				System.out.printf("%s: %s", v.getKey(), v.getValue());
+			}
 		}
 	}//getNextuse
 

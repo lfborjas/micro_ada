@@ -53,7 +53,8 @@ public class AdaSymbol{
 
 	public String toString(){
 		String cons=(constant) ? "Constant ": "";
-		return cons+type.toString()+" @ "+String.valueOf(this.address);
+		//return cons+type.toString()+" @ "+String.valueOf(this.address);
+		return String.format("%s%s@%s|alive: %s next use: %d", cons, type, address, isAlive, nextUse);
 	}
 
 	
