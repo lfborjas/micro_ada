@@ -29,8 +29,8 @@ public class Backend{
 	/*Expresiones regulares*/
 	private final static String DECLARERS="function|glbl|record";
 	private final static String BBDELIMITERS="exit|if.*|goto|glblExit";
-	private final static String BEGINNERS="initFunction|initRecord";
-	private final static String JUMPS="if.*|goto|call|return";
+	private final static String BEGINNERS="initFunction|initRecord|call";
+	private final static String JUMPS="if.*|goto";
 	private final static String ENDERS="exit|glblExit";
 	private final static String ERASABLES="function|record";
 	private final static String FE_TEMP="\\$t[0-9]+";
@@ -176,7 +176,7 @@ public class Backend{
 		for(i=0;i<leaders.size()-1;i++){
 			leader=leaders.get(i).intValue();
 			instruction=code.get(leader);
-			label=(instruction.operador.matches(BEGINNERS)) ? instruction.arg1 : String.format("%s%d", "L",i);
+			label=(instruction.operador.matches("initFunction|initRecord")) ? instruction.arg1 : String.format("%s%d", "L",i);
 			this.basicBlocks.add(
 					new BasicBlock(label, leader, leaders.get(i+1).intValue()-1)
 				);
