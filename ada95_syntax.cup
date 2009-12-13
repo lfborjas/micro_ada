@@ -2072,13 +2072,13 @@ when_option			::=	| WHEN m:m condition:c
 				;
 return_statement		::=	RETURN SEMICOLON
 					{:
-						gen("goto", "", "", "exit_"+currentScope.id);
+						gen("return", "", "", "");
 					:}
 				|	RETURN expression:e SEMICOLON 
 					{:
 						ParserResult pe=(ParserResult)e;
 						gen("return", pe.value, "", "");
-						gen("goto", "", "", "exit_"+currentScope.id);
+						//gen("goto", "", "", "exit_"+currentScope.id);
 						RESULT=e;
 					:}
 				;
