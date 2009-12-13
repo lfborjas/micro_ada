@@ -1,0 +1,50 @@
+":=", expression.value, "", result
+":=", "1", "", result
+"goto", "", "",cuadruplos.size()+1
+":=", "0", "", result
+":=", expression.value, "", result
+"goto", " ", "", ""
+"initRecord",table.getFlatId(),String.valueOf(table.desplazamiento), "" );					      	      gen("exit", table.getFlatId(), "", ""
+"goto", " ", "", ""
+getIf(po.value), pr.value, qr.value, " "
+"goto", " ", "", ""
+po.value, pt.value, "", lugar
+po.value, pt.value, "", lugar
+or.value, pr.value, qr.value, lugar
+or.value, pr.value, qr.value, lugar
+"**", pr.value, qr.value, lugar
+step.operador, step.arg1, step.arg2, step.res
+"goto", "", "", post.get(0)
+"goto","", "", iteration.value
+"goto", "", "", mr.value
+step.operador, step.arg1, step.arg2, step.res
+"goto", "", "", post.get(0)
+"goto", "", "", iteration.value
+"goto", "", "", mr.value
+":=", initial, "", i
+"if_<", i, fin, ""
+"goto", " ", "", ""
+":=", fin, "", i
+"if_>=", i, initial, ""
+"goto", " ", "", ""
+"goto", "", "", " "
+"goto", "", "", "exit_"+currentScope.id
+"return", pe.value, "", ""
+"goto", "", "", "exit_"+currentScope.id
+"function", id, "", ""
+"glbl", id, "", ""
+"function", id, "", ""
+"glbl", id, "", ""
+"function", id, "", ""
+"glbl", id, "", ""
+"function", id, "", ""
+"glbl", id, "", ""
+"initFunction", currentScope.getFlatId(
+"glblExit", currentScope.getFlatId(), "", ""
+"exit",currentScope.getFlatId(), "", ""
+"call", pn.value, "0", ""
+"get", tipo.split("Type")[0], "", lugar
+"get", tipo.split("Type")[0], "", lugar
+"call", pn.value, "0", lugar
+"param", res.value, "", ""
+"call", pn.value, pr.size(), lugar

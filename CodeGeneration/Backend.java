@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Map;
 import static CodeGeneration.VarInfo.UNUSED;
 /**
 La súper clase de generación de código.
@@ -33,6 +34,7 @@ public class Backend{
 	private final static String ENDERS="exit|glblExit";
 	private final static String ERASABLES="function|record";
 	private final static String FE_TEMP="\\$t[1-9]+";
+	private final static String PSEUDOINSTRUCTIONS="initRecord|initFunction|exit|call";
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/*Lo que ocupa internamente*/
@@ -40,13 +42,18 @@ public class Backend{
 	private StringBuilder data;
 	private StringBuilder text;
 	//contiene los temporales y el siguiente uso de los mismos. 
-	private HashMap<String, Integer> frontEndTemps;
+	private HashMap<String, VarInfo> frontEndTemps;
+	//los descriptores de registros:
+	private C1RegisterDescriptor floatDescriptor;
+	private RegisterDescriptor   regDescriptor;
 	/**El constructor, recibe del front-end las cosas y del main si debuggear*/
 	public Backend(ArrayList<Cuadruplo> i, FlatSymbolTable t, boolean dbg){
 		data=new StringBuilder("\t.data\n");
 		text=new StringBuilder("\t.text\n");
 		this.basicBlocks=new ArrayList<BasicBlock>();
-		frontEndTemps=new HashMap<String, Integer>();
+		frontEndTemps=new HashMap<String, VarInfo>();
+		floatDescriptor=new C1RegisterDescriptor();
+		regDescriptor=new RegisterDescriptor();
 		icode=i;
 		st=t;
 		DEBUG=dbg;
@@ -149,7 +156,7 @@ public class Backend{
 			}
 			//llenar lo de los temporales:
 			if(instruction.res.matches(FE_TEMP)){
-				this.frontEndTemps.put(instruction.res, new Integer(UNUSED));
+				this.frontEndTemps.put(instruction.res, new VarInfo(false, UNUSED));
 			}
 		}
 		//convertir el set en lista:		
@@ -178,8 +185,107 @@ public class Backend{
 		}
 	}//findBasicBlocks
 
-	/**La función que determina la información de siguiente uso de las direcciones en las instrucciones*/
+	/**La función que determina la información de siguiente uso de las direcciones en las instrucciones
+	*  OBSTACULOS: alguna de las direcciones podría no estar en ninguna tabla o ser una constante
+		       no debería generar para pseudo-instrucciones*/
+	//@deprecated
 	private void getNextUse(){
-		for(Cuadruplo instruction: Collections.reverse())
+		if(DEBUG){System.out.println("Determinando la información de siguiente uso...");}
+		Cuadruplo instruction;
+		String currentScope="";
+		String fmt="%s.%s";
+		VarInfo temp;
+		AdaSymbol var;
+		HashMap<String, String> dirs=new HashMap<String, String>(3);
+		for(int i=this.icode.size()-1; i>=0;i++){
+			instruction=icode.get(i);
+			if(instruction.operador.matches(ENDERS)){
+				currentScope=instruction.arg1;				
+			}
+			//no generar info de siguiente uso para estas:
+			if(instruction.operador.matches(PSEUDOINSTRUCTIONS))
+				continue;
+			//hay instrucciones que no tienen ninguna dirección
+			if(!instruction.res.isEmpty()){dirs.put("res", instruction.res);}
+			if(!instrucion.arg1.isEmpty()){dirs.put("arg1", instruction.arg1);}
+			if(!instruction.arg2.isEmpty()){dirs.put("arg2", instruction.arg2);}
+			//adjuntar a la instrucción la info en la st de las variables
+			for(Map.Entry dir: dirs.entrySet){
+				if(dir.getValue().matches(FE_TEMP)){//es un temporal
+					temp=this.frontEndTemps.get(dir.getValue());
+					instruction.info.put(
+						dir.getKey(),
+						temp
+					);
+				}else{//es una variable normal					
+					SymbolLookup t=this.st.get(currentScope, dir.getValue());
+					var=(t==null)?null:t.symbol;
+					if(var != null){
+						instruction.info.put(
+							dir.getKey(),
+							new VarInfo(var.isAlive, var.nextUse)
+						);
+					}
+				}				
+			}//fin del paso 1
+
+			//poner en la tabla de símbolos al lado izquierdo como inactivo y no usado:
+			if(!instruction.res.isEmpty()){
+				if(instruction.res.matches(FE_TEMP)){
+					this.frontEndTemps.put(instruction.res, new VarInfo(false, UNUSED));
+				}else{
+					SymbolLookup t=this.st.get(currentScope, instruction.res);
+					var=(t==null)?null:t.symbol;
+					if(var != null){
+						var.isAlive=false;
+						var.nextUse=UNUSED;
+					}
+				}//fin del paso 2
+			}
+			//poner al lado derecho como activo y usado en esta instrucción:
+			
+			if(!instruction.arg1.isEmpty()){
+				if(instruction.res.matches(FE_TEMP)){
+					this.frontEndTemps.put(instruction.arg1, new VarInfo(false, UNUSED));
+				}else{
+					SymbolLookup t=this.st.get(currentScope, instruction.arg1);
+					var=(t==null)?null:t.symbol;
+					if(var != null){
+						var.isAlive=false;
+						var.nextUse=UNUSED;
+					}
+				}
+			}
+	
+			if(!instruction.arg2.isEmpty()){
+				if(instruction.res.matches(FE_TEMP)){
+					this.frontEndTemps.put(instruction.arg2, new VarInfo(false, UNUSED));
+				}else{
+					SymbolLookup t=this.st.get(currentScope, instruction.arg2);
+					var=(t==null)?null:t.symbol;
+					if(var != null){
+						var.isAlive=false;
+						var.nextUse=UNUSED;
+					}
+				}
+			}
+		}//iterar en reversa sobre las instrucciones.
+		if(DEBUG){
+			System.out.println("La información de siguiente uso:");
+			for(Cuadruplo c: this.icode)	
+				System.out.println(c.info);
+		}
+	}//getNextuse
+
+	/**La función para obtener los registros de una instrucción:*/
+	private void siguienteReg(Cuadruplo I, int instruction, BasicBlock block){
+		/*el algoritmo del libro...*/
 	}
-}
+	
+	/**La función loca que hace la generación*/
+	public void assemble(){
+			
+	}
+
+	/*PONER ACÁ LAS FUNCIONES QUE ESCRIBEN EL CÓDIGO A UN ARCHIVO AHÍ...*/
+}//generator
