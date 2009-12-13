@@ -2409,7 +2409,7 @@ subprogram_body			::=	subprogram_specification_is:s
 					Object designator=(s instanceof ParserResult) ? ((ParserResult)s).value : s;
 					String id=designator.toString();
 					if(currentScope.getAncestor() == null)
-						gen("glblExit", "", "", "");
+						gen("glblExit", currentScope.getFlatId(), "", "");
 					else
 						gen("exit",currentScope.getFlatId(), "", "");
 					  //resetear las cosas: el main no debería desaparecer!

@@ -176,5 +176,10 @@ public class Backend{
 			for(BasicBlock b: this.basicBlocks)
 				System.out.println(b);
 		}
+	}//findBasicBlocks
+
+	/**La función que determina la información de siguiente uso de las direcciones en las instrucciones*/
+	private void getNextUse(){
+		for(Cuadruplo instruction: Collections.reverse())
 	}
 }
