@@ -47,7 +47,7 @@ public class Backend{
 	private StringBuilder data;
 	private StringBuilder text;
 	//contiene los temporales y el siguiente uso de los mismos. 
-	private HashMap<String, VarInfo> frontEndTemps;
+	private HashMap<String, TempSymbol> frontEndTemps;
 	//los descriptores de registros:
 	private C1RegisterDescriptor floatDescriptor;
 	private RegisterDescriptor   regDescriptor;
@@ -56,7 +56,7 @@ public class Backend{
 		data=new StringBuilder("\t.data\n");
 		text=new StringBuilder("\t.text\n");
 		this.basicBlocks=new ArrayList<BasicBlock>();
-		frontEndTemps=new HashMap<String, VarInfo>();
+		frontEndTemps=new HashMap<String, TempSymbol>();
 		floatDescriptor=new C1RegisterDescriptor();
 		regDescriptor=new RegisterDescriptor();
 		icode=i;
@@ -162,7 +162,7 @@ public class Backend{
 			}
 			//llenar lo de los temporales:
 			if(instruction.res.matches(FE_TEMP)){
-				this.frontEndTemps.put(instruction.res, new VarInfo(false, UNUSED));
+				this.frontEndTemps.put(instruction.res, new TempSymbol(new VarInfo(false, UNUSED)));
 			}
 		}
 		//convertir el set en lista:		
@@ -196,7 +196,7 @@ public class Backend{
 		AdaSymbol sym;
 			if(!var.isEmpty() && !var.matches(NOT_VAR)){
 				if(var.matches(FE_TEMP)){
-					this.frontEndTemps.put(var, new VarInfo(isAlive, nextUse));
+					this.frontEndTemps.put(var, new TempSymbol(new VarInfo(isAlive, nextUse)));
 				}else{
 					SymbolLookup t=this.st.get(currentScope, var);
 					sym=(t==null)?null:t.symbol;
@@ -205,6 +205,26 @@ public class Backend{
 						sym.nextUse=nextUse;
 					}
 				}
+			}
+	}//setVarInfo
+	
+	/**Obtiene la información de una variable*/
+	private VarInfo setVarInfo(String var, String currentScope){
+		AdaSymbol sym;
+			if(!var.isEmpty() && !var.matches(NOT_VAR)){
+				if(var.matches(FE_TEMP)){
+					return this.frontEndTemps.get(var).info;
+				}else{
+					SymbolLookup t=this.st.get(currentScope, var);
+					sym=(t==null)?null:t.symbol;
+					if(sym != null){
+						return new VarInfo(sym.isAlive, sym.nextUse);
+					}else{
+						return null;
+					}
+				}
+			}else{
+				return null;
 			}
 	}//setVarInfo
 
@@ -234,7 +254,7 @@ public class Backend{
 				//adjuntar a la instrucción la info en la st de las variables
 				for(Map.Entry dir: dirs.entrySet()){
 					if(dir.getValue().toString().matches(FE_TEMP)){//es un temporal
-						temp=this.frontEndTemps.get(dir.getValue());
+						temp=this.frontEndTemps.get(dir.getValue()).info;
 						instruction.info.put(
 							dir.getKey().toString(),
 							temp
@@ -269,14 +289,28 @@ public class Backend{
 		}
 	}//getNextuse
 
-	/**La función para obtener los registros de una instrucción:*/
-	private void siguienteReg(Cuadruplo I, int instruction, BasicBlock block){
-		/*el algoritmo del libro...*/
+	/**La función para obtener los registros de una instrucción:
+	   Por cuestiones de tiempo, asumiré que son enteros...
+	   Las variables temporales SOLO pueden estar en registros, así que se les dará prioridad.
+	   (es decir, nada de guardarlas en otro lado).	
+	 */
+	private HashMap<String, String> obtenReg(Cuadruplo I, String currentScope, BasicBlock block, int instruction){
+		//determinar el tipo: ¿cómo saber el tipo para instrucciones tipo $t1=$t1+$t3 ?
+		/*En todas las operaciones enteras, el segundo operando puede ser una constante, entonces
+		  Si es constante, no nos tomemos la molestia de buscarle un registro.*/
+		HashMap<String, String> dirs=new HashMap<String, String>();
+		dirs.put("x", I.res);
+		dirs.put("y", I.arg1);
+		dirs.put("z", I.arg2);
+		return dirs;
 	}
 	
 	/**La función loca que hace la generación*/
 	public void assemble(){
-			
+		/*Hay dos tipos de instrucciones:
+		 1. Las que ocupan registros: operaciones, copias, put/get y param.
+			1.1 las copias son un caso especial.
+		 2. Las que no: como los inits, exit y call*/			
 	}
 
 	/*PONER ACÁ LAS FUNCIONES QUE ESCRIBEN EL CÓDIGO A UN ARCHIVO AHÍ...*/
