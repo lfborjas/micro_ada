@@ -27,7 +27,7 @@ public class Backend{
 	private final static String DECLARERS="function|glbl|record";
 	private final static String BBDELIMITERS="exit|if.*|goto|glblExit";
 	private final static String BEGINNERS="initFunction|initRecord";
-	private final static String JUMPS="if.*|goto";
+	private final static String JUMPS="if.*|goto|call";
 	private final static String ENDERS="exit|glblExit";
 	private final static String ERASABLES="function|record";
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
