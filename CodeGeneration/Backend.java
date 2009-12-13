@@ -5,6 +5,8 @@ import java.util.Stack;
 import java.util.LinkedHashMap;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.HashMap;
+import static CodeGeneration.VarInfo.UNUSED;
 /**
 La súper clase de generación de código.
 Genera código final para MIPS
@@ -30,18 +32,21 @@ public class Backend{
 	private final static String JUMPS="if.*|goto|call";
 	private final static String ENDERS="exit|glblExit";
 	private final static String ERASABLES="function|record";
+	private final static String FE_TEMP="\\$t[1-9]+";
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/*Lo que ocupa internamente*/
 	private ArrayList<BasicBlock> basicBlocks;
 	private StringBuilder data;
 	private StringBuilder text;
-
+	//contiene los temporales y el siguiente uso de los mismos. 
+	private HashMap<String, Integer> frontEndTemps;
 	/**El constructor, recibe del front-end las cosas y del main si debuggear*/
 	public Backend(ArrayList<Cuadruplo> i, FlatSymbolTable t, boolean dbg){
 		data=new StringBuilder("\t.data\n");
 		text=new StringBuilder("\t.text\n");
 		this.basicBlocks=new ArrayList<BasicBlock>();
+		frontEndTemps=new HashMap<String, Integer>();
 		icode=i;
 		st=t;
 		DEBUG=dbg;
@@ -142,7 +147,10 @@ public class Backend{
 			}else if(instruction.operador.matches(BEGINNERS)){
 				leaderSet.add(iteration);
 			}
-			
+			//llenar lo de los temporales:
+			if(instruction.res.matches(FE_TEMP)){
+				this.frontEndTemps.put(instruction.res, new Integer(UNUSED));
+			}
 		}
 		//convertir el set en lista:		
 		ArrayList<Integer> leaders=new ArrayList<Integer>();		
