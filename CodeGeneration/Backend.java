@@ -64,6 +64,7 @@ public class Backend{
 		DEBUG=dbg;
 		this.icode=reorderCode(this.icode);
 		findBasicBlocks(this.icode);
+		getNextUse();
 	}
 
 	/**El método que mueve todo el código de la parte declarativa de un subprograma 
@@ -261,11 +262,9 @@ public class Backend{
 
 		if(DEBUG){
 			System.out.println("La información de siguiente uso:");
-			for(Cuadruplo c: this.icode)	
-				System.out.println(c.info);
 			System.out.printf("La tabla de símbolos:\n %s ", this.st.toString());
 			for(Map.Entry v: this.frontEndTemps.entrySet()){
-				System.out.printf("%s: %s", v.getKey(), v.getValue());
+				System.out.printf("%s: %s\n", v.getKey(), v.getValue());
 			}
 		}
 	}//getNextuse
