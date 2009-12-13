@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 public class FlatSymbolTable{
 	HashMap<String, AdaSymbol> table;
+	public FlatSymbolTable(){
+		this.table=new HashMap<String, AdaSymbol>();
+	}
 	/**Hace un recorrido en profundidad de la tabla para aplanarla.*/
 	public FlatSymbolTable(LinkedSymbolTable table){
 		this.table=new HashMap<String, AdaSymbol>();
@@ -35,8 +38,26 @@ public class FlatSymbolTable{
 
 	/**Para obtener un valor: buscar en currentScope, y de ahí, en sus ancestros.*/
 	public SymbolLookup get(String currentScope, String key){
-		SymbolLookup retVal=new SymbolLookup();
+		if (currentScope.isEmpty())
+			return new SymbolLookup(0, this.table.get(key));
 		String[] tokenized=currentScope.split("__");
+		StringBuilder finder=new StringBuilder(currentScope);
+		String lookup=currentScope;
+		AdaSymbol found=new AdaSymbol();
+		int q_depth=0;
+		String l_key=lookup+"."+key;
+		//ir en reversa
+		for(int i=tokenized.length-1; i>=0; i--){
+			if ((found=this.table.get(l_key)) != null)
+				break;
+			q_depth=tokenized.length-i;
+			lookup=(i==0)? tokenized[i] : finder.substring(0, finder.lastIndexOf("__"+tokenized[i]));
+			l_key=lookup+"."+key;
+		}
+
+		//en base a la profundidad de éste y del llamado, devolver el número de saltos:
+		int saltos=q_depth;
+		return new SymbolLookup(q_depth, found);	
 	}
 	
 	/**Para poner algo en esta tabla*/

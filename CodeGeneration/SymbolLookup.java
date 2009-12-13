@@ -6,4 +6,19 @@ desde el registro de activación actual para llegar a él*/
 public class SymbolLookup{
 	public int saltos;
 	public AdaSymbol symbol;
+
+	public SymbolLookup(){
+		saltos=0;
+		symbol=null;
+	}
+
+	public SymbolLookup(int s, AdaSymbol sym){
+		saltos=s;
+		symbol=sym;
+	}
+
+	public String toString(){
+		return String.format("%d {%s}", saltos, symbol);
+	}
+
 } 
