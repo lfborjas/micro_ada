@@ -58,8 +58,10 @@ public class Cuadruplo{
 			return res+" := "+ arg1;
 		else if(operador.equals("goto"))
 			return "goto "+res;
-		else if(operador.matches("put|get|call|param|glbl|function|return|initFunction"))
+		else if(operador.matches("put|call|param|glbl|function|return|initFunction"))
 			return operador+" "+ arg1+" "+arg2;
+		else if(operador.equals("get"))
+			return res+":= get "+arg1;
 		return r+a1+o+arg2;
 	}
 		

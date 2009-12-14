@@ -49,7 +49,7 @@ public class Backend{
 	private final static String NOT_REGISTRABLE=String.format("integer|string|float|boolean|%s", STRING_LITERAL);
 	private final static String REGISTER="%[tsf][0-9]+";
 	private final static String BRANCHES="goto|call";
-	private final static String OPERATOR="if.*|add|sub|neg|not|abs|mul|div|mod|rem";
+	private final static String OPERATOR="if.*|add|sub|neg|not|abs|mul|div|mod|rem|put|get";
 	private final static String THREEWAY_OPERATOR="add|sub|mul|div";
 	private final static String TWINE_OPERATOR="neg|not|rem|abs";
 	private final static String PROLOGUED="initFunction|initRecord";
@@ -355,7 +355,8 @@ public class Backend{
 		HashMap<String, String> retVal=new HashMap<String, String>();
 		//conseguir registros para x, y und z
 		String key, value, register;		
-		HashSet<String> accessDescriptor, regdesc;
+		HashSet<String> accessDescriptor=new HashSet<String>();
+		HashSet<String> regdesc=new HashSet<String>();
 		int regScore=0;
 		HashMap<String, Integer> scores=new HashMap<String, Integer>();
 		VarInfo v_info;
@@ -364,12 +365,13 @@ public class Backend{
 			key=dir.getKey().toString();
 			value=dir.getValue().toString();
 			//saltárselo si está vacío:
-			if(value.isEmpty()){continue;}
-			if(!value.matches(NOT_REGISTRABLE) && !(value.matches(CONSTANT) && value.equals("z"))){
+			if(value.isEmpty()){retVal.put(key, ""); continue;}
+			if(!value.matches(NOT_REGISTRABLE) && 
+				!(value.matches(INTEGER_LITERAL) && (key.equals("z") || key.equals("x")))){
 				//1. Ver si YA está en un registro.
 				if(value.matches(FE_TEMP)){//es un temporal
 					accessDescriptor=this.frontEndTemps.get(value).accessDescriptor;
-				}else{
+				}else if(!value.matches(INTEGER_LITERAL)){					
 					accessDescriptor=this.st.get(currentScope, value).symbol.accessDescriptor;
 				}	
 				for(String place: accessDescriptor){
@@ -434,9 +436,9 @@ public class Backend{
 						lesserReg=s.getKey().toString();
 					
 				}
-				retVal.put(value, lesserReg);
+				retVal.put(key, lesserReg);
 			}else{
-				retVal.put(value, "");
+				retVal.put(key, "");
 			}
 		}
 		//si es copia, le damos a x el de y
@@ -474,8 +476,8 @@ public class Backend{
 		HashMap<String, String> registros;
 		HashSet<String> ad=new HashSet<String>();
 		//poner global función principal y ponerle main también, porque MIPS la ocupa
-		if(icode.get(1).operador.matches("glbl")){
-			text.append(String.format("\t.globl %s\nmain:\n", icode.get(1).arg1));
+		if(icode.get(0).operador.matches("glbl")){
+			text.append(String.format("\t.globl %s\nmain:\n", icode.get(0).arg1));
 			//currentScope=icode.get(1).arg1;			
 		}
 		for(BasicBlock block: this.basicBlocks){
@@ -487,6 +489,9 @@ public class Backend{
 			//por cada instrucción en este bloque:
 			for(int i=block.beginning; i<=block.end; i++){
 				instruction=this.icode.get(i);
+				if(DEBUG){
+					System.out.printf("Procesando %s\n", instruction);
+				}
 				//al final del bloque básico, guardar las variables vivas:
 				if(i==block.end){
 					/*TODO: guardar variables vivas!*/
@@ -517,7 +522,7 @@ public class Backend{
 							if(info.isAlive){
 								//TODO: actualizar el descriptor de acceso
 								text.append(
-								 String.format("\t %s %s %d($fp)", 
+								 String.format("\t %s %s %d($fp)\n", 
 										"sw", info.address,
 										getLocation(currentScope,blockVar) )
 								);
@@ -530,14 +535,14 @@ public class Backend{
 				
 				//si es una prologada, poner el prólogo:
 				if(instruction.operador.matches(PROLOGUED)){
-					variable_space=WORD_LENGTH*Integer.parseInt(instruction.arg2);	
+					variable_space=Integer.parseInt(instruction.arg2);	
 					//meter ra y fp:
 					text.append("\t#PROLOGUE:\n");
-					text.append(String.format("\tsub $sp, $sp, %d", 8+variable_space));
+					text.append(String.format("\tsub $sp, $sp, %d\n", 8+variable_space));
 					text.append("\tsw $ra, ($sp)\n");
 					text.append("\tsw $fp, 4($sp)\n");
 					//reservar el espacio para variables:
-					text.append(String.format("\tsub $fp, $sp, %d", variable_space));
+					text.append(String.format("\tsub $fp, $sp, %d\n", variable_space));
 					//inicializar el stack pointer:
 					text.append("\tmove $sp, $fp\n\t#BODY:\n");					
 					currentScope=instruction.arg1;
@@ -548,7 +553,7 @@ public class Backend{
 				if(instruction.operador.matches(EPILOGUED)){
 					text.append("\t#EPILOGUE:\n");
 					//poner la etiqueta:
-					text.append(String.format("\t_exit_%s:\n", instruction.arg1));
+					text.append(String.format("_exit_%s:\n", instruction.arg1));
 					//reestablecer el sp:
 					text.append(String.format("\tadd $sp, $fp, %d\n", variable_space));
 					//sacar fp:
@@ -563,7 +568,7 @@ public class Backend{
 				 /*Las variables vivas ya debieron haber sido guardadas...*/
 				if(instruction.operador.equalsIgnoreCase("goto")){
 					//imprimir el salto
-					text.append(String.format("\tb _%s\n", getLabel(instruction.arg1)));
+					text.append(String.format("\tb _%s\n", getLabel(instruction.res)));
 					continue;
 				}//goto
 
@@ -571,6 +576,26 @@ public class Backend{
 					//imprimir el salto
 					paramCount=0;
 					text.append(String.format("\tjal _%s\n", instruction.arg1));
+					//procesar el resultado:
+					if(!instruction.res.isEmpty()){
+						//obtener un registro para el temporal del retorno
+						HashMap<String, String> reg =obtenReg(
+							new Cuadruplo("",instruction.res, "", ""),
+							 currentScope, block, i, true);
+						//generar el mv
+						text.append(String.format("\tmove %s, $v0\n", reg.get("y")));
+						//actualizar el descriptor de acceso y registro
+						if(instruction.res.matches(FE_TEMP)){
+							ad=this.frontEndTemps.get(instruction.res).accessDescriptor;
+						}else{
+							ad=this.st.get(currentScope, instruction.res).symbol.accessDescriptor;
+						}
+						//el descriptor de acceso
+						ad.add(reg.get("y"));
+						//el descriptor de registro:
+						regDescriptor.get(reg.get("y")).clear();
+						regDescriptor.get(reg.get("y")).add(instruction.res);
+					}
 					continue;
 				}//call
 				//TODO: tener un buffer de params, para saber cuándo empezar a meter a la pila
@@ -587,12 +612,12 @@ public class Backend{
 					String location=getLocation(currentScope, instruction.arg1);
 					text.append(String.format("\t%s $v0, %s\n",
 								    getLoadInstruction(location), location));
-					text.append(String.format("\tb _exit_%s", currentScope));
+					text.append(String.format("\tb _exit_%s\n", currentScope));
 					continue;
 				}//return
 				if(instruction.operador.equalsIgnoreCase("glblExit")){
 				//la etiqueta ya está generada...
-					text.append(String.format("\tli $v0, 10\nsyscall\n\n"));
+					text.append(String.format("\tli $v0, 10\n\tsyscall\n\n"));
 					continue;
 				}
 
@@ -614,7 +639,7 @@ public class Backend{
 					generateInstruction(instruction, 
 							    registros.get("x"), registros.get("y"), registros.get("z"));
 					//actualizar descriptores para x:
-					if(!registros.get("x").isEmpty()){
+					if(!registros.get("x").isEmpty() && !instruction.res.matches(CONSTANT)){
 						//1. Rx sólo debe contener a x:
 						regDescriptor.get(registros.get("x")).clear();
 						regDescriptor.get(registros.get("x")).add(instruction.res);
@@ -662,6 +687,7 @@ public class Backend{
 			}//por cada instrucción en el bloque
 			
 		}//por cada bloque
+		writeCodeFile(filename);
 	}//assemble
 
 	private void createLoad(String currentScope, String arg, String namen, HashMap<String,String> registros){
@@ -727,26 +753,26 @@ public class Backend{
 			//obtener la correspondiente instrucción:
 			machineOperator=BRANCH_OPERATIONS.get(rel);
 			//generar la instrucción máquina
-			text.append(String.format("\t %s, %s, %s, %s\n", machineOperator, ry, rz, getLabel(instruction.res)));
+			text.append(String.format("\t%s, %s, %s, %s\n", machineOperator, ry, rz, getLabel(instruction.res)));
 		}else if(operador.matches("put")){
 			String service=SYSTEM_SERVICES.get(String.format("put_%s", instruction.arg1));
-			text.append(String.format("\tli %v0, %s\n", service));
+			text.append(String.format("\tli $v0, %s\n", service));
 			//sólo trabajar con el segundo parámetro:
 			if(instruction.arg1.equalsIgnoreCase("string")){
-				data.append(String.format("_msg%d: .asciiz \"%s\"", dataMessages++, instruction.arg2));
+				data.append(String.format("_msg%d: .asciiz \"%s\"\n", dataMessages++, instruction.arg2));
 			}
-			text.append(String.format("\t la $a0, %s\nsyscall\n", rz));
+			text.append(String.format("\tla $a0, %s\n\tsyscall\n", rz));
 							
 		}else if(operador.matches("get")){
 			//trabajar con el resultado
 			String service=SYSTEM_SERVICES.get(String.format("get_%s", instruction.arg1));
-			text.append(String.format("\tli %v0, %s\nsyscall\n", service));
-			text.append(String.format("\tmove $v0, %s", rx));
+			text.append(String.format("\tli $v0, %s\n\tsyscall\n", service));
+			text.append(String.format("\tmove $v0, %s\n", rx));
 		}else if(operador.matches(THREEWAY_OPERATOR)){
 			//should be seamless...
-			text.append(String.format("\t %s %s, %s, %s", operador, rx, ry, rz));
+			text.append(String.format("\t%s %s, %s, %s\n", operador, rx, ry, rz));
 		}else if(operador.matches(TWINE_OPERATOR)){
-			text.append(String.format("\t %s %s, %s", operador, rx, ry));
+			text.append(String.format("\t%s %s, %s\n", operador, rx, ry));
 		}
 	}//generateInstruction
 
