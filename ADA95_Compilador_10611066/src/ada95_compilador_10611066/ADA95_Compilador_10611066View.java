@@ -3,6 +3,8 @@
  */
 package ada95_compilador_10611066;
 
+import AdaSemantic.FrontEndResult;
+import CodeGeneration.Backend;
 import java.awt.Color;
 import java.io.FileNotFoundException;
 import java.util.logging.Level;
@@ -512,13 +514,14 @@ public class ADA95_Compilador_10611066View extends FrameView {
             long start = System.currentTimeMillis();
             try {
                 //lo de parsear:
+                Object result;
                 this.progressBar.setValue(25);
                 parser p = new parser(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));
-                if (debug) {
-                    Object result = p.debug_parse();
-                } else {
-                    Object result = p.parse();
-                }
+//                if (debug) {
+//                    Object result = p.debug_parse();
+//                } else {
+                    /*bject*/result = p.parse();
+                //}
                 //sacar los errores y advertencias del parser
                 this.progressBar.setValue(50);
                 ArrayList<String> parserErrores = p.getErrores();
@@ -545,12 +548,13 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 }
                 //hacer el semántico sii el sintáctico pasó bien:
                 if(parserErrores.size()==0){
+                    this.progressBar.setString("Generando código intermedio...");
                     semantic s= new semantic(new Ada95Lexer(new FileReader(archivo.getAbsolutePath())));
-                    if(debug){
-                            Object result = s.debug_parse().value;
-                    }else{
-                            Object result = s.parse().value;
-                    }
+                    //if(debug){
+                     //       Object result = s.debug_parse().value;
+                    //}else{
+                            result = s.parse().value;
+                    //}
                     parserErrores=s.getErrores();
                     for(String error: parserErrores){
                             errorArea.setForeground(Color.red);
@@ -566,6 +570,30 @@ public class ADA95_Compilador_10611066View extends FrameView {
                 if (parserErrores.size() == 0) {
                     if(parserAdvertencias.size()==0)
                         errorArea.setForeground(new Color(52,124,23));
+                    FrontEndResult parsed;
+                    //generar el código:
+                    this.progressBar.setString("Generando código...");
+                    if(result != null){
+			if(result instanceof FrontEndResult){
+				parsed=(FrontEndResult)result;
+				if(debug){
+					System.out.println(String.format("Generados %d cuádruplos",parsed.icode.size()));
+					for(int i=0; i< parsed.icode.size(); i++){
+						System.out.printf("%d\t%s\n", i, parsed.icode.get(i));
+					}
+					System.out.println("La tabla de símbolos a usar: ");
+					System.out.println(parsed.table.toString());
+				}
+				//TODO: hacer acá lo siguiente
+				String assemblyName=archivo.getPath().replace(".adb", ".asm");
+				Backend backend=new Backend(parsed.icode, parsed.table, debug);
+				backend.assemble(assemblyName); // <= pasarle el nombre de archivo
+				errorArea.append(String.format("Código objeto generado en: %s\n", assemblyName));
+			}
+		}
+		end=System.currentTimeMillis();
+		elapsed=(end-start);
+		System.out.println("Compilación exitosa (Tiempo total: "+elapsed+" milisegundos)");
                     errorArea.append("Compilación exitosa (Tiempo total: " + String.valueOf(elapsed)+ " milisegundos)\n");
                 } else {
                     String pluralize_finding = "encontr";
