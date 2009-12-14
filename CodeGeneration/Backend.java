@@ -40,6 +40,7 @@ public class Backend{
 	private final static String STRING_LITERAL="\".*\"";
 	private final static String CONSTANT=String.format("%s|%s|%s", INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL);
 	private final static String NOT_VAR=String.format("integer|string|float|boolean|%s", CONSTANT);
+	private final static String REGISTER="%[tsf][0-9]+";
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/*Lo que ocupa internamente*/
@@ -209,7 +210,7 @@ public class Backend{
 	}//setVarInfo
 	
 	/**Obtiene la información de una variable*/
-	private VarInfo setVarInfo(String var, String currentScope){
+	private VarInfo getVarInfo(String var, String currentScope){
 		AdaSymbol sym;
 			if(!var.isEmpty() && !var.matches(NOT_VAR)){
 				if(var.matches(FE_TEMP)){
@@ -294,17 +295,115 @@ public class Backend{
 	   Las variables temporales SOLO pueden estar en registros, así que se les dará prioridad.
 	   (es decir, nada de guardarlas en otro lado).	
 	 */
-	private HashMap<String, String> obtenReg(Cuadruplo I, String currentScope, BasicBlock block, int instruction){
+	private HashMap<String, String> obtenReg(Cuadruplo I, 
+						String currentScope, BasicBlock block, int instruction, boolean isCopy){
 		//determinar el tipo: ¿cómo saber el tipo para instrucciones tipo $t1=$t1+$t3 ?
 		/*En todas las operaciones enteras, el segundo operando puede ser una constante, entonces
 		  Si es constante, no nos tomemos la molestia de buscarle un registro.*/
-		HashMap<String, String> dirs=new HashMap<String, String>();
-		dirs.put("x", I.res);
+		HashMap<String, String> dirs=new HashMap<String, String>();		
 		dirs.put("y", I.arg1);
-		dirs.put("z", I.arg2);
-		return dirs;
-	}
+		if(!isCopy){
+			dirs.put("z", I.arg2);
+			dirs.put("x", I.res);
+		}
+		HashMap<String, String> retVal=new HashMap<String, String>();
+		//conseguir registros para x, y und z
+		String key, value, register;		
+		HashSet<String> accessDescriptor, regdesc;
+		int regScore=0;
+		HashMap<String, Integer> scores=new HashMap<String, Integer>();
+		VarInfo v_info;
+		boolean inReg=false;
+		for(Map.Entry dir: dirs.entrySet()){
+			key=dir.getKey().toString();
+			value=dir.getValue().toString();
+			//saltárselo si está vacío:
+			if(value.isEmpty()){continue;}
+			if(!value.matches(NOT_VAR)){
+				//1. Ver si YA está en un registro.
+				if(value.matches(FE_TEMP)){//es un temporal
+					accessDescriptor=this.frontEndTemps.get(value).accessDescriptor;
+				}else{
+					accessDescriptor=this.st.get(currentScope, value).symbol.accessDescriptor;
+				}	
+				for(String place: accessDescriptor){
+					//si está en un registro, devolverlo. Ya terminamos con esta var.
+					inReg=false;
+					if(place.matches(REGISTER)){						
+						retVal.put(key, place );
+						inReg=true;
+						break;//ya encontramos que está en un registro!
+					}					
+				}//iterar en el descriptor de acceso
+				if(inReg){continue;}
+				//2. Aún aquí? Ok. Tratemos de darle un registro vacío:
+				register=this.regDescriptor.getEmpty();
+				if(register != null){
+					retVal.put(key, register);
+					continue;
+				}
+				boolean good=false;
+				//3. OK, estamos fregados va? Bueno, busquemos registro por registro cuál darle!
+				for(Map.Entry reg: this.regDescriptor.descriptor.entrySet()){
+					regScore=0;
+					regdesc=(HashSet<String>)reg.getValue();
+					register=reg.getKey().toString();
+					//por cada una de las variables en este descriptor, veamos qué ondas:
+					for(String var: regdesc){
+						if(var.matches(FE_TEMP)){
+							accessDescriptor=this.frontEndTemps.get(var).accessDescriptor;
+						}else{//es una variable normal
+							accessDescriptor=this.st.get(currentScope,var).symbol.accessDescriptor;
+						}
+						String ix=dirs.get("x");
+						v_info=getVarInfo(currentScope, var);
+						//si el descriptor dice que está en algún otro lado...
+						if(accessDescriptor.size()>1){
+							good=true;		
+						//si v es x y x no vuelve a salir en I:
+						}else if(var.equals(ix) && !(ix.equals(dirs.get("y")) 
+							|| ix.equals(dirs.get("z")))){
+							good=true;
+						}
+						//si v no se utiliza otra vez en este bloque:
+						else if(v_info.nextUse< instruction)
+							good=true;
+						//ni aún así? Generar un derrame:
+						else if(!var.matches(FE_TEMP)){
+							store(currentScope, var);
+							regScore++;
+						}
+						if(good){break;}
+						good=false;
+					}//iterar en las variables del registro
+					scores.put(register, new Integer(regScore));
+				}//iterar en los registros
+				//encontrar la menor score:
+				int lesser=Integer.MAX_VALUE;
+				int current;
+				String lesserReg="";
+				for(Map.Entry s: scores.entrySet()){
+					current=((Integer)s.getValue()).intValue();
+					if(current < lesser)
+						lesserReg=s.getKey().toString();
+					
+				}
+				retVal.put(value, lesserReg);
+			}else{
+				retVal.put(value, "");
+			}
+		}
+		//si es copia, le damos a x el de y
+		if(isCopy){retVal.put("x", retVal.get("y"));}
+		return retVal;
+	}//obtenerReg
 	
+	/**Para generar un guardado de una variable*/
+	private void store(String var, String currentScope){
+		long address=this.st.get(currentScope, var).symbol.address;
+		text.append(String.format("\t sw %s, %d($fp)", var, address));
+	}	
+
 	/**La función loca que hace la generación*/
 	public void assemble(){
 		/*Hay dos tipos de instrucciones:

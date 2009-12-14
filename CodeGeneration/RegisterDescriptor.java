@@ -7,9 +7,9 @@ a las variables que están en él*/
 
 public class RegisterDescriptor{
 	/*Constantes para los temporales disponibles en mips*/
-	public String temps="t_1_0-9";
-	public String savedTemps="s_1_0-7";
-	public String floatTemps="f_2_0-31";
+	public String temps="%t_1_0-9";
+	public String savedTemps="%s_1_0-7";
+	public String floatTemps="%f_2_0-31";
 	public HashMap<String, HashSet<String>> descriptor;
 
 	public RegisterDescriptor(){
@@ -47,5 +47,15 @@ public class RegisterDescriptor{
 			s.append(String.format("%s:\t%s\n",entry.getKey(),entry.getValue()));
 		}
 		return s.toString();
+	}
+	
+	public String getEmpty(){
+		HashSet<String> value;
+		for(Map.Entry entry: descriptor.entrySet()){
+			value=(HashSet<String>)entry.getValue();
+			if(value.isEmpty())
+				return entry.getKey().toString();
+		}
+		return null;
 	}
 }
