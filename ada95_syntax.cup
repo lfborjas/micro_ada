@@ -1583,7 +1583,7 @@ adding_operator			::=	PLUS {:RESULT=new ParserResult("add");:}
 				|	CONCATENATE {:RESULT= new ParserResult("&");:}
 				;
 unary_operator			::=	PLUS:p {:RESULT=new ParserResult("+", new IntegerType());:}
-				|	MINUS:m {:RESULT=new ParserResult("-", new IntegerType());:}
+				|	MINUS:m {:RESULT=new ParserResult("neg", new IntegerType());:}
 				|	NOT:n	{:RESULT=new ParserResult("not", new BooleanType());:}
 				|	ABS:a	{:RESULT=new ParserResult("abs", new IntegerType());:}
 				;
