@@ -70,7 +70,11 @@ public class LinkedSymbolTable{
 			//dar la dirección de memoria:
 			tipo.address=this.desplazamiento;
 			//poner como primera ubicación su lugar en memoria:
-			tipo.accessDescriptor.add(String.format("%d($fp)", tipo.address));
+			String disp;
+			if(tipo.accessDescriptor.isEmpty()){
+				disp=(tipo.address==0)? "" : String.valueOf(tipo.address);
+				tipo.accessDescriptor.add(String.format("%s($fp)", disp));
+			}
 			//actualizar el desplazamiento:
 			desplazamiento += tipo.type.width;
 			table.put(id, tipo);

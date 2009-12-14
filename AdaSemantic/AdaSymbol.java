@@ -50,7 +50,16 @@ public class AdaSymbol{
 		this.address=a;
 		initPostInfo();
 	}
-
+	
+	public AdaSymbol(Type t, boolean cons, String initialPlace){
+		this.type=t;
+		this.address=0x0;
+		this.constant=cons;
+		this.isAlive=false;
+		this.nextUse=UNUSED;
+		this.accessDescriptor=new HashSet<String>();
+		this.accessDescriptor.add(initialPlace);
+	}
 	public String toString(){
 		String cons=(constant) ? "Constant ": "";
 		//return cons+type.toString()+" @ "+String.valueOf(this.address);

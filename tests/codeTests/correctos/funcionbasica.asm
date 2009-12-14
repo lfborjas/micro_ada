@@ -11,13 +11,13 @@ _funcionbasica__operar:
 	sub $fp, $sp, 12
 	move $sp, $fp
 	#BODY:
-	lw $t0, 8($fp)
+	ERROR $t0, $a2
 	beq, $t0, 1, _L2
 _L1:
 	b _L3
 _L2:
-	lw $t2, 0($fp)
-	lw $t1, 4($fp)
+	ERROR $t2, $a0
+	ERROR $t1, $a1
 	add $t3, $t2, $t1
 	move $v0, $t3
 	b _exit_funcionbasica__operar
