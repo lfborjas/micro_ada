@@ -7,6 +7,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import static CodeGeneration.VarInfo.UNUSED;
 /**
 La súper clase de generación de código.
@@ -405,12 +410,31 @@ public class Backend{
 	}	
 
 	/**La función loca que hace la generación*/
-	public void assemble(){
+	public void assemble(String filename){
 		/*Hay dos tipos de instrucciones:
 		 1. Las que ocupan registros: operaciones, copias, put/get y param.
 			1.1 las copias son un caso especial.
 		 2. Las que no: como los inits, exit y call*/			
 	}
 
+	private void writeCodeFile(String filename){
+		File archivo=new File(filename);
+		BufferedWriter out=null;
+		try{
+			out=new BufferedWriter(new FileWriter(archivo));
+			out.write(data.toString());out.newLine();
+			out.write(text.toString());out.newLine();
+		}catch(FileNotFoundException fnfex){
+			System.err.printf("No se encuentra el archivo %s", filename);
+		}catch(IOException ioex){
+			System.err.printf("No se pudo escribir el archivo %s", filename);
+		}finally{
+			try{
+				out.close();	
+			}catch(IOException fnx){
+				System.err.printf("No se encuentra el archivo %s", filename);
+			}
+		}
+	}
 	/*PONER ACÁ LAS FUNCIONES QUE ESCRIBEN EL CÓDIGO A UN ARCHIVO AHÍ...*/
 }//generator

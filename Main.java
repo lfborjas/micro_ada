@@ -160,7 +160,10 @@ public class Main {
 					System.out.println(parsed.table.toString());
 				}
 				//TODO: hacer acá lo siguiente
+				String assemblyName=filename.replace(".adb", ".asm");
 				Backend backend=new Backend(parsed.icode, parsed.table, debug);
+				//backend.assemble(assemblyName); // <= pasarle el nombre de archivo
+				System.out.printf("Código objeto generado en: %s", assemblyName);
 			}
 		}	
 		end=System.currentTimeMillis();
