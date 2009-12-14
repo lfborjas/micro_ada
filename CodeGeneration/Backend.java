@@ -47,7 +47,7 @@ public class Backend{
 	private final static String CONSTANT=String.format("%s|%s|%s", INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL);
 	private final static String NOT_VAR=String.format("integer|string|float|boolean|%s", CONSTANT);
 	private final static String NOT_REGISTRABLE=String.format("integer|string|float|boolean|%s", STRING_LITERAL);
-	private final static String REGISTER="%[tsf][0-9]+";
+	private final static String REGISTER="\\$[tsf][0-9]+";
 	private final static String BRANCHES="goto|call";
 	private final static String OPERATOR="if.*|add|sub|neg|not|abs|mul|div|mod|rem|put|get";
 	private final static String THREEWAY_OPERATOR="add|sub|mul|div";
@@ -759,9 +759,12 @@ public class Backend{
 			text.append(String.format("\tli $v0, %s\n", service));
 			//sólo trabajar con el segundo parámetro:
 			if(instruction.arg1.equalsIgnoreCase("string")){
-				data.append(String.format("_msg%d: .asciiz \"%s\"\n", dataMessages++, instruction.arg2));
+				String message=String.format("_msg%d", dataMessages++);
+				data.append(String.format("%s: .asciiz %s\n", message, instruction.arg2));
+				text.append(String.format("\tla $a0, %s\n\tsyscall\n", message));
+			}else{
+				text.append(String.format("\tla $a0, %s\n\tsyscall\n", rz));
 			}
-			text.append(String.format("\tla $a0, %s\n\tsyscall\n", rz));
 							
 		}else if(operador.matches("get")){
 			//trabajar con el resultado

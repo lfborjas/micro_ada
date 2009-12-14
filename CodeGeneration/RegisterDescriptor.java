@@ -7,9 +7,9 @@ a las variables que están en él*/
 
 public class RegisterDescriptor{
 	/*Constantes para los temporales disponibles en mips*/
-	public String temps="%t_1_0-9";
-	public String savedTemps="%s_1_0-7";
-	public String floatTemps="%f_2_0-31";
+	public String temps="$t_1_0-9";
+	public String savedTemps="$s_1_0-7";
+	public String floatTemps="$f_2_0-31";
 	public HashMap<String, HashSet<String>> descriptor;
 
 	public RegisterDescriptor(){

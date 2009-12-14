@@ -2249,7 +2249,9 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 designator			::=	identifier:i {:RESULT=i;:} 
 				|	operator_symbol:o {:RESULT=o;:}
 				;
-operator_symbol			::=	STRING_LITERAL:s {:RESULT=new ParserResult(s, new StringType(((String)s).length()));:}
+operator_symbol			::=	STRING_LITERAL:s 
+					{:RESULT=new ParserResult(String.format("\"%s\"", s),
+					  new StringType(((String)s).length()));:}
 				;
 formal_part			::=	LEFTPAR parameter_declaration_list:l {:RESULT=l;:} RIGHTPAR
 				;
