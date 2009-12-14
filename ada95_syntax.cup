@@ -2136,7 +2136,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
                                           currentScope=new LinkedSymbolTable(id);
                                           boolean neverused=currentScope.put("put", new AdaSymbol(new FunctionType()));
                                           boolean neveruser2=currentScope.put("get", new AdaSymbol(new FunctionType()));
-					  gen("glbl", id, "", ""); //glbl genera las cosas iniciales. Pero todas las vars van en regs...
+					  gen("glbl", currentScope.getFlatId(), "", ""); //glbl genera las cosas iniciales. Pero todas las vars van en regs...
                                          }
 
                                           RESULT=i;
@@ -2162,7 +2162,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								gen("function", id, "", "");
 							}else{
 								currentScope=new LinkedSymbolTable(id);
-								gen("glbl", id, "", "");
+								gen("glbl", currentScope.getFlatId(), "", "");
 							}
 							String nombre="";
 							boolean cons=false;
@@ -2202,7 +2202,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 									gen("function", id, "", "");	
 								}else{
 									currentScope=new LinkedSymbolTable(id);
-									gen("glbl", id, "", "");
+									gen("glbl", currentScope.getFlatId(), "", "");
 								}
 								String nombre="";
 								boolean cons=false;
@@ -2233,7 +2233,7 @@ subprogram_specification_is	::=	PROCEDURE identifier:i IS
 								gen("function", id, "", "");	
 							}else{
 								currentScope=new LinkedSymbolTable(id);
-								gen("glbl", id, "", "");
+								gen("glbl", currentScope.getFlatId(), "", "");
 							}
 						}
 						
