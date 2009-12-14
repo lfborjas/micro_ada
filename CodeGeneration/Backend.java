@@ -46,17 +46,26 @@ public class Backend{
 	private final static String STRING_LITERAL="\".*\"";
 	private final static String CONSTANT=String.format("%s|%s|%s", INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL);
 	private final static String NOT_VAR=String.format("integer|string|float|boolean|%s", CONSTANT);
+	private final static String NOT_REGISTRABLE="integer|string|float|boolean";
 	private final static String REGISTER="%[tsf][0-9]+";
 	private final static String BRANCHES="goto|call";
-	private final static String OPERATOR="if.*|add|sub|-|not|abs|mul|div|mod|rem";
+	private final static String OPERATOR="if.*|add|sub|neg|not|abs|mul|div|mod|rem";
+	private final static String THREEWAY_OPERATOR="add|sub|mul|div";
+	private final static String TWINE_OPERATOR="neg|not|rem|abs";
 	private final static String PROLOGUED="initFunction|initRecord";
 	private final static String EPILOGUED="exit";
 	private final static String IN_STACK="-?[0-9]+\\(\\$[sf]p\\)";
-
+	private final static String COPY=":=";
+	private final static String IMMEDIATE="[0-9]+";
 	public final static int  WORD_LENGTH=4;
+
+	/*MAPAS DE OPERACIONES:*/
+	public HashMap<String, String> BRANCH_OPERATIONS;
+	public HashMap<String, String> SYSTEM_SERVICES;
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/*Lo que ocupa internamente*/
+	private int dataMessages;
 	private ArrayList<BasicBlock> basicBlocks;
 	private StringBuilder data;
 	private StringBuilder text;
@@ -73,14 +82,38 @@ public class Backend{
 		frontEndTemps=new HashMap<String, TempSymbol>();
 		floatDescriptor=new C1RegisterDescriptor();
 		regDescriptor=new RegisterDescriptor();
+		dataMessages=0;
 		icode=i;
 		st=t;
 		DEBUG=dbg;
+		initMaps();
 		this.icode=reorderCode(this.icode);
 		findBasicBlocks(this.icode);
 		getNextUse();
 	}
+	private void initMaps(){
+		BRANCH_OPERATIONS=new HashMap<String, String>();
+		BRANCH_OPERATIONS.put("==", "beq");
+		BRANCH_OPERATIONS.put("/=", "bneq");
+		BRANCH_OPERATIONS.put("<", "blt");
+		BRANCH_OPERATIONS.put(">", "bgt");
+		BRANCH_OPERATIONS.put("<=", "ble");
+		BRANCH_OPERATIONS.put(">=", "bge");
 
+		SYSTEM_SERVICES=new HashMap<String, String>();
+		SYSTEM_SERVICES.put("put_integer", "1");
+		SYSTEM_SERVICES.put("put_boolean", "1");
+		SYSTEM_SERVICES.put("put_float", "2");
+		SYSTEM_SERVICES.put("put_double", "3");
+		SYSTEM_SERVICES.put("put_string", "4");
+		SYSTEM_SERVICES.put("get_int", "5");
+		SYSTEM_SERVICES.put("get_boolean", "5");
+		SYSTEM_SERVICES.put("get_float", "6");
+		SYSTEM_SERVICES.put("get_double", "7");
+		SYSTEM_SERVICES.put("get_string", "8");
+		SYSTEM_SERVICES.put("sbrk", "9");
+		SYSTEM_SERVICES.put("exit", "10");
+	}
 	/**El método que mueve todo el código de la parte declarativa de un subprograma 
 	   al cuerpo. ¡Importante para poder generar los bloques básicos!*/	
 	private ArrayList<Cuadruplo> reorderCode(ArrayList<Cuadruplo> code){
@@ -332,7 +365,7 @@ public class Backend{
 			value=dir.getValue().toString();
 			//saltárselo si está vacío:
 			if(value.isEmpty()){continue;}
-			if(!value.matches(NOT_VAR)){
+			if(!value.matches(NOT_REGISTRABLE) && !(value.matches(CONSTANT) && value.equals("z"))){
 				//1. Ver si YA está en un registro.
 				if(value.matches(FE_TEMP)){//es un temporal
 					accessDescriptor=this.frontEndTemps.get(value).accessDescriptor;
@@ -435,6 +468,7 @@ public class Backend{
 		Cuadruplo instruction;
 		int variable_space=0;
 		String currentScope="";
+		int paramCount=0;//cuenta cuántos parámetros van
 		HashSet<String> blockVariables;
 		LinkedHashSet<String> pushedTemps; //los temporales que un bloque guarde
 		//poner global función principal y ponerle main también, porque MIPS la ocupa
@@ -460,7 +494,7 @@ public class Backend{
 								//push onto the stack
 								pushedTemps.add(blockVar);
 								text.append(
-								 String.format("\t %s, %s ,%d($sp)", 
+								 String.format("\t %s %s ,%d($sp)", 
 										"sw", pushedTemps.size(), 
 										getLocation(currentScope, blockVar))
 								);
@@ -473,7 +507,7 @@ public class Backend{
 							if(info.isAlive){
 								//TODO: actualizar el descriptor de acceso
 								text.append(
-								 String.format("\t %s, %s %d($fp)", 
+								 String.format("\t %s %s %d($fp)", 
 										"sw", info.address,
 										getLocation(currentScope,blockVar) )
 								);
@@ -525,14 +559,23 @@ public class Backend{
 
 				if(instruction.operador.equalsIgnoreCase("call")){
 					//imprimir el salto
+					paramCount=0;
 					text.append(String.format("\tjal _%s\n", instruction.arg1));
 					continue;
 				}//call
-
+				//TODO: tener un buffer de params, para saber cuándo empezar a meter a la pila
+				if(instruction.operador.equalsIgnoreCase("param")){
+					paramCount++;
+					//if( paramCount > 4){/*generar push...*/}
+					String location=getLocation(currentScope, instruction.arg1);
+					text.append(String.format("\t%s $a%d, %s\n",
+								    getLoadInstruction(location), paramCount, location));					      continue;
+				}//param
+				
 				if(instruction.operador.equalsIgnoreCase("return")){
 					//determinar el registro:
 					String location=getLocation(currentScope, instruction.arg1);
-					text.append(String.format("\t%s, $v0, %s\n",
+					text.append(String.format("\t%s $v0, %s\n",
 								    getLoadInstruction(location), location));
 					text.append(String.format("\tb _exit_%s", currentScope));
 					continue;
@@ -540,15 +583,21 @@ public class Backend{
 				if(instruction.operador.equalsIgnoreCase("glblExit")){
 				//la etiqueta ya está generada...
 					text.append(String.format("\tli $v0, 10\nsycall\n\n"));
+					continue;
 				}
 
 				/*Ahora, la hora de la verdad: las variables que ocupan registros!!*/
+				if(!instruction.operador.matches(COPY)){
 				
+				}else{
+
+				}
+				//fin de las que ocupan registros.				
 			}//por cada instrucción en el bloque
 			
 		}//por cada bloque
 	}
-	
+		
 	/**Mira el registro de acceso de la variable y devuelve una ubicación*/
 	private String getLocation(String currentScope, String symbol){
 		//si es constante, sólo regresarlo
@@ -574,6 +623,38 @@ public class Backend{
 		return "ERROR";
 	}
 	
+	/**Función de conveniencia que genera la instrucción máquina correspondiente al operador
+	   Rz podría ser un valor inmediato...*/
+	private void generateInstruction(Cuadruplo instruction, String operador, String rx, String ry, String rz){
+		String machineOperator="";
+		if(operador.matches("if.*")){
+			//sacar el operador relacional
+			String rel=operador.split("_")[1];
+			//obtener la correspondiente instrucción:
+			machineOperator=BRANCH_OPERATIONS.get(rel);
+			//generar la instrucción máquina
+			text.append(String.format("\t %s, %s, %s, %s\n", machineOperator, ry, rz, getLabel(instruction.res)));
+		}else if(operador.matches("put")){
+			String service=SYSTEM_SERVICES.get(String.format("put_%s", instruction.arg1));
+			text.append(String.format("\tli %v0, %s\n", service));
+			//sólo trabajar con el segundo parámetro:
+			if(instruction.arg1.equalsIgnoreCase("string")){
+				data.append(String.format("_msg%d: .asciiz \"%s\"", dataMessages++, instruction.arg2));
+			}
+			text.append(String.format("\t la $a0, %s\nsyscall\n", rz));
+							
+		}else if(operador.matches("get")){
+			//trabajar con el resultado
+			String service=SYSTEM_SERVICES.get(String.format("get_%s", instruction.arg1));
+			text.append(String.format("\tli %v0, %s\nsyscall\n", service));
+			text.append(String.format("\tmove $v0, %s", rx));
+		}else if(operador.matches(THREEWAY_OPERATOR)){
+			//should be seamless...
+			text.append(String.format("\t %s %s, %s, %s", operador, rx, ry, rz));
+		}else if(operador.matches(TWINE_OPERATOR)){
+			text.append(String.format("\t %s %s, %s", operador, rx, ry));
+		}
+	}
 	private void writeCodeFile(String filename){
 		File archivo=new File(filename);
 		BufferedWriter out=null;
@@ -593,5 +674,5 @@ public class Backend{
 			}
 		}
 	}
-	/*PONER ACÁ LAS FUNCIONES QUE ESCRIBEN EL CÓDIGO A UN ARCHIVO AHÍ...*/
 }//generator
+
