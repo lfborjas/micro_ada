@@ -1,5 +1,5 @@
 package CodeGeneration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashSet;
 /**El descriptor de registros de MIPS: es un mapa de registro a un arreglo 
@@ -10,11 +10,11 @@ public class RegisterDescriptor{
 	public String temps="$t_1_0-9";
 	public String savedTemps="$s_1_0-7";
 	public String floatTemps="$f_2_0-31";
-	public HashMap<String, HashSet<String>> descriptor;
+	public LinkedHashMap<String, HashSet<String>> descriptor;
 
 	public RegisterDescriptor(){
 
-		descriptor=new HashMap<String, HashSet<String>>();
+		descriptor=new LinkedHashMap<String, HashSet<String>>();
 		//inicializar el mapa con los distintos registros:
 		String[] t_info=temps.split("_");
 		String[] s_info=savedTemps.split("_");

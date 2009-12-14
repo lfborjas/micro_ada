@@ -1,10 +1,10 @@
 package CodeGeneration;
 import java.util.HashSet;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 /**Descriptor de registros para el primer coprocesador*/
 public class C1RegisterDescriptor extends RegisterDescriptor{
 	public C1RegisterDescriptor(){
-		descriptor=new HashMap<String, HashSet<String>>();
+		descriptor=new LinkedHashMap<String, HashSet<String>>();
                 //inicializar el mapa con los distintos registros:
                 String[] info=floatTemps.split("_");
                

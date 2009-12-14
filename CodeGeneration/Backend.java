@@ -106,7 +106,7 @@ public class Backend{
 		SYSTEM_SERVICES.put("put_float", "2");
 		SYSTEM_SERVICES.put("put_double", "3");
 		SYSTEM_SERVICES.put("put_string", "4");
-		SYSTEM_SERVICES.put("get_int", "5");
+		SYSTEM_SERVICES.put("get_integer", "5");
 		SYSTEM_SERVICES.put("get_boolean", "5");
 		SYSTEM_SERVICES.put("get_float", "6");
 		SYSTEM_SERVICES.put("get_double", "7");
