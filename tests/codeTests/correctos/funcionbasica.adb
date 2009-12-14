@@ -10,11 +10,16 @@ begin
 end operar;
 
 begin
+	put("Escriba x: ");
 	get(x);
+	put("Escriba y: ");
 	get(y);
 	z:=operar(x,y,1);
+	put("x+y= ");
 	put(z);
 	z:=operar(y,x,2);
+	put("x*y= ");
 	put(z);
+	put("\n");
 end funcionBasica;
 

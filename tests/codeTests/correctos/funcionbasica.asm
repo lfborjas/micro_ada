@@ -1,4 +1,9 @@
 	.data
+_msg0: .asciiz "escriba x: "
+_msg1: .asciiz "escriba y: "
+_msg2: .asciiz "x+y= "
+_msg3: .asciiz "x*y= "
+_msg4: .asciiz "\n"
 
 	.text
 	.globl main
@@ -39,9 +44,15 @@ _funcionbasica:
 	sub $fp, $sp, 12
 	move $sp, $fp
 	#BODY:
+	li $v0, 4
+	la $a0, _msg0
+	syscall
 	li $v0, 5
 	syscall
 	move $v0, $t2
+	li $v0, 4
+	la $a0, _msg1
+	syscall
 	li $v0, 5
 	syscall
 	move $v0, $t3
@@ -51,6 +62,9 @@ _funcionbasica:
 _L6:
 	jal _funcionbasica__operar
 	move $t4, $v0
+	li $v0, 4
+	la $a0, _msg2
+	syscall
 	li $v0, 1
 	move $a0, $t4
 	syscall
@@ -60,8 +74,14 @@ _L6:
 _L7:
 	jal _funcionbasica__operar
 	move $t5, $v0
+	li $v0, 4
+	la $a0, _msg3
+	syscall
 	li $v0, 1
 	move $a0, $t5
+	syscall
+	li $v0, 4
+	la $a0, _msg4
 	syscall
 	li $v0, 10
 	syscall
