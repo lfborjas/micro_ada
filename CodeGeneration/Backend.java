@@ -471,6 +471,8 @@ public class Backend{
 		int paramCount=0;//cuenta cuántos parámetros van
 		HashSet<String> blockVariables;
 		LinkedHashSet<String> pushedTemps; //los temporales que un bloque guarde
+		HashMap<String, String> registros;
+		HashSet<String> ad=new HashSet<String>();
 		//poner global función principal y ponerle main también, porque MIPS la ocupa
 		if(icode.get(1).operador.matches("glbl")){
 			text.append(String.format("\t.globl %s\nmain:\n", icode.get(1).arg1));
@@ -490,6 +492,13 @@ public class Backend{
 					/*TODO: guardar variables vivas!*/
 					for(String blockVar: blockVariables){
 						if(blockVar.matches(FE_TEMP)){
+						//si es temporal, dejémosla morir:
+							HashSet <String>key=new HashSet<String>();
+							for(String place: this.frontEndTemps.get(blockVar).accessDescriptor){
+								if((key=this.regDescriptor.get(place)) != null)
+									key.remove(blockVar);
+							}
+						/* O LA GUARDAMOS?
 							if(this.frontEndTemps.get(blockVar).info.isAlive){
 								//push onto the stack
 								pushedTemps.add(blockVar);
@@ -502,6 +511,7 @@ public class Backend{
 												String.format("%d($sp)",
 												pushedTemps.size()));
 							}//temporal viva
+						*/
 						}else{//es una variable:
 							AdaSymbol info=this.st.get(currentScope, blockVar).symbol;
 							if(info.isAlive){
@@ -582,22 +592,105 @@ public class Backend{
 				}//return
 				if(instruction.operador.equalsIgnoreCase("glblExit")){
 				//la etiqueta ya está generada...
-					text.append(String.format("\tli $v0, 10\nsycall\n\n"));
+					text.append(String.format("\tli $v0, 10\nsyscall\n\n"));
 					continue;
 				}
 
 				/*Ahora, la hora de la verdad: las variables que ocupan registros!!*/
-				if(!instruction.operador.matches(COPY)){
-				
-				}else{
-
-				}
-				//fin de las que ocupan registros.				
+				if(instruction.operador.matches(OPERATOR)){
+					//obtener los registros
+					registros=obtenReg(instruction, currentScope, block, i, false);
+					
+					//ver si se necesitan instrucciones de carga:
+					createLoad(currentScope, instruction.arg1, "y", registros);
+					//el último no tiene por qué cargarse a registro si es entero
+					if(instruction.arg2.matches(INTEGER_LITERAL)){
+						registros.put("z", instruction.arg2);
+					}else{
+						createLoad(currentScope, instruction.arg2,"z",registros);
+					}
+						
+					//generar la instrucción:
+					generateInstruction(instruction, 
+							    registros.get("x"), registros.get("y"), registros.get("z"));
+					//actualizar descriptores para x:
+					if(!registros.get("x").isEmpty()){
+						//1. Rx sólo debe contener a x:
+						regDescriptor.get(registros.get("x")).clear();
+						regDescriptor.get(registros.get("x")).add(instruction.res);
+						//2. x sólo debe estar en Rx
+						//if(!instruction.res.isEmpty() &&!instruction.res.matches(NOT_REGISTRABLE)){
+						if(instruction.res.matches(FE_TEMP)){
+							ad=this.frontEndTemps.get(instruction.res).accessDescriptor;
+						}else{
+							ad=this.st.get(currentScope,instruction.res).symbol.accessDescriptor;
+						}
+						ad.clear();
+						ad.add(registros.get("x"));
+						//}
+						//3.Eliminar Rx del descriptor de acceso de cualquier variable que no sea x
+						for(Map.Entry var: st.table.entrySet()) {
+							String key=var.getKey().toString();
+							AdaSymbol value=(AdaSymbol)var.getValue();
+							if(!key.equals(String.format("%s.%s", currentScope, instruction.res))
+							   && value.accessDescriptor.contains(registros.get("x"))){
+								value.accessDescriptor.remove(registros.get("x"));
+							}
+						}//eliminar el registro
+					}//sii el registro de equis no está vacío, claro	
+				}else if(instruction.operador.matches(COPY)){
+					//obtener registros
+					registros=obtenReg(instruction, currentScope, block, i, false);
+					
+					//determinar si y ocupa carga:
+					createLoad(currentScope, instruction.arg1, "y", registros);
+					//poner a x como una de las vars en el registro de y:
+					this.regDescriptor.update(registros.get("y"), instruction.res);
+					//actualizar para x
+					//la única ubicación de x debe ser Ry:
+					if(instruction.res.matches(FE_TEMP)){
+						ad=this.frontEndTemps.get(instruction.res).accessDescriptor;
+					}else{
+						ad=this.st.get(currentScope,instruction.res).symbol.accessDescriptor;
+					}
+					ad.clear();
+					ad.add(registros.get("y"));
+					
+				}//copia
+		
+				/*fin de las que ocupan registros.*/			
 			}//por cada instrucción en el bloque
 			
 		}//por cada bloque
-	}
+	}//assemble
+
+	private void createLoad(String currentScope, String arg, String namen, HashMap<String,String> registros){
+		if(!arg.isEmpty() && !arg.matches(NOT_REGISTRABLE)){
+			HashSet<String> ad=new HashSet<String>();
+			//tiene que ser una variable o algo va?
+			String l=getLocation(currentScope, arg);
+			if(arg.matches(FE_TEMP)){
+				ad=this.frontEndTemps.get(arg).accessDescriptor;
+			}else{
+				ad=this.st.get(currentScope,arg).symbol.accessDescriptor;
+			}
+			if(!ad.contains(registros.get(namen))){
+				//no lo contiene, generar el load
+				text.append(
+				String.format("\t%s %s, %s\n", getLoadInstruction(l),
+					registros.get(namen),
+					l
+				)
+				);
+				//ahora, actualizar el registro:
+				regDescriptor.get(registros.get(namen)).clear();
+				regDescriptor.get(registros.get(namen)).add(arg);
+				//luego, actualizar el acceso:
+				ad.add(registros.get(namen));
+			}
+		}//si es un argumento válido
 		
+	}//createLoad		
 	/**Mira el registro de acceso de la variable y devuelve una ubicación*/
 	private String getLocation(String currentScope, String symbol){
 		//si es constante, sólo regresarlo
@@ -625,7 +718,8 @@ public class Backend{
 	
 	/**Función de conveniencia que genera la instrucción máquina correspondiente al operador
 	   Rz podría ser un valor inmediato...*/
-	private void generateInstruction(Cuadruplo instruction, String operador, String rx, String ry, String rz){
+	private void generateInstruction(Cuadruplo instruction, String rx, String ry, String rz){
+		String operador=instruction.operador;
 		String machineOperator="";
 		if(operador.matches("if.*")){
 			//sacar el operador relacional
@@ -654,7 +748,8 @@ public class Backend{
 		}else if(operador.matches(TWINE_OPERATOR)){
 			text.append(String.format("\t %s %s, %s", operador, rx, ry));
 		}
-	}
+	}//generateInstruction
+
 	private void writeCodeFile(String filename){
 		File archivo=new File(filename);
 		BufferedWriter out=null;
