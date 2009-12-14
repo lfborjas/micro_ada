@@ -16,17 +16,15 @@ _funcionbasica__operar:
 _L1:
 	b _L3
 _L2:
-	lw $t0, 0($fp)
-	lw $t0, 4($fp)
-	add $t0, $t0, $t0
-	move $v0, $t0
+	lw $t2, 0($fp)
+	lw $t1, 4($fp)
+	add $t3, $t2, $t1
+	move $v0, $t3
 	b _exit_funcionbasica__operar
 	b _L4
 _L3:
-	lw $t1, 0($fp)
-	lw $t1, 4($fp)
-	mul $t1, $t1, $t1
-	move $v0, $t1
+	mul $t4, $t2, $t1
+	move $v0, $t4
 	b _exit_funcionbasica__operar
 _L4:
 	#EPILOGUE:
@@ -46,27 +44,27 @@ _funcionbasica:
 	#BODY:
 	li $v0, 5
 	syscall
-	move $v0, $t2
+	move $v0, $t5
 	li $v0, 5
 	syscall
-	move $v0, $t3
-	move $a1, $t2
-	move $a2, $t3
+	move $v0, $t6
+	move $a1, $t5
+	move $a2, $t6
 	li $a3, 1
 _L6:
 	jal _operar
-	move $t4, $v0
+	move $t7, $v0
 	li $v0, 1
-	la $a0, $t4
+	la $a0, $t7
 	syscall
-	move $a1, $t3
-	move $a2, $t2
+	move $a1, $t6
+	move $a2, $t5
 	li $a3, 2
 _L7:
 	jal _operar
-	move $t5, $v0
+	move $t8, $v0
 	li $v0, 1
-	la $a0, $t5
+	la $a0, $t8
 	syscall
 	li $v0, 10
 	syscall

@@ -39,7 +39,7 @@ public class Backend{
 	private final static String JUMPS="if.*|goto";
 	private final static String ENDERS="exit|glblExit";
 	private final static String ERASABLES="function|record";
-	private final static String FE_TEMP="\\$t[0-9]+";
+	private final static String FE_TEMP="%t[0-9]+";
 	private final static String PSEUDOINSTRUCTIONS="initRecord|initFunction|exit|call";
 	private final static String INTEGER_LITERAL="[0-9]+";
 	private final static String FLOAT_LITERAL="[0-9]+\\.[0-9]+";
@@ -362,6 +362,7 @@ public class Backend{
 		VarInfo v_info;
 		boolean inReg=false;
 		for(Map.Entry dir: dirs.entrySet()){
+			inReg=false;
 			key=dir.getKey().toString();
 			value=dir.getValue().toString();
 			//saltárselo si está vacío:
@@ -384,8 +385,15 @@ public class Backend{
 					}					
 				}//iterar en el descriptor de acceso
 				if(inReg){continue;}
-				//2. Aún aquí? Ok. Tratemos de darle un registro vacío:
-				register=this.regDescriptor.getEmpty();
+				//2. Aún aquí? Ok. Tratemos de darle un registro vacío:				
+				LinkedHashSet<String> attempts=new LinkedHashSet<String>();
+				register=this.regDescriptor.getEmpty();				
+				attempts.add(register);
+				//si ya está, seguir buscando hasta que encontremos uno vacío:
+				while(register != null && retVal.containsValue(register)){
+					register=this.regDescriptor.getEmpty(attempts);					
+					attempts.add(register);
+				}
 				if(register != null){
 					retVal.put(key, register);
 					continue;
@@ -426,13 +434,13 @@ public class Backend{
 					}//iterar en las variables del registro
 					scores.put(register, new Integer(regScore));
 				}//iterar en los registros
-				//encontrar la menor score:
+				//encontrar la menor score que no esté ya en los elegidos:
 				int lesser=Integer.MAX_VALUE;
 				int current;
 				String lesserReg="";
 				for(Map.Entry s: scores.entrySet()){
 					current=((Integer)s.getValue()).intValue();
-					if(current < lesser)
+					if(current < lesser && !retVal.containsValue(s.getKey().toString()))
 						lesserReg=s.getKey().toString();
 					
 				}

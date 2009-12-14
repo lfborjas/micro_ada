@@ -40,7 +40,7 @@ boolean[] temps=new boolean[MIPS_TEMPS];
 int temp_provisorio=0;
 /**Para obtener el siguiente temporal libre*/
 public String temp_nuevo(){
-	return "$t"+String.valueOf(++temp_provisorio);
+	return "%t"+String.valueOf(++temp_provisorio);
 }
 /**La lista de saltos de salida en el loop actual (sólo funciona para salidas inmediatas)*/
 ListaSalto currentExit=null;
