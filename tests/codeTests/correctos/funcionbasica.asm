@@ -49,19 +49,19 @@ _funcionbasica:
 	move $a2, $t3
 	li $a3, 1
 _L6:
-	jal _operar
+	jal _funcionbasica__operar
 	move $t4, $v0
 	li $v0, 1
-	la $a0, $t4
+	move $a0, $t4
 	syscall
 	move $a1, $t3
 	move $a2, $t2
 	li $a3, 2
 _L7:
-	jal _operar
+	jal _funcionbasica__operar
 	move $t5, $v0
 	li $v0, 1
-	la $a0, $t5
+	move $a0, $t5
 	syscall
 	li $v0, 10
 	syscall

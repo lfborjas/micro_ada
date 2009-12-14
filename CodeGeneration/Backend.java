@@ -584,7 +584,7 @@ public class Backend{
 				if(instruction.operador.equalsIgnoreCase("call")){
 					//imprimir el salto
 					paramCount=0;
-					text.append(String.format("\tjal _%s\n", instruction.arg1));
+					text.append(String.format("\tjal _%s__%s\n",currentScope, instruction.arg1));
 					//procesar el resultado:
 					if(!instruction.res.isEmpty()){
 						//obtener un registro para el temporal del retorno
@@ -772,7 +772,7 @@ public class Backend{
 				data.append(String.format("%s: .asciiz %s\n", message, instruction.arg2));
 				text.append(String.format("\tla $a0, %s\n\tsyscall\n", message));
 			}else{
-				text.append(String.format("\tla $a0, %s\n\tsyscall\n", rz));
+				text.append(String.format("\tmove $a0, %s\n\tsyscall\n", rz));
 			}
 							
 		}else if(operador.matches("get")){
