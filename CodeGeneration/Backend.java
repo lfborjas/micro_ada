@@ -456,7 +456,7 @@ public class Backend{
 	private String getLabel(String destino){
 		int destino_entero=Integer.parseInt(destino);
 		for(BasicBlock b: this.basicBlocks){
-			if(b.beginning>=destino_entero || b.end <= destino_entero)
+			if(b.beginning==destino_entero) 
 				return b.label;
 		}
 		return "ERROR";
@@ -754,7 +754,7 @@ public class Backend{
 			//obtener la correspondiente instrucción:
 			machineOperator=BRANCH_OPERATIONS.get(rel);
 			//generar la instrucción máquina
-			text.append(String.format("\t%s, %s, %s, %s\n", machineOperator, ry, rz, getLabel(instruction.res)));
+			text.append(String.format("\t%s, %s, %s, _%s\n", machineOperator, ry, rz, getLabel(instruction.res)));
 		}else if(operador.matches("put")){
 			String service=SYSTEM_SERVICES.get(String.format("put_%s", instruction.arg1));
 			text.append(String.format("\tli $v0, %s\n", service));
