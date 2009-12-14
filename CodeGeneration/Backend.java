@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedHashSet;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -434,24 +435,56 @@ public class Backend{
 		Cuadruplo instruction;
 		int variable_space=0;
 		String currentScope="";
+		HashSet<String> blockVariables;
+		LinkedHashSet<String> pushedTemps; //los temporales que un bloque guarde
 		//poner global función principal y ponerle main también, porque MIPS la ocupa
 		if(icode.get(1).operador.matches("glbl")){
 			text.append(String.format("\t.globl %s\nmain:\n", icode.get(1).arg1));
 			//currentScope=icode.get(1).arg1;			
 		}
 		for(BasicBlock block: this.basicBlocks){
+			//reinicializar las variables del bloque
+			blockVariables=new HashSet<String>();
+			pushedTemps=new LinkedHashSet<String>();
 			//poner la etiqueta:
 			text.append(String.format("_%s:\n", block.label));
 			//por cada instrucción en este bloque:
 			for(int i=block.beginning; i<=block.end; i++){
 				instruction=this.icode.get(i);
-				//si es una prologada, poner el prólogo:
-				
 				//al final del bloque básico, guardar las variables vivas:
 				if(i==block.end){
 					/*TODO: guardar variables vivas!*/
-				}
+					for(String blockVar: blockVariables){
+						if(blockVar.matches(FE_TEMP)){
+							if(this.frontEndTemps.get(blockVar).info.isAlive){
+								//push onto the stack
+								pushedTemps.add(blockVar);
+								text.append(
+								 String.format("\t %s, %s ,%d($sp)", 
+										"sw", pushedTemps.size(), 
+										getLocation(currentScope, blockVar))
+								);
+								this.frontEndTemps.get(blockVar).accessDescriptor.add(
+												String.format("%d($sp)",
+												pushedTemps.size()));
+							}//temporal viva
+						}else{//es una variable:
+							AdaSymbol info=this.st.get(currentScope, blockVar).symbol;
+							if(info.isAlive){
+								//TODO: actualizar el descriptor de acceso
+								text.append(
+								 String.format("\t %s, %s %d($fp)", 
+										"sw", info.address,
+										getLocation(currentScope,blockVar) )
+								);
+								info.accessDescriptor.add(String.format("%d($fp)",
+											   info.address));
+							}//está viva al salir
+						}//variable
+					}//para cada variable usada en el bloque
+				}//guardar variables vivas
 				
+				//si es una prologada, poner el prólogo:
 				if(instruction.operador.matches(PROLOGUED)){
 					variable_space=WORD_LENGTH*Integer.parseInt(instruction.arg2);	
 					//meter ra y fp:
@@ -489,11 +522,13 @@ public class Backend{
 					text.append(String.format("\tb _%s\n", getLabel(instruction.arg1)));
 					continue;
 				}//goto
+
 				if(instruction.operador.equalsIgnoreCase("call")){
 					//imprimir el salto
 					text.append(String.format("\tjal _%s\n", instruction.arg1));
 					continue;
 				}//call
+
 				if(instruction.operador.equalsIgnoreCase("return")){
 					//determinar el registro:
 					String location=getLocation(currentScope, instruction.arg1);
