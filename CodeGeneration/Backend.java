@@ -46,6 +46,13 @@ public class Backend{
 	private final static String CONSTANT=String.format("%s|%s|%s", INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL);
 	private final static String NOT_VAR=String.format("integer|string|float|boolean|%s", CONSTANT);
 	private final static String REGISTER="%[tsf][0-9]+";
+	private final static String BRANCHES="goto|call";
+	private final static String OPERATOR="if.*|add|sub|-|not|abs|mul|div|mod|rem";
+	private final static String PROLOGUED="initFunction|initRecord";
+	private final static String EPILOGUED="exit";
+	private final static String IN_STACK="-?[0-9]+\\(\\$[sf]p\\)";
+
+	public final static int  WORD_LENGTH=4;
 	/*TODO: AQUI FIJO VAN MÁS COSAS*/
 
 	/*Lo que ocupa internamente*/
@@ -408,15 +415,130 @@ public class Backend{
 		long address=this.st.get(currentScope, var).symbol.address;
 		text.append(String.format("\t sw %s, %d($fp)", var, address));
 	}	
-
+	
+	/**En base a un número de instrucción, determina qué bloque básico la contiene y devuelve la etiqueta de éste*/
+	private String getLabel(String destino){
+		int destino_entero=Integer.parseInt(destino);
+		for(BasicBlock b: this.basicBlocks){
+			if(b.beginning>=destino_entero || b.end <= destino_entero)
+				return b.label;
+		}
+		return "ERROR";
+	}
 	/**La función loca que hace la generación*/
 	public void assemble(String filename){
 		/*Hay dos tipos de instrucciones:
 		 1. Las que ocupan registros: operaciones, copias, put/get y param.
 			1.1 las copias son un caso especial.
 		 2. Las que no: como los inits, exit y call*/			
+		Cuadruplo instruction;
+		int variable_space=0;
+		String currentScope="";
+		//poner global función principal y ponerle main también, porque MIPS la ocupa
+		if(icode.get(1).operador.matches("glbl")){
+			text.append(String.format("\t.globl %s\nmain:\n", icode.get(1).arg1));
+			//currentScope=icode.get(1).arg1;			
+		}
+		for(BasicBlock block: this.basicBlocks){
+			//poner la etiqueta:
+			text.append(String.format("_%s:\n", block.label));
+			//por cada instrucción en este bloque:
+			for(int i=block.beginning; i<=block.end; i++){
+				instruction=this.icode.get(i);
+				//si es una prologada, poner el prólogo:
+				
+				//al final del bloque básico, guardar las variables vivas:
+				if(i==block.end){
+					/*TODO: guardar variables vivas!*/
+				}
+				
+				if(instruction.operador.matches(PROLOGUED)){
+					variable_space=WORD_LENGTH*Integer.parseInt(instruction.arg2);	
+					//meter ra y fp:
+					text.append("\t#PROLOGUE:\n");
+					text.append(String.format("\tsub $sp, $sp, %d", 8+variable_space));
+					text.append("\tsw $ra, ($sp)\n");
+					text.append("\tsw $fp, 4($sp)\n");
+					//reservar el espacio para variables:
+					text.append(String.format("\tsub $fp, $sp, %d", variable_space));
+					//inicializar el stack pointer:
+					text.append("\tmove $sp, $fp\n\t#BODY:\n");					
+					currentScope=instruction.arg1;
+					continue;
+				}//prologadas
+
+				//si es un epílogo, escribirlo
+				if(instruction.operador.matches(EPILOGUED)){
+					text.append("\t#EPILOGUE:\n");
+					//poner la etiqueta:
+					text.append(String.format("\t_exit_%s:\n", instruction.arg1));
+					//reestablecer el sp:
+					text.append(String.format("\tadd $sp, $fp, %d\n", variable_space));
+					//sacar fp:
+					text.append("\tlw $fp, 4($sp)\n");
+					//sacar ra:
+					text.append("\tlw $ra, ($sp)\n");
+					//regresar:
+					text.append("\tjr $ra\n\n");
+					continue;
+				}//epilogadas
+				
+				 /*Las variables vivas ya debieron haber sido guardadas...*/
+				if(instruction.operador.equalsIgnoreCase("goto")){
+					//imprimir el salto
+					text.append(String.format("\tb _%s\n", getLabel(instruction.arg1)));
+					continue;
+				}//goto
+				if(instruction.operador.equalsIgnoreCase("call")){
+					//imprimir el salto
+					text.append(String.format("\tjal _%s\n", instruction.arg1));
+					continue;
+				}//call
+				if(instruction.operador.equalsIgnoreCase("return")){
+					//determinar el registro:
+					String location=getLocation(currentScope, instruction.arg1);
+					text.append(String.format("\t%s, $v0, %s\n",
+								    getLoadInstruction(location), location));
+					text.append(String.format("\tb _exit_%s", currentScope));
+					continue;
+				}//return
+				if(instruction.operador.equalsIgnoreCase("glblExit")){
+				//la etiqueta ya está generada...
+					text.append(String.format("\tli $v0, 10\nsycall\n\n"));
+				}
+
+				/*Ahora, la hora de la verdad: las variables que ocupan registros!!*/
+				
+			}//por cada instrucción en el bloque
+			
+		}//por cada bloque
+	}
+	
+	/**Mira el registro de acceso de la variable y devuelve una ubicación*/
+	private String getLocation(String currentScope, String symbol){
+		//si es constante, sólo regresarlo
+		if(symbol.matches(CONSTANT))
+			return symbol;
+		//si es temporal, buscar allá		
+		if(symbol.matches(FE_TEMP)){
+			return this.frontEndTemps.get(symbol).accessDescriptor.iterator().next().toString();	
+		}
+		//si no, es variable, buscar en la st
+		return this.st.get(currentScope, symbol).symbol.accessDescriptor.iterator().next().toString();
+	
 	}
 
+	private String getLoadInstruction(String var){
+		if(var.matches(CONSTANT))
+			return "li";
+		if(var.matches(REGISTER))
+			return "move";
+		if(var.matches(IN_STACK))
+			return "lw";
+		//si sale otra cosa, estamos mal!!
+		return "ERROR";
+	}
+	
 	private void writeCodeFile(String filename){
 		File archivo=new File(filename);
 		BufferedWriter out=null;
