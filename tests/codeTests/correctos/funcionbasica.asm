@@ -33,6 +33,7 @@ _exit_funcionbasica__operar:
 	add $sp, $fp, 12
 	lw $fp, 4($sp)
 	lw $ra, ($sp)
+	add $sp, $sp, 8
 	jr $ra
 
 main:
@@ -49,13 +50,13 @@ _funcionbasica:
 	syscall
 	li $v0, 5
 	syscall
-	move $v0, $t2
+	move $t2, $v0
 	li $v0, 4
 	la $a0, _msg1
 	syscall
 	li $v0, 5
 	syscall
-	move $v0, $t3
+	move $t3, $v0
 	move $a1, $t2
 	move $a2, $t3
 	li $a3, 1

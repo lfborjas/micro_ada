@@ -573,6 +573,8 @@ public class Backend{
 					text.append("\tlw $fp, 4($sp)\n");
 					//sacar ra:
 					text.append("\tlw $ra, ($sp)\n");
+					//terminar de reestablecer sp:
+					text.append("\tadd $sp, $sp, 8\n");
 					//regresar:
 					text.append("\tjr $ra\n\n");
 					continue;
@@ -783,7 +785,7 @@ public class Backend{
 			//trabajar con el resultado
 			String service=SYSTEM_SERVICES.get(String.format("get_%s", instruction.arg1));
 			text.append(String.format("\tli $v0, %s\n\tsyscall\n", service));
-			text.append(String.format("\tmove $v0, %s\n", rx));
+			text.append(String.format("\tmove %s, $v0\n", rx));
 		}else if(operador.matches(THREEWAY_OPERATOR)){
 			//should be seamless...
 			text.append(String.format("\t%s %s, %s, %s\n", operador, rx, ry, rz));
