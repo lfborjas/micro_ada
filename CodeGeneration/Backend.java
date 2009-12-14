@@ -47,7 +47,7 @@ public class Backend{
 	private final static String CONSTANT=String.format("%s|%s|%s", INTEGER_LITERAL, FLOAT_LITERAL, STRING_LITERAL);
 	private final static String NOT_VAR=String.format("integer|string|float|boolean|%s", CONSTANT);
 	private final static String NOT_REGISTRABLE=String.format("integer|string|float|boolean|%s", STRING_LITERAL);
-	private final static String REGISTER="\\$[tsf][0-9]+";
+	private final static String REGISTER="\\$[atsf][0-9]+";
 	private final static String BRANCHES="goto|call";
 	private final static String OPERATOR="if.*|add|sub|neg|not|abs|mul|div|mod|rem|put|get";
 	private final static String THREEWAY_OPERATOR="add|sub|mul|div";
