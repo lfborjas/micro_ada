@@ -477,7 +477,8 @@ public class Backend{
 		HashSet<String> ad=new HashSet<String>();
 		//poner global función principal y ponerle main también, porque MIPS la ocupa
 		if(icode.get(0).operador.matches("glbl")){
-			text.append(String.format("\t.globl %s\nmain:\n", icode.get(0).arg1));
+			//text.append(String.format("\t.globl %s\nmain:\n", icode.get(0).arg1));
+			text.append("\t.globl main\nmain:\n");
 			//currentScope=icode.get(1).arg1;			
 		}
 		for(BasicBlock block: this.basicBlocks){
