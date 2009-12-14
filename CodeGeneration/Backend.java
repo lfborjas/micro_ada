@@ -496,7 +496,7 @@ public class Backend{
 			blockVariables=new HashSet<String>();
 			pushedTemps=new LinkedHashSet<String>();
 			//poner la etiqueta:
-			if(block.label.equals(mainProcedure))
+			if(block.label.equals(mainProcedure) || this.basicBlocks.size() == 1)
 				text.append("main:\n");
 			text.append(String.format("_%s:\n", block.label));
 			//por cada instrucción en este bloque:
