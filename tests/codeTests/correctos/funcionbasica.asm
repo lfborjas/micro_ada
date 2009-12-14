@@ -7,7 +7,6 @@ _msg4: .asciiz "\n"
 
 	.text
 	.globl main
-main:
 _funcionbasica__operar:
 	#PROLOGUE:
 	sub $sp, $sp, 20
@@ -36,6 +35,7 @@ _exit_funcionbasica__operar:
 	lw $ra, ($sp)
 	jr $ra
 
+main:
 _funcionbasica:
 	#PROLOGUE:
 	sub $sp, $sp, 20

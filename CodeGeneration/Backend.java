@@ -483,10 +483,12 @@ public class Backend{
 		LinkedHashSet<String> pushedTemps; //los temporales que un bloque guarde
 		HashMap<String, String> registros;
 		HashSet<String> ad=new HashSet<String>();
+		String mainProcedure="";
 		//poner global función principal y ponerle main también, porque MIPS la ocupa
 		if(icode.get(0).operador.matches("glbl")){
 			//text.append(String.format("\t.globl %s\nmain:\n", icode.get(0).arg1));
-			text.append("\t.globl main\nmain:\n");
+			mainProcedure=icode.get(0).arg1;
+			text.append("\t.globl main\n");
 			//currentScope=icode.get(1).arg1;			
 		}
 		for(BasicBlock block: this.basicBlocks){
@@ -494,6 +496,8 @@ public class Backend{
 			blockVariables=new HashSet<String>();
 			pushedTemps=new LinkedHashSet<String>();
 			//poner la etiqueta:
+			if(block.label.equals(mainProcedure))
+				text.append("main:\n");
 			text.append(String.format("_%s:\n", block.label));
 			//por cada instrucción en este bloque:
 			for(int i=block.beginning; i<=block.end; i++){
