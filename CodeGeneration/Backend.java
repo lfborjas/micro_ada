@@ -680,8 +680,7 @@ public class Backend{
 					}//sii el registro de equis no está vacío, claro	
 				}else if(instruction.operador.matches(COPY)){
 					//obtener registros
-					registros=obtenReg(instruction, currentScope, block, i, false);
-					
+					registros=obtenReg(instruction, currentScope, block, i, true);
 					//determinar si y ocupa carga:
 					createLoad(currentScope, instruction.arg1, "y", registros);
 					//poner a x como una de las vars en el registro de y:
