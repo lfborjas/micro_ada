@@ -686,6 +686,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         // TODO add your handling code here:
+        dlgConsola.pack();
         dlgConsola.setVisible(true);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 //variables de lfborjas:
