@@ -4,7 +4,7 @@ _msg1: .asciiz "escriba y: "
 _msg2: .asciiz "x+y= "
 _msg3: .asciiz "x*y= "
 _msg4: .asciiz "\n"
-
+_DEBUG: .asciiz "SALIENDO DE OPERAR"
 	.text
 	.globl main
 _funcionbasica__operar:
@@ -15,7 +15,7 @@ _funcionbasica__operar:
 	sub $fp, $sp, 12
 	move $sp, $fp
 	#BODY:
-	beq, $a2, 1, _L2
+	beq $a2, 1, _L2
 _L1:
 	b _L3
 _L2:
@@ -30,6 +30,14 @@ _L3:
 _L4:
 	#EPILOGUE:
 _exit_funcionbasica__operar:
+	move $s1, $v0
+	li $v0, 1
+	move $a0, $s1
+	syscall
+
+	li $v0, 4
+	la $a0, _DEBUG
+	syscall
 	add $sp, $fp, 12
 	lw $fp, 4($sp)
 	lw $ra, ($sp)
