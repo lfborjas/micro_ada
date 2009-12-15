@@ -615,11 +615,11 @@ public class Backend{
 				}//call
 				//TODO: tener un buffer de params, para saber cuándo empezar a meter a la pila
 				if(instruction.operador.equalsIgnoreCase("param")){
-					paramCount++;
+					//paramCount++;
 					//if( paramCount > 4){/*generar push...*/}
 					String location=getLocation(currentScope, instruction.arg1);
 					text.append(String.format("\t%s $a%d, %s\n",
-								    getLoadInstruction(location), paramCount, location));					      continue;
+								    getLoadInstruction(location), paramCount++, location));					      continue;
 				}//param
 				
 				if(instruction.operador.equalsIgnoreCase("return")){
