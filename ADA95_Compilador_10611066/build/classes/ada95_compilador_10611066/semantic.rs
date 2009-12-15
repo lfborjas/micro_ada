@@ -1,2 +1,0 @@
-ada95_compilador_10611066.semantic
-ada95_compilador_10611066.CUP$semantic$actions
