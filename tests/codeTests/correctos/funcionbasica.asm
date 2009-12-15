@@ -2,8 +2,9 @@
 _msg0: .asciiz "escriba x: "
 _msg1: .asciiz "escriba y: "
 _msg2: .asciiz "x+y= "
-_msg3: .asciiz "x*y= "
-_msg4: .asciiz "\n"
+_msg3: .asciiz "\n"
+_msg4: .asciiz "x*y= "
+_msg5: .asciiz "\n"
 
 	.text
 	.globl main
@@ -69,6 +70,9 @@ _L6:
 	li $v0, 1
 	move $a0, $t4
 	syscall
+	li $v0, 4
+	la $a0, _msg3
+	syscall
 	move $a0, $t3
 	move $a1, $t2
 	li $a2, 2
@@ -76,13 +80,13 @@ _L7:
 	jal _funcionbasica__operar
 	move $t5, $v0
 	li $v0, 4
-	la $a0, _msg3
+	la $a0, _msg4
 	syscall
 	li $v0, 1
 	move $a0, $t5
 	syscall
 	li $v0, 4
-	la $a0, _msg4
+	la $a0, _msg5
 	syscall
 	li $v0, 10
 	syscall

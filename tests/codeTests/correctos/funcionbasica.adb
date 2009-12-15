@@ -17,6 +17,7 @@ begin
 	z:=operar(x,y,1);
 	put("x+y= ");
 	put(z);
+	put("\n");
 	z:=operar(y,x,2);
 	put("x*y= ");
 	put(z);
