@@ -1953,7 +1953,7 @@ iteration_clause_option		::=
 						gen("goto", " ", "", "");
 						ParserResult mr=(ParserResult)m;
 						//post.add(mr.value);
-						post.add(new Cuadruplo("+", i.toString(), "1", i.toString()));
+						post.add(new Cuadruplo("add", i.toString(), "1", i.toString()));
 						RESULT=new ParserResult(post, b_res);
 						
 					}
@@ -1984,7 +1984,7 @@ iteration_clause_option		::=
 						gen("if_>=", i, initial, "");
 						gen("goto", " ", "", "");
 						ParserResult mr=(ParserResult)m;
-						post.add(new Cuadruplo("-", i.toString(), "1", i.toString()));
+						post.add(new Cuadruplo("sub", i.toString(), "1", i.toString()));
 						RESULT=new ParserResult(post, b_res);
 					}	
 					:}
