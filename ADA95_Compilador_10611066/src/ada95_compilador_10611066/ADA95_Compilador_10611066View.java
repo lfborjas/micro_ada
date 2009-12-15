@@ -61,6 +61,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         this.jFileChooser1.setFileFilter(new AdaFilter());
         this.jTabbedPane1.setTitleAt(0, "Salida");
         this.errorArea.setForeground(Color.red);
+        redirectSystemStreams();
         // status bar initialization - message timeout, idle icon and busy animation, etc
         ResourceMap resourceMap = getResourceMap();
         int messageTimeout = resourceMap.getInteger("StatusBar.messageTimeout");
@@ -153,6 +154,8 @@ public class ADA95_Compilador_10611066View extends FrameView {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuGuardar = new javax.swing.JMenuItem();
         javax.swing.JMenuItem exitMenuItem = new javax.swing.JMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
         javax.swing.JMenu helpMenu = new javax.swing.JMenu();
         javax.swing.JMenuItem aboutMenuItem = new javax.swing.JMenuItem();
         statusPanel = new javax.swing.JPanel();
@@ -160,6 +163,9 @@ public class ADA95_Compilador_10611066View extends FrameView {
         statusAnimationLabel = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         jFileChooser1 = new javax.swing.JFileChooser();
+        dlgConsola = new javax.swing.JDialog();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        txtConsola = new javax.swing.JTextArea();
 
         mainPanel.setName("mainPanel"); // NOI18N
         mainPanel.setPreferredSize(new java.awt.Dimension(1000, 1000));
@@ -287,6 +293,21 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
         menuBar.add(fileMenu);
 
+        jMenu1.setText(resourceMap.getString("jMenu1.text")); // NOI18N
+        jMenu1.setName("jMenu1"); // NOI18N
+
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setText(resourceMap.getString("jMenuItem2.text")); // NOI18N
+        jMenuItem2.setName("jMenuItem2"); // NOI18N
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem2);
+
+        menuBar.add(jMenu1);
+
         helpMenu.setText(resourceMap.getString("helpMenu.text")); // NOI18N
         helpMenu.setName("helpMenu"); // NOI18N
 
@@ -299,7 +320,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
 
         statusPanel.setName("statusPanel"); // NOI18N
         statusPanel.setPreferredSize(new java.awt.Dimension(1027, 20));
-        statusPanel.setLayout(new java.awt.GridLayout());
+        statusPanel.setLayout(new java.awt.GridLayout(1, 0));
 
         statusMessageLabel.setName("statusMessageLabel"); // NOI18N
         statusPanel.add(statusMessageLabel);
@@ -313,6 +334,29 @@ public class ADA95_Compilador_10611066View extends FrameView {
         statusPanel.add(progressBar);
 
         jFileChooser1.setName("jFileChooser1"); // NOI18N
+
+        dlgConsola.setTitle(resourceMap.getString("dlgConsola.title")); // NOI18N
+        dlgConsola.setName("dlgConsola"); // NOI18N
+
+        jScrollPane3.setName("jScrollPane3"); // NOI18N
+
+        txtConsola.setBackground(resourceMap.getColor("txtConsola.background")); // NOI18N
+        txtConsola.setColumns(20);
+        txtConsola.setForeground(resourceMap.getColor("txtConsola.foreground")); // NOI18N
+        txtConsola.setRows(5);
+        txtConsola.setName("txtConsola"); // NOI18N
+        jScrollPane3.setViewportView(txtConsola);
+
+        javax.swing.GroupLayout dlgConsolaLayout = new javax.swing.GroupLayout(dlgConsola.getContentPane());
+        dlgConsola.getContentPane().setLayout(dlgConsolaLayout);
+        dlgConsolaLayout.setHorizontalGroup(
+            dlgConsolaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE)
+        );
+        dlgConsolaLayout.setVerticalGroup(
+            dlgConsolaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+        );
 
         setComponent(mainPanel);
         setMenuBar(menuBar);
@@ -328,7 +372,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                errorArea.append(text);
+                txtConsola.append(text);
             }
         });
     }
@@ -639,22 +683,31 @@ public class ADA95_Compilador_10611066View extends FrameView {
     private void mainPanelKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_mainPanelKeyPressed
         // TODO add your handling code here:
     }//GEN-LAST:event_mainPanelKeyPressed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        // TODO add your handling code here:
+        dlgConsola.setVisible(true);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 //variables de lfborjas:
     File archivo = null;
     /**El contenido del archivo en texto:*/
     String textoDeArchivo;
     boolean debug;
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JDialog dlgConsola;
     private javax.swing.JTextArea errorArea;
     private javax.swing.JButton jButton1;
     private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JEditorPane jEditorPaneDocDisplay;
     private javax.swing.JFileChooser jFileChooser1;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuItem jMenuGuardar;
     private javax.swing.JMenuItem jMenuINuevo;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel mainPanel;
@@ -663,6 +716,7 @@ public class ADA95_Compilador_10611066View extends FrameView {
     private javax.swing.JLabel statusAnimationLabel;
     private javax.swing.JLabel statusMessageLabel;
     private javax.swing.JPanel statusPanel;
+    private javax.swing.JTextArea txtConsola;
     // End of variables declaration//GEN-END:variables
     private final Timer messageTimer;
     private final Timer busyIconTimer;
