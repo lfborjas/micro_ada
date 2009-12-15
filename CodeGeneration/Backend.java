@@ -54,7 +54,7 @@ public class Backend{
 	private final static String TWINE_OPERATOR="neg|not|rem|abs";
 	private final static String PROLOGUED="initFunction|initRecord";
 	private final static String EPILOGUED="exit";
-	private final static String IN_STACK="-?[0-9]+\\(\\$[sf]p\\)";
+	private final static String IN_STACK="-?([0-9])?+\\(\\$[sf]p\\)";
 	private final static String COPY=":=";
 	private final static String IMMEDIATE="[0-9]+";
 	public final static int  WORD_LENGTH=4;
@@ -706,7 +706,7 @@ public class Backend{
 	}//assemble
 
 	private void createLoad(String currentScope, String arg, String namen, HashMap<String,String> registros){
-		if(!arg.isEmpty() && !arg.matches(NOT_REGISTRABLE)){
+		if(!arg.isEmpty() && !arg.matches(NOT_REGISTRABLE) && !arg.matches(INTEGER_LITERAL)){
 			HashSet<String> ad=new HashSet<String>();
 			//tiene que ser una variable o algo va?
 			String l=getLocation(currentScope, arg);
@@ -729,7 +729,14 @@ public class Backend{
 				//luego, actualizar el acceso:
 				ad.add(registros.get(namen));
 			}
-		}//si es un argumento válido
+		}else if(arg.matches(INTEGER_LITERAL)){
+			text.append(
+			String.format("\t%s %s, %s\n", getLoadInstruction(arg),
+				registros.get(namen),
+				arg
+			)
+			);
+		}
 		
 	}//createLoad		
 	/**Mira el registro de acceso de la variable y devuelve una ubicación*/
